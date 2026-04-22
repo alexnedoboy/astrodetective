@@ -42,6 +42,8 @@ const PLANETS = {
   jupiter: { glyph:"♃",  name:"Юпитер",   color:"#C8A860" },
   saturn:  { glyph:"♄",  name:"Сатурн",   color:"#B09878" },
   uranus:  { glyph:"♅",  name:"Уран",     color:"#80C8D8" },
+  neptune: { glyph:"♆",  name:"Нептун",   color:"#5B7FBF" },
+  pluto:   { glyph:"♇",  name:"Плутон",   color:"#9B59B6" },
 };
 
 const ASPECTS = {
@@ -52,7 +54,7 @@ const ASPECTS = {
   opposition:  { glyph:"☍", name:"Оппозиция",  deg:180, signs:6, color:"#E8904A" },
 };
 
-const DIFF_LABEL = { 1:"Начало", 2:"Средний", 3:"Сложный" };
+const DIFF_LABEL = { 1:"Начало", 2:"Средний", 3:"Сложный", 4:"Продвинутый", 5:"Эксперт" };
 
 function getAspectId(zid1, zid2) {
   let diff = Math.abs(ZI[zid1] - ZI[zid2]);
@@ -157,6 +159,115 @@ const CASES = [
       asc:"Асцендент в Близнецах — внешний образ непоследовательного, перескакивающего человека. Луна и Асц в одном знаке создают стойкое впечатление которое контрастирует со скорпионской глубиной Солнца.",
     },
   },
+  // ── Блок 4: Личные планеты ─────────────────────────────────────
+  {
+    id:"q4_01", type:"signs", quest:4, questStep:1, difficulty:4,
+    title:"Портрет #10",
+    description:"Солнце в Тельце, Луна в Козероге, Асц в Деве. Говорит медленно и взвешенно — каждое слово на месте. Не любит абстракций, мыслит конкретными примерами и фактами. В разговоре всегда возвращает к практическому смыслу: «и что с этим делать?»",
+    planets:["mercury"], prePlaced:{},
+    answers:{ mercury:"taurus" },
+    explanations:{ mercury:"Меркурий в Тельце — медленное, основательное мышление. Предпочитает конкретное абстрактному, практическое — теоретическому. Слова выбирает тщательно, мыслит через материальные образы." },
+  },
+  {
+    id:"q4_02", type:"signs", quest:4, questStep:2, difficulty:4,
+    title:"Портрет #11",
+    description:"Солнце в Овне, Луна в Льве, Асц в Стрельце. В отношениях ищет партнёра-друга — лёгкость, свободу, совместные приключения. Влюбляется в нестандартных людей. Собственничество и ревность её отталкивают мгновенно.",
+    planets:["venus"], prePlaced:{},
+    answers:{ venus:"aquarius" },
+    explanations:{ venus:"Венера в Водолее — притяжение к необычному, нестандартному. В любви ценит свободу и дружбу больше страсти и слияния. Идеальные отношения — два независимых человека рядом." },
+  },
+  {
+    id:"q4_03", type:"signs", quest:4, questStep:3, difficulty:4,
+    title:"Портрет #12",
+    description:"Солнце в Раке, Луна в Рыбах, Асц в Тельце. Внешне — мягкий и неспешный. Но когда берётся за цель — методично, настойчиво, без лишнего шума. Не останавливается. Злится редко, но если довести — долго и тяжело.",
+    planets:["mars"], prePlaced:{},
+    answers:{ mars:"capricorn" },
+    explanations:{ mars:"Марс в Козероге — одно из сильнейших положений Марса (экзальтация). Действие методичное, терпеливое, направленное на долгосрочный результат. Энергия не тратится впустую — она инвестируется." },
+  },
+  {
+    id:"q4_04", type:"signs", quest:4, questStep:4, difficulty:4,
+    title:"Портрет #13",
+    description:"Солнце в Близнецах, Луна в Весах, Асц в Водолее. Анализирует всё и сразу — мозг не выключается никогда, идеи сыплются потоком. В любви ищет красоту и утончённость, тянется к творческим людям и эстетике. Действует вспышками — горит идеей, бросается в неё, быстро сгорает.",
+    planets:["mercury","venus","mars"], prePlaced:{},
+    answers:{ mercury:"gemini", venus:"libra", mars:"aries" },
+    explanations:{
+      mercury:"Меркурий в Близнецах — домашний знак Меркурия. Быстрое, ассоциативное мышление, поток идей, лёгкость с языком и информацией.",
+      venus:"Венера в Весах — домашний знак Венеры. Тяга к красоте, гармонии, утончённости. В отношениях ищет равновесие и эстетику.",
+      mars:"Марс в Овне — домашний знак Марса. Действие через вспышку, импульс, энтузиазм. Энергия мощная но быстро сгорает.",
+    },
+  },
+  // ── Блок 5: Введение в аспекты ────────────────────────────────
+  {
+    id:"q5_01", type:"aspect_build", quest:5, questStep:1, difficulty:4,
+    title:"Аспект #1",
+    description:"Солнце стоит в Овне. Поставь Сатурн в трин к Солнцу.",
+    planetPool:["saturn"],
+    prePlaced:{ sun:"aries" },
+    correctPair:["sun","saturn"],
+    correctAspect:"trine",
+    explanation:"Трин (120°) — гармоничный аспект. Овен (1й знак) + 4 знака = Лев (5й знак). Трин соединяет знаки одной стихии: Овен и Лев — оба Огонь. Энергия течёт свободно, без трения.",
+  },
+  {
+    id:"q5_02", type:"aspect_build", quest:5, questStep:2, difficulty:4,
+    title:"Аспект #2",
+    description:"Луна стоит в Раке. Поставь Марс в оппозицию к Луне.",
+    planetPool:["mars"],
+    prePlaced:{ moon:"cancer" },
+    correctPair:["moon","mars"],
+    correctAspect:"opposition",
+    explanation:"Оппозиция (180°) — противостояние. Рак (4й знак) + 6 знаков = Козерог (10й знак). Оппозиция всегда соединяет противоположные знаки зодиака. Луна в Раке и Марс в Козероге — эмоциональная потребность в безопасности против воли к достижению.",
+  },
+  {
+    id:"q5_03", type:"aspect_build", quest:5, questStep:3, difficulty:4,
+    title:"Аспект #3",
+    description:"Человек одновременно стремится к свободе и независимости — и к глубокой эмоциональной близости. Эти два желания тянут в разные стороны. Поставь Венеру и Уран в квадрат.",
+    planetPool:["venus","uranus"],
+    prePlaced:{},
+    correctPair:["venus","uranus"],
+    correctAspect:"square",
+    explanation:"Квадрат (90°) — напряжение между двумя принципами. Венера — близость, привязанность, потребность в союзе. Уран — свобода, независимость, разрыв с привычным. Квадрат создаёт внутренний конфликт: хочу близости и хочу свободы одновременно.",
+  },
+  {
+    id:"q5_04", type:"aspect_build", quest:5, questStep:4, difficulty:4,
+    title:"Аспект #4",
+    description:"Мышление этого человека — мощный инструмент трансформации. Он видит то что другие не замечают, докапывается до сути. Иногда это пугает его самого. Слова имеют для него особый вес — он знает что они меняют реальность.",
+    planetPool:["mercury","pluto","saturn","neptune","sun"],
+    prePlaced:{},
+    correctPair:["mercury","pluto"],
+    correctAspect:"conjunction",
+    explanation:"Соединение ☿–♇ — Меркурий (мышление, речь) слит с Плутоном (трансформация, глубина, скрытое). Мысль приобретает плутонианское качество: проникающая, необратимая, способная вскрывать то что лежит под поверхностью. Слова такого человека — не просто информация.",
+  },
+  // ── Блок 6: Аспекты полностью ─────────────────────────────────
+  {
+    id:"q6_01", type:"aspect_build", quest:6, questStep:1, difficulty:4,
+    title:"Аспект #5",
+    description:"Всю жизнь ощущает противоречие между собственной волей и внешними ограничениями. Хочет действовать — что-то останавливает. Добивается своего — но всегда через сопротивление, никогда легко.",
+    planetPool:["sun","saturn","jupiter","moon","venus"],
+    prePlaced:{},
+    correctPair:["sun","saturn"],
+    correctAspect:"opposition",
+    explanation:"Оппозиция ☉–♄. Солнце — воля, инициатива, самовыражение. Сатурн — ограничение, структура, требование реальности. В оппозиции они стоят лицом к лицу: каждое действие встречает равное противодействие. Не блокировку — а вызов, который закаляет.",
+  },
+  {
+    id:"q6_02", type:"aspect_build", quest:6, questStep:2, difficulty:5,
+    title:"Аспект #6",
+    description:"Интуиция работает как радар — чувствует людей и ситуации раньше чем успевает подумать. Иногда это дар, иногда — источник спутанности: трудно отличить своё от чужого, реальное от воображаемого.",
+    planetPool:["moon","neptune","mercury","uranus","saturn"],
+    prePlaced:{},
+    correctPair:["moon","neptune"],
+    correctAspect:"conjunction",
+    explanation:"Соединение ☽–♆. Луна (эмоции, интуиция, восприятие) растворяется в Нептуне (иллюзия, тонкое восприятие, слияние). Границы между собой и миром становятся проницаемыми. Высшее проявление — эмпатия и художественная чувствительность. Вызов — сохранить себя.",
+  },
+  {
+    id:"q6_03", type:"aspect_build", quest:6, questStep:3, difficulty:5,
+    title:"Аспект #7",
+    description:"Говорит легко и красиво — слова приходят сами. Умеет убеждать не давя, вдохновлять не навязывая. Люди тянутся к нему в разговоре — есть в его речи что-то притягивающее и успокаивающее одновременно.",
+    planetPool:["mercury","venus","sun","jupiter","moon"],
+    prePlaced:{},
+    correctPair:["mercury","venus"],
+    correctAspect:"conjunction",
+    explanation:"Соединение ☿–♀. Меркурий (речь, мышление) слит с Венерой (красота, притяжение, гармония). Речь приобретает венерианское качество: мягкая, эстетичная, притягивающая. Классическое положение для поэтов, дипломатов, переговорщиков — тех кто умеет говорить красиво и убедительно.",
+  },
 ];
 
 const toRad = d => d * Math.PI / 180;
@@ -184,6 +295,10 @@ function App() {
 
   const cas = CASES[caseIdx];
 
+  const maxAspPlacements = cas.type === "aspect_build"
+    ? 2 - Object.keys(cas.prePlaced || {}).length
+    : 2;
+
   const z2pArr = {};
   Object.entries(placements).forEach(([p, z]) => {
     if (!z2pArr[z]) z2pArr[z] = [];
@@ -207,18 +322,19 @@ function App() {
 
   const allPlaced = (() => {
     if (cas.type === "signs")        return cas.planets.every(pid => placements[pid]);
-    if (cas.type === "aspect_build") return Object.keys(placements).length === 2;
+    if (cas.type === "aspect_build") return Object.keys(placements).length >= maxAspPlacements;
     if (cas.type === "ruler")        return !!placements[cas.answer?.planet];
     return false;
   })();
 
   const selPlanet = sel ? PLANETS[sel] : null;
+  const aspAll = { ...(cas.prePlaced || {}), ...placements };
 
   const liveAspect = (() => {
     if (cas.type !== "aspect_build") return null;
-    const pids = Object.keys(placements);
-    if (pids.length !== 2) return null;
-    const z1 = placements[pids[0]], z2 = placements[pids[1]];
+    if (Object.keys(aspAll).length !== 2) return null;
+    const [pid1, pid2] = Object.keys(aspAll);
+    const z1 = aspAll[pid1], z2 = aspAll[pid2];
     const p1 = innerEdge(ZI[z1]), p2 = innerEdge(ZI[z2]);
     return { x1:p1.x, y1:p1.y, x2:p2.x, y2:p2.y, aspectId: getAspectId(z1, z2) };
   })();
@@ -233,21 +349,15 @@ function App() {
 
   const aspectResult = (() => {
     if (phase !== "checked" || cas.type !== "aspect_build") return null;
-    const pids = Object.keys(placements);
+    const pids = Object.keys(aspAll);
     const pairOk = cas.correctPair.every(p => pids.includes(p));
-    const aspectId = pids.length === 2 ? getAspectId(placements[pids[0]], placements[pids[1]]) : null;
+    const aspectId = pids.length === 2 ? getAspectId(aspAll[pids[0]], aspAll[pids[1]]) : null;
     return { pairOk, aspectId, aspectOk: pairOk && aspectId === cas.correctAspect };
-  })();
-
-  const rulerResult = (() => {
-    if (phase !== "checked" || cas.type !== "ruler") return null;
-    return placements[cas.answer?.planet] === cas.answer?.sign;
   })();
 
   const handleSector = (zid) => {
     if (phase !== "playing") return;
     if ((preZ2pArr[zid] || []).length > 0) return;
-
     if (!sel) {
       const placed = z2pArr[zid] || [];
       if (placed.length === 0) return;
@@ -255,9 +365,7 @@ function App() {
       const np = {...placements}; delete np[pid]; setPlacements(np); setSel(pid);
       return;
     }
-
-    if (cas.type === "aspect_build" && Object.keys(placements).length >= 2) return;
-
+    if (cas.type === "aspect_build" && Object.keys(placements).length >= maxAspPlacements) return;
     const np = {...placements};
     np[sel] = zid;
     setPlacements(np); setSel(null);
@@ -266,12 +374,10 @@ function App() {
   const handleChip = (pid) => {
     if (phase !== "playing") return;
     if (sel === pid) { setSel(null); return; }
-
     if (cas.type === "aspect_build") {
       const placed = Object.keys(placements);
-      if (placed.length >= 2 && !placements[pid]) return;
+      if (placed.length >= maxAspPlacements && !placements[pid]) return;
     }
-
     if (placements[pid]) {
       const np = {...placements}; delete np[pid]; setPlacements(np);
     }
@@ -287,16 +393,15 @@ function App() {
     if (cas.type === "aspect_build") {
       if (liveAspect?.aspectId) {
         const a = ASPECTS[liveAspect.aspectId];
-        const pids = Object.keys(placements);
-        const pairOk = cas.correctPair.every(p => pids.includes(p));
+        const aspPids = Object.keys(aspAll);
+        const pairOk = cas.correctPair.every(p => aspPids.includes(p));
         const aspOk  = liveAspect.aspectId === cas.correctAspect;
         if (pairOk && aspOk)  return { hintText:`✓ ${a.name} — нажми Проверить`, hintColor:"#8FBA88" };
         if (!pairOk && aspOk) return { hintText:`${a.name}, но не те планеты`, hintColor:"#E8904A" };
         return { hintText:`${a.name} ${a.deg}° — не тот аспект`, hintColor:"#CF6450" };
       }
-      return { hintText:"Выбери 2 планеты → расставь их в аспекте", hintColor:"#2A3A58" };
+      return { hintText:"Выбери планеты → расставь их в нужном аспекте", hintColor:"#2A3A58" };
     }
-    if (cas.type === "ruler") return { hintText: cas.hint || "", hintColor:"#C9A84C66" };
     return { hintText:"Выбери планету → тапни знак зодиака", hintColor:"#1E2C40" };
   })();
 
@@ -324,7 +429,7 @@ function App() {
         <div style={{ display:"flex", gap:4 }}>
           {CASES.map((_,i) => (
             <div key={i} onClick={() => goTo(i)} style={{
-              width:i===caseIdx?18:6, height:6, borderRadius:3, cursor:"pointer",
+              width:i===caseIdx?14:4, height:4, borderRadius:2, cursor:"pointer",
               background:i===caseIdx?"#C9A84C":i<caseIdx?"#2D3D1C":"#1A2438", transition:"all .2s"
             }}/>
           ))}
@@ -359,7 +464,6 @@ function App() {
               <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
             </filter>
           </defs>
-
           <circle cx={CX} cy={CY} r={OR+18} fill="none" stroke="#0F1828" strokeWidth={.5}/>
           <circle cx={CX} cy={CY} r={OR+11} fill="none" stroke="#131E30" strokeWidth={.5}/>
           <circle cx={CX} cy={CY} r={OR+5}  fill="url(#wbg)" stroke="#192236" strokeWidth={1}/>
@@ -371,49 +475,32 @@ function App() {
             const firstPid    = allPids[0];
             const firstPlanet = firstPid ? PLANETS[firstPid] : null;
             const isPre       = prePids.length > 0 && playerPids.length === 0;
-            const isMC        = cas.mcSign === z.id;
 
             const sectorCorrect = phase==="checked" && cas.type==="signs" &&
               playerPids.length > 0 && playerPids.every(pid => signsResults[pid]==="correct");
-            const sectorWrong = phase==="checked" && cas.type==="signs" &&
+            const sectorWrong   = phase==="checked" && cas.type==="signs" &&
               playerPids.some(pid => signsResults[pid]==="wrong");
-
             const aspSectorOk    = phase==="checked" && cas.type==="aspect_build" && !!aspectResult?.aspectOk && playerPids.length > 0;
             const aspSectorWrong = phase==="checked" && cas.type==="aspect_build" && playerPids.length > 0 && !aspectResult?.aspectOk;
 
-            const rulSectorOk    = phase==="checked" && cas.type==="ruler" && playerPids.includes(cas.answer?.planet) && !!rulerResult;
-            const rulSectorWrong = phase==="checked" && cas.type==="ruler" && playerPids.includes(cas.answer?.planet) && !rulerResult;
-
-            const anyCorrect = sectorCorrect || aspSectorOk || rulSectorOk;
-            const anyWrong   = sectorWrong   || aspSectorWrong || rulSectorWrong;
-
+            const anyCorrect = sectorCorrect || aspSectorOk;
+            const anyWrong   = sectorWrong   || aspSectorWrong;
             const active = phase==="playing" && sel !== null && prePids.length === 0;
             const fill   = anyCorrect?"#0E2015":anyWrong?"#1C0D0D":
-                           isMC?"#0F1C10":
                            firstPlanet?(isPre?firstPlanet.color+"0C":firstPlanet.color+"13"):
                            active?"#0F1C34":"#0C1424";
             const stroke = anyCorrect?"#4CAF5038":anyWrong?"#CF645038":
-                           isMC?"#2A4820":
                            firstPlanet?firstPlanet.color+(isPre?"25":"38"):"#16203A";
-
             const outerP = midPos(i, OR-19);
             const midR   = (OR+IR)/2;
-            const mcPos  = midPos(i, OR+3);
 
             return (
               <g key={z.id} className="sec" onClick={() => handleSector(z.id)}
                 style={{ cursor: phase==="playing" && prePids.length===0 ? "pointer":"default" }}>
                 <path d={sectorPath(i)} fill={fill} stroke={stroke} strokeWidth={1}/>
-
                 <text x={outerP.x} y={outerP.y+6} textAnchor="middle" fontSize={17}
-                  fill={firstPlanet?firstPlanet.color+(isPre?"35":"45"):isMC?"#4A7A3A":"#1C2D45"}
+                  fill={firstPlanet?firstPlanet.color+(isPre?"35":"45"):"#1C2D45"}
                   style={{ userSelect:"none", fontFamily:"serif" }}>{z.glyph}</text>
-
-                {isMC && (
-                  <text x={mcPos.x} y={mcPos.y+5} textAnchor="middle" fontSize={8}
-                    fill="#5A9A48" style={{ userSelect:"none", fontFamily:"'Cinzel',serif", letterSpacing:.5 }}>MC</text>
-                )}
-
                 {allPids.length > 0 ? allPids.map((pid, idx) => {
                   const planet = PLANETS[pid];
                   const isPreP = prePids.includes(pid);
@@ -427,8 +514,7 @@ function App() {
                   );
                 }) : (
                   <text x={midPos(i,midR).x} y={midPos(i,midR).y+4} textAnchor="middle" fontSize={7.5}
-                    fill={isMC?"#2A4820":"#18243A"}
-                    style={{ userSelect:"none", fontFamily:"sans-serif", letterSpacing:.3 }}>
+                    fill="#18243A" style={{ userSelect:"none", fontFamily:"sans-serif", letterSpacing:.3 }}>
                     {z.name.substring(0,3).toUpperCase()}
                   </text>
                 )}
@@ -440,8 +526,8 @@ function App() {
 
           {liveAspect && (() => {
             const a = liveAspect.aspectId ? ASPECTS[liveAspect.aspectId] : null;
-            const pids = Object.keys(placements);
-            const pairOk = cas.correctPair?.every(p => pids.includes(p));
+            const aspPids = Object.keys(aspAll);
+            const pairOk = cas.correctPair?.every(p => aspPids.includes(p));
             const aspOk  = liveAspect.aspectId === cas.correctAspect;
             const lineColor = phase==="checked"
               ? (aspectResult?.aspectOk ? "#8FBA88" : "#CF6450")
@@ -459,7 +545,18 @@ function App() {
               <text x={CX} y={CY+10} textAnchor="middle" fontSize={9} fill="#18243A" letterSpacing={3} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>CRAFT</text>
             </>
           )}
-
+          {phase==="playing" && !sel && cas.type==="aspect_build" && (() => {
+            const a = liveAspect?.aspectId ? ASPECTS[liveAspect.aspectId] : null;
+            if (!a) return <text x={CX} y={CY+12} textAnchor="middle" fontSize={30} fill="#1A2840" style={{ userSelect:"none" }}>?</text>;
+            const aspPids = Object.keys(aspAll);
+            const pairOk = cas.correctPair.every(p => aspPids.includes(p));
+            const aspOk  = liveAspect.aspectId === cas.correctAspect;
+            const c = pairOk && aspOk ? "#8FBA88" : pairOk ? "#E8904A" : a.color;
+            return <>
+              <text x={CX} y={CY-1} textAnchor="middle" fontSize={24} fill={c} style={{ fontFamily:"serif", userSelect:"none" }}>{a.glyph}</text>
+              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill={c+"88"} style={{ userSelect:"none", letterSpacing:1.5, fontFamily:"'Cinzel',serif" }}>{a.deg}°</text>
+            </>;
+          })()}
           {phase==="playing" && sel && (
             <g className="pls">
               <circle cx={CX} cy={CY} r={IR-7} fill="none" stroke={selPlanet?.color+"25"} strokeWidth={2}/>
@@ -467,7 +564,6 @@ function App() {
                 filter="url(#glow)" style={{ userSelect:"none", fontFamily:"serif" }}>{selPlanet?.glyph}</text>
             </g>
           )}
-
           {phase==="checked" && cas.type==="signs" && (
             <>
               <text x={CX} y={CY-3} textAnchor="middle" fontSize={26}
@@ -476,24 +572,34 @@ function App() {
               <text x={CX} y={CY+13} textAnchor="middle" fontSize={8} fill="#2A3550" style={{ userSelect:"none", letterSpacing:1 }}>ВЕРНО</text>
             </>
           )}
+          {phase==="checked" && cas.type==="aspect_build" && (() => {
+            const ok = aspectResult?.aspectOk;
+            const a  = ASPECTS[cas.correctAspect];
+            return <>
+              <circle cx={CX} cy={CY} r={IR-7} fill="none" stroke={ok?"#4CAF5030":"#CF645030"} strokeWidth={2}/>
+              <text x={CX} y={CY-1} textAnchor="middle" fontSize={22} fill={ok?"#C9A84C":a.color} style={{ fontFamily:"serif", userSelect:"none" }}>{a.glyph}</text>
+              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill="#2A3550" style={{ userSelect:"none", letterSpacing:1 }}>{a.deg}°</text>
+            </>;
+          })()}
         </svg>
       </div>
 
       <div style={{ padding:"0 12px 20px", flex:1 }}>
-
         {phase === "playing" && (
-          <div style={{ display:"flex", gap:7, marginBottom:10 }}>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:7, marginBottom:10 }}>
             {chipPool.map(p => {
               const placed   = !!placements[p.id];
               const selected = sel === p.id;
-              const isMax2   = cas.type==="aspect_build" && Object.keys(placements).length >= 2 && !placed;
+              const isMax    = cas.type==="aspect_build" && Object.keys(placements).length >= maxAspPlacements && !placed;
               return (
                 <div key={p.id} className="tap" onClick={() => handleChip(p.id)} style={{
                   display:"flex", flexDirection:"column", alignItems:"center", gap:4,
-                  padding:"10px 0", borderRadius:12, flex:1,
+                  padding:"10px 0", borderRadius:12,
+                  flex: chipPool.length <= 3 ? 1 : "0 0 calc(20% - 6px)",
+                  minWidth: chipPool.length > 3 ? 56 : "auto",
                   background:selected?p.color+"16":"#0C1422",
                   border:`1.5px solid ${selected?p.color:placed?p.color+"25":"#192236"}`,
-                  opacity: (placed && !selected) || isMax2 ? .3 : 1,
+                  opacity: (placed && !selected) || isMax ? .3 : 1,
                   boxShadow:selected?`0 0 16px ${p.color}1E`:"none",
                 }}>
                   <span style={{ fontSize:21, color:p.color, lineHeight:1, fontFamily:"serif" }}>{p.glyph}</span>
@@ -516,7 +622,6 @@ function App() {
 
         {phase === "checked" && (
           <div className="fu">
-
             {cas.type === "signs" && (
               <>
                 <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Cinzel',serif", fontSize:11, letterSpacing:2.5,
@@ -549,7 +654,42 @@ function App() {
               </>
             )}
 
-            <div style={{ display:"flex", gap:8, marginTop:10 }}>
+            {cas.type === "aspect_build" && aspectResult && (() => {
+              const ok = aspectResult.aspectOk;
+              const ca = ASPECTS[cas.correctAspect];
+              const fa = aspectResult.aspectId ? ASPECTS[aspectResult.aspectId] : null;
+              const cp = cas.correctPair.map(pid => PLANETS[pid]);
+              const pp = Object.keys(placements).map(pid => PLANETS[pid]);
+              return (
+                <div style={{
+                  marginBottom:10, padding:"14px",
+                  background:ok?"rgba(76,175,80,.05)":"rgba(207,100,80,.05)",
+                  border:`1px solid ${ok?"rgba(76,175,80,.14)":"rgba(207,100,80,.14)"}`,
+                  borderRadius:11,
+                }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                    <span style={{ fontSize:22, color:ca.color, fontFamily:"serif" }}>{ca.glyph}</span>
+                    <span style={{ fontFamily:"'Cinzel',serif", fontSize:11, color:"#C9A84C" }}>{cp[0]?.name} – {cp[1]?.name}</span>
+                    <span style={{ marginLeft:"auto", color:ok?"#5CBF78":"#CF6450", fontSize:16 }}>{ok?"✓":"✗"}</span>
+                  </div>
+                  {!aspectResult.pairOk && (
+                    <div style={{ fontSize:11, color:"#CF645055", marginBottom:7 }}>
+                      Выбрал: {pp.map(p=>p?.glyph+p?.name).join(" + ")} — нужно: {cp.map(p=>p?.glyph+p?.name).join(" + ")}
+                    </div>
+                  )}
+                  {aspectResult.pairOk && !aspectResult.aspectOk && fa && (
+                    <div style={{ fontSize:11, color:"#CF645055", marginBottom:7 }}>
+                      Верные планеты, но аспект {fa.glyph}{fa.name} → нужно {ca.glyph}{ca.name}
+                    </div>
+                  )}
+                  <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13.5, lineHeight:1.55, color:"#726858", margin:0 }}>
+                    {cas.explanation}
+                  </p>
+                </div>
+              );
+            })()}
+
+            <div style={{ display:"flex", gap:8, marginTop:8 }}>
               <button className="gbtn" onClick={retry} style={{
                 flex:1, padding:13, borderRadius:12, background:"#0C1422",
                 border:"1px solid #192236", color:"#8A9AAC", fontSize:10, letterSpacing:2,
