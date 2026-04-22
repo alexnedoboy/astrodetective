@@ -322,21 +322,23 @@ const CASES = [
 ];
 
 const toRad = d => d * Math.PI / 180;
-const CX = 185, CY = 185, OR = 160, IR = 65;
+const CX = 185, CY = 185, OR = 160, IR = 65, R_ZOD = 124;
 
 const ELEM = ['fire','earth','air','water','fire','earth','air','water','fire','earth','air','water'];
 const EC = {
-  fire:  { bg:'#FFF1EC', ring:'#FFE4D8', div:'#D4A090', glyph:'#A85038' },
-  earth: { bg:'#F5F2E8', ring:'#EBE6D4', div:'#B0A87A', glyph:'#706030' },
-  air:   { bg:'#EDF2FC', ring:'#DCE8F8', div:'#90AACC', glyph:'#3860A0' },
-  water: { bg:'#F2EEFB', ring:'#E4DDF8', div:'#A890C4', glyph:'#503898' },
+  fire:  { rf:'#D8907A', glyph:'#FDFAF4' },
+  earth: { rf:'#A8A070', glyph:'#FDFAF4' },
+  air:   { rf:'#7898C8', glyph:'#FDFAF4' },
+  water: { rf:'#9070C0', glyph:'#FDFAF4' },
 };
+const INNER_FILL = '#FDFAF5';
 
-function sectorPath(i) {
+function arcPath(i, r1, r2) {
   const s = toRad(180 - i*30), e = toRad(180 - (i+1)*30);
   const cs=Math.cos(s),ss=Math.sin(s),ce=Math.cos(e),se=Math.sin(e);
-  return `M${CX+OR*cs} ${CY+OR*ss} A${OR} ${OR} 0 0 0 ${CX+OR*ce} ${CY+OR*se} L${CX+IR*ce} ${CY+IR*se} A${IR} ${IR} 0 0 1 ${CX+IR*cs} ${CY+IR*ss}Z`;
+  return `M${CX+r2*cs} ${CY+r2*ss} A${r2} ${r2} 0 0 0 ${CX+r2*ce} ${CY+r2*se} L${CX+r1*ce} ${CY+r1*se} A${r1} ${r1} 0 0 1 ${CX+r1*cs} ${CY+r1*ss}Z`;
 }
+function sectorPath(i) { return arcPath(i, IR, OR); }
 function midPos(i, r) {
   const a = toRad(180 - i*30 - 15);
   return { x: CX + r*Math.cos(a), y: CY + r*Math.sin(a) };
@@ -520,8 +522,7 @@ function App() {
             </filter>
           </defs>
           <rect x={0} y={0} width={370} height={370} fill="#F5F0E8"/>
-          <circle cx={CX} cy={CY} r={OR+12} fill="none" stroke="#D0C8B8" strokeWidth={.5}/>
-          <circle cx={CX} cy={CY} r={OR+4}  fill="#FDFAF4" stroke="#C0B8A8" strokeWidth={1}/>
+          <circle cx={CX} cy={CY} r={OR+1} fill="none" stroke="#9A9088" strokeWidth={1.5}/>
 
           {ZODIAC.map((z,i) => {
             const playerPids  = z2pArr[z.id]    || [];
@@ -542,30 +543,32 @@ function App() {
             const anyWrong   = sectorWrong   || aspSectorWrong;
             const active = phase==="playing" && sel !== null && prePids.length === 0;
             const ec     = EC[ELEM[i]];
-            const fill   = anyCorrect?"#DFF2E0":anyWrong?"#FAE4E0":
-                           firstPlanet?(isPre?ec.bg:ec.ring):
-                           active?"#EAE4F8":ec.bg;
+            const fill   = anyCorrect?"#DFF2E0":anyWrong?"#FAE4E0":INNER_FILL;
             const stroke = anyCorrect?"#70C07860":anyWrong?"#D0806060":
-                           firstPlanet?firstPlanet.color+"50":ec.div;
-            const outerP = midPos(i, OR-19);
-            const midR   = (OR+IR)/2;
+                           firstPlanet?firstPlanet.color+"50":"#C8C0B8";
+            const midR   = IR + 22;
+            const ringMid = midPos(i, (R_ZOD + OR) / 2);
 
             return (
               <g key={z.id} className="sec" onClick={() => handleSector(z.id)}
                 style={{ cursor: phase==="playing" && prePids.length===0 ? "pointer":"default" }}>
-                <path d={sectorPath(i)} fill={fill} stroke={stroke} strokeWidth={1}/>
-                <text x={outerP.x} y={outerP.y+6} textAnchor="middle" fontSize={17}
-                  fill={firstPlanet?firstPlanet.color:ec.glyph}
+                {/* Zodiac ring slice */}
+                <path d={arcPath(i, R_ZOD, OR)} fill={INNER_FILL} stroke="#9A9088" strokeWidth={1}/>
+                {/* Inner interactive sector */}
+                <path d={arcPath(i, IR, R_ZOD)} fill={fill} stroke="#9A9088" strokeWidth={.8}/>
+                {/* Zodiac glyph inside ring */}
+                <text x={ringMid.x} y={ringMid.y+6} textAnchor="middle" fontSize={15}
+                  fill="#706050"
                   style={{ userSelect:"none", fontFamily:"'Segoe UI Symbol','Apple Symbols','Symbola',serif" }}>{z.glyph}{'\uFE0E'}</text>
                 {allPids.length > 0 && allPids.map((pid, idx) => {
                   const planet = PLANETS[pid];
                   const isPreP = prePids.includes(pid);
-                  const r      = allPids.length === 1 ? midR : midR + (idx === 0 ? 11 : -11);
+                  const r      = allPids.length === 1 ? midR : midR + (idx === 0 ? 9 : -9);
                   const p      = midPos(i, r);
-                  const fsize  = allPids.length === 1 ? (isPreP?21:23) : (isPreP?17:19);
+                  const fsize  = allPids.length === 1 ? (isPreP?20:22) : (isPreP?16:18);
                   return (
                     <text key={pid} x={p.x} y={p.y+9} textAnchor="middle" fontSize={fsize}
-                      fill={planet.color+(isPreP?"90":"")} filter={isPreP?"none":"url(#glow)"}
+                      fill={planet.color+(isPreP?"90":"")}
                       style={{ userSelect:"none", fontFamily:"serif" }}>{planet.glyph}</text>
                   );
                 })}
@@ -573,7 +576,7 @@ function App() {
             );
           })}
 
-          <circle cx={CX} cy={CY} r={IR} fill="#FDFAF4" stroke="#C0B8A8" strokeWidth={1.5}/>
+          <circle cx={CX} cy={CY} r={R_ZOD} fill="none" stroke="#9A9088" strokeWidth={1}/>
 
           {liveAspect && (() => {
             const a = liveAspect.aspectId ? ASPECTS[liveAspect.aspectId] : null;
