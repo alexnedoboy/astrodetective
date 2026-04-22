@@ -8,7 +8,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    body { margin: 0; background: #080C18; }
+    body { margin: 0; background: #F5F0E8; }
   </style>
 </head>
 <body>
@@ -324,6 +324,14 @@ const CASES = [
 const toRad = d => d * Math.PI / 180;
 const CX = 185, CY = 185, OR = 160, IR = 65;
 
+const ELEM = ['fire','earth','air','water','fire','earth','air','water','fire','earth','air','water'];
+const EC = {
+  fire:  { bg:'#FFF1EC', ring:'#FFE4D8', div:'#D4A090', glyph:'#A85038' },
+  earth: { bg:'#F5F2E8', ring:'#EBE6D4', div:'#B0A87A', glyph:'#706030' },
+  air:   { bg:'#EDF2FC', ring:'#DCE8F8', div:'#90AACC', glyph:'#3860A0' },
+  water: { bg:'#F2EEFB', ring:'#E4DDF8', div:'#A890C4', glyph:'#503898' },
+};
+
 function sectorPath(i) {
   const s = toRad(180 - i*30), e = toRad(180 - (i+1)*30);
   const cs=Math.cos(s),ss=Math.sin(s),ce=Math.cos(e),se=Math.sin(e);
@@ -439,7 +447,7 @@ function App() {
   const retry = ()  => { setPhase("playing"); setPlacements({}); setSel(null); };
 
   const { hintText, hintColor } = (() => {
-    if (phase !== "playing") return { hintText:"", hintColor:"#1E2C40" };
+    if (phase !== "playing") return { hintText:"", hintColor:"#B0A898" };
     if (sel) return { hintText:`↑ Поставь ${selPlanet?.name}`, hintColor: selPlanet?.color };
     if (cas.type === "aspect_build") {
       if (liveAspect?.aspectId) {
@@ -447,17 +455,17 @@ function App() {
         const aspPids = Object.keys(aspAll);
         const pairOk = cas.correctPair.every(p => aspPids.includes(p));
         const aspOk  = liveAspect.aspectId === cas.correctAspect;
-        if (pairOk && aspOk)  return { hintText:`✓ ${a.name} — нажми Проверить`, hintColor:"#8FBA88" };
-        if (!pairOk && aspOk) return { hintText:`${a.name}, но не те планеты`, hintColor:"#E8904A" };
+        if (pairOk && aspOk)  return { hintText:`✓ ${a.name} — нажми Проверить`, hintColor:"#4A9040" };
+        if (!pairOk && aspOk) return { hintText:`${a.name}, но не те планеты`, hintColor:"#C87030" };
         return { hintText:`${a.name} ${a.deg}° — не тот аспект`, hintColor:"#CF6450" };
       }
-      return { hintText:"Выбери планеты → расставь их в нужном аспекте", hintColor:"#2A3A58" };
+      return { hintText:"Выбери планеты → расставь их в нужном аспекте", hintColor:"#B0A898" };
     }
-    return { hintText:"Выбери планету → тапни знак зодиака", hintColor:"#1E2C40" };
+    return { hintText:"Выбери планету → тапни знак зодиака", hintColor:"#B0A898" };
   })();
 
   return (
-    <div style={{ background:"#080C18", minHeight:"100vh", color:"#E8E0D0", maxWidth:420, margin:"0 auto", fontFamily:"Georgia,serif", display:"flex", flexDirection:"column" }}>
+    <div style={{ background:"#F5F0E8", minHeight:"100vh", color:"#2A2010", maxWidth:420, margin:"0 auto", fontFamily:"Georgia,serif", display:"flex", flexDirection:"column" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap');
         *{box-sizing:border-box;}
@@ -476,25 +484,25 @@ function App() {
       `}</style>
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 18px 5px" }}>
-        <span style={{ fontFamily:"'Cinzel',serif", color:"#C9A84C", fontSize:10, letterSpacing:4 }}>CHARTCRAFT</span>
+        <span style={{ fontFamily:"'Cinzel',serif", color:"#B08828", fontSize:10, letterSpacing:4 }}>CHARTCRAFT</span>
         <div style={{ display:"flex", gap:4 }}>
           {CASES.map((_,i) => (
             <div key={i} onClick={() => goTo(i)} style={{
               width:i===caseIdx?14:4, height:4, borderRadius:2, cursor:"pointer",
-              background:i===caseIdx?"#C9A84C":i<caseIdx?"#2D3D1C":"#1A2438", transition:"all .2s"
+              background:i===caseIdx?"#B08828":i<caseIdx?"#90A060":"#D8D0C0", transition:"all .2s"
             }}/>
           ))}
         </div>
       </div>
 
-      <div style={{ margin:"0 12px 3px", padding:"10px 14px", background:"#0B1220", border:"1px solid #192236", borderRadius:12 }}>
+      <div style={{ margin:"0 12px 3px", padding:"10px 14px", background:"#FDFAF5", border:"1px solid #E0D8CC", borderRadius:12 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
-          <span style={{ fontFamily:"'Cinzel',serif", color:"#C9A84C", fontSize:9.5, letterSpacing:1.5 }}>{cas.title}</span>
-          <span style={{ background:"rgba(143,186,136,.08)", border:"1px solid rgba(143,186,136,.22)", borderRadius:20, padding:"2px 9px", fontSize:9.5, color:"#8FBA88" }}>
+          <span style={{ fontFamily:"'Cinzel',serif", color:"#B08828", fontSize:9.5, letterSpacing:1.5 }}>{cas.title}</span>
+          <span style={{ background:"rgba(80,140,80,.07)", border:"1px solid rgba(80,140,80,.25)", borderRadius:20, padding:"2px 9px", fontSize:9.5, color:"#508050" }}>
             {DIFF_LABEL[cas.difficulty] || cas.difficulty}
           </span>
         </div>
-        <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13.5, lineHeight:1.5, color:"#8A8070", margin:0 }}>
+        <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13.5, lineHeight:1.5, color:"#706050", margin:0 }}>
           "{cas.description}"
         </p>
       </div>
@@ -506,18 +514,14 @@ function App() {
       <div style={{ display:"flex", justifyContent:"center" }}>
         <svg viewBox="0 0 370 370" width="100%" style={{ maxWidth:400, display:"block" }}>
           <defs>
-            <radialGradient id="wbg" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#0F1A2E"/>
-              <stop offset="100%" stopColor="#060810"/>
-            </radialGradient>
             <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="2.5" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              <feGaussianBlur stdDeviation="1.5" result="blur"/>
+              <feComposite in="SourceGraphic" in2="blur" operator="over"/>
             </filter>
           </defs>
-          <circle cx={CX} cy={CY} r={OR+18} fill="none" stroke="#0F1828" strokeWidth={.5}/>
-          <circle cx={CX} cy={CY} r={OR+11} fill="none" stroke="#131E30" strokeWidth={.5}/>
-          <circle cx={CX} cy={CY} r={OR+5}  fill="url(#wbg)" stroke="#192236" strokeWidth={1}/>
+          <rect x={0} y={0} width={370} height={370} fill="#F5F0E8"/>
+          <circle cx={CX} cy={CY} r={OR+12} fill="none" stroke="#D0C8B8" strokeWidth={.5}/>
+          <circle cx={CX} cy={CY} r={OR+4}  fill="#FDFAF4" stroke="#C0B8A8" strokeWidth={1}/>
 
           {ZODIAC.map((z,i) => {
             const playerPids  = z2pArr[z.id]    || [];
@@ -537,11 +541,12 @@ function App() {
             const anyCorrect = sectorCorrect || aspSectorOk;
             const anyWrong   = sectorWrong   || aspSectorWrong;
             const active = phase==="playing" && sel !== null && prePids.length === 0;
-            const fill   = anyCorrect?"#0E2015":anyWrong?"#1C0D0D":
-                           firstPlanet?(isPre?firstPlanet.color+"0C":firstPlanet.color+"13"):
-                           active?"#0F1C34":"#0C1424";
-            const stroke = anyCorrect?"#4CAF5038":anyWrong?"#CF645038":
-                           firstPlanet?firstPlanet.color+(isPre?"25":"38"):"#16203A";
+            const ec     = EC[ELEM[i]];
+            const fill   = anyCorrect?"#DFF2E0":anyWrong?"#FAE4E0":
+                           firstPlanet?(isPre?ec.bg:ec.ring):
+                           active?"#EAE4F8":ec.bg;
+            const stroke = anyCorrect?"#70C07860":anyWrong?"#D0806060":
+                           firstPlanet?firstPlanet.color+"50":ec.div;
             const outerP = midPos(i, OR-19);
             const midR   = (OR+IR)/2;
 
@@ -550,9 +555,9 @@ function App() {
                 style={{ cursor: phase==="playing" && prePids.length===0 ? "pointer":"default" }}>
                 <path d={sectorPath(i)} fill={fill} stroke={stroke} strokeWidth={1}/>
                 <text x={outerP.x} y={outerP.y+6} textAnchor="middle" fontSize={17}
-                  fill={firstPlanet?firstPlanet.color+(isPre?"35":"45"):"#1C2D45"}
-                  style={{ userSelect:"none", fontFamily:"serif" }}>{z.glyph}</text>
-                {allPids.length > 0 ? allPids.map((pid, idx) => {
+                  fill={firstPlanet?firstPlanet.color:ec.glyph}
+                  style={{ userSelect:"none", fontFamily:"'Segoe UI Symbol','Apple Symbols','Symbola',serif" }}>{z.glyph}{'\uFE0E'}</text>
+                {allPids.length > 0 && allPids.map((pid, idx) => {
                   const planet = PLANETS[pid];
                   const isPreP = prePids.includes(pid);
                   const r      = allPids.length === 1 ? midR : midR + (idx === 0 ? 11 : -11);
@@ -560,20 +565,15 @@ function App() {
                   const fsize  = allPids.length === 1 ? (isPreP?21:23) : (isPreP?17:19);
                   return (
                     <text key={pid} x={p.x} y={p.y+9} textAnchor="middle" fontSize={fsize}
-                      fill={planet.color+(isPreP?"80":"")} filter={isPreP?"none":"url(#glow)"}
+                      fill={planet.color+(isPreP?"90":"")} filter={isPreP?"none":"url(#glow)"}
                       style={{ userSelect:"none", fontFamily:"serif" }}>{planet.glyph}</text>
                   );
-                }) : (
-                  <text x={midPos(i,midR).x} y={midPos(i,midR).y+4} textAnchor="middle" fontSize={7.5}
-                    fill="#18243A" style={{ userSelect:"none", fontFamily:"sans-serif", letterSpacing:.3 }}>
-                    {z.name.substring(0,3).toUpperCase()}
-                  </text>
-                )}
+                })}
               </g>
             );
           })}
 
-          <circle cx={CX} cy={CY} r={IR} fill="#070910" stroke="#192236" strokeWidth={1}/>
+          <circle cx={CX} cy={CY} r={IR} fill="#FDFAF4" stroke="#C0B8A8" strokeWidth={1.5}/>
 
           {liveAspect && (() => {
             const a = liveAspect.aspectId ? ASPECTS[liveAspect.aspectId] : null;
@@ -581,8 +581,8 @@ function App() {
             const pairOk = cas.correctPair?.every(p => aspPids.includes(p));
             const aspOk  = liveAspect.aspectId === cas.correctAspect;
             const lineColor = phase==="checked"
-              ? (aspectResult?.aspectOk ? "#8FBA88" : "#CF6450")
-              : (pairOk && aspOk ? "#8FBA8870" : a ? a.color+"50" : "#C9A84C40");
+              ? (aspectResult?.aspectOk ? "#4A9040" : "#CF6450")
+              : (pairOk && aspOk ? "#4A904090" : a ? a.color+"80" : "#B0902060");
             return (
               <line x1={liveAspect.x1} y1={liveAspect.y1} x2={liveAspect.x2} y2={liveAspect.y2}
                 stroke={lineColor} strokeWidth={phase==="checked"?2.5:1.5}
@@ -592,25 +592,25 @@ function App() {
 
           {phase==="playing" && !sel && cas.type==="signs" && (
             <>
-              <text x={CX} y={CY-4} textAnchor="middle" fontSize={9} fill="#18243A" letterSpacing={3} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>CHART</text>
-              <text x={CX} y={CY+10} textAnchor="middle" fontSize={9} fill="#18243A" letterSpacing={3} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>CRAFT</text>
+              <text x={CX} y={CY-4} textAnchor="middle" fontSize={9} fill="#C8C0B0" letterSpacing={3} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>CHART</text>
+              <text x={CX} y={CY+10} textAnchor="middle" fontSize={9} fill="#C8C0B0" letterSpacing={3} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>CRAFT</text>
             </>
           )}
           {phase==="playing" && !sel && cas.type==="aspect_build" && (() => {
             const a = liveAspect?.aspectId ? ASPECTS[liveAspect.aspectId] : null;
-            if (!a) return <text x={CX} y={CY+12} textAnchor="middle" fontSize={30} fill="#1A2840" style={{ userSelect:"none" }}>?</text>;
+            if (!a) return <text x={CX} y={CY+12} textAnchor="middle" fontSize={30} fill="#C8C0B0" style={{ userSelect:"none" }}>?</text>;
             const aspPids = Object.keys(aspAll);
             const pairOk = cas.correctPair.every(p => aspPids.includes(p));
             const aspOk  = liveAspect.aspectId === cas.correctAspect;
-            const c = pairOk && aspOk ? "#8FBA88" : pairOk ? "#E8904A" : a.color;
+            const c = pairOk && aspOk ? "#4A9040" : pairOk ? "#C87030" : a.color;
             return <>
               <text x={CX} y={CY-1} textAnchor="middle" fontSize={24} fill={c} style={{ fontFamily:"serif", userSelect:"none" }}>{a.glyph}</text>
-              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill={c+"88"} style={{ userSelect:"none", letterSpacing:1.5, fontFamily:"'Cinzel',serif" }}>{a.deg}°</text>
+              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill={c+"AA"} style={{ userSelect:"none", letterSpacing:1.5, fontFamily:"'Cinzel',serif" }}>{a.deg}°</text>
             </>;
           })()}
           {phase==="playing" && sel && (
             <g className="pls">
-              <circle cx={CX} cy={CY} r={IR-7} fill="none" stroke={selPlanet?.color+"25"} strokeWidth={2}/>
+              <circle cx={CX} cy={CY} r={IR-7} fill="none" stroke={selPlanet?.color+"50"} strokeWidth={2}/>
               <text x={CX} y={CY+12} textAnchor="middle" fontSize={30} fill={selPlanet?.color}
                 filter="url(#glow)" style={{ userSelect:"none", fontFamily:"serif" }}>{selPlanet?.glyph}</text>
             </g>
@@ -618,18 +618,18 @@ function App() {
           {phase==="checked" && cas.type==="signs" && (
             <>
               <text x={CX} y={CY-3} textAnchor="middle" fontSize={26}
-                fill={signsScore===cas.planets.length?"#C9A84C":"#8FBA88"}
+                fill={signsScore===cas.planets.length?"#B8922C":"#4A9040"}
                 style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>{signsScore}/{cas.planets.length}</text>
-              <text x={CX} y={CY+13} textAnchor="middle" fontSize={8} fill="#2A3550" style={{ userSelect:"none", letterSpacing:1 }}>ВЕРНО</text>
+              <text x={CX} y={CY+13} textAnchor="middle" fontSize={8} fill="#C8C0B0" style={{ userSelect:"none", letterSpacing:1 }}>ВЕРНО</text>
             </>
           )}
           {phase==="checked" && cas.type==="aspect_build" && (() => {
             const ok = aspectResult?.aspectOk;
             const a  = ASPECTS[cas.correctAspect];
             return <>
-              <circle cx={CX} cy={CY} r={IR-7} fill="none" stroke={ok?"#4CAF5030":"#CF645030"} strokeWidth={2}/>
-              <text x={CX} y={CY-1} textAnchor="middle" fontSize={22} fill={ok?"#C9A84C":a.color} style={{ fontFamily:"serif", userSelect:"none" }}>{a.glyph}</text>
-              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill="#2A3550" style={{ userSelect:"none", letterSpacing:1 }}>{a.deg}°</text>
+              <circle cx={CX} cy={CY} r={IR-7} fill="none" stroke={ok?"#4CAF5060":"#CF645060"} strokeWidth={2}/>
+              <text x={CX} y={CY-1} textAnchor="middle" fontSize={22} fill={ok?"#B8922C":a.color} style={{ fontFamily:"serif", userSelect:"none" }}>{a.glyph}</text>
+              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill="#C0B8A8" style={{ userSelect:"none", letterSpacing:1 }}>{a.deg}°</text>
             </>;
           })()}
         </svg>
@@ -648,13 +648,13 @@ function App() {
                   padding:"10px 0", borderRadius:12,
                   flex: chipPool.length <= 3 ? 1 : chipPool.length <= 5 ? "0 0 calc(20% - 6px)" : "0 0 calc(33.33% - 6px)",
                   minWidth: chipPool.length > 3 ? 56 : "auto",
-                  background:selected?p.color+"16":"#0C1422",
-                  border:`1.5px solid ${selected?p.color:placed?p.color+"25":"#192236"}`,
+                  background:selected?p.color+"18":"#FDFAF5",
+                  border:`1.5px solid ${selected?p.color:placed?p.color+"50":"#DDD8CC"}`,
                   opacity: (placed && !selected) || isMax ? .3 : 1,
-                  boxShadow:selected?`0 0 16px ${p.color}1E`:"none",
+                  boxShadow:selected?`0 0 14px ${p.color}30`:"none",
                 }}>
                   <span style={{ fontSize:21, color:p.color, lineHeight:1, fontFamily:"serif" }}>{p.glyph}</span>
-                  <span style={{ fontSize:9, color:"#3E5068" }}>{p.name}</span>
+                  <span style={{ fontSize:9, color:"#908070" }}>{p.name}</span>
                 </div>
               );
             })}
@@ -664,9 +664,9 @@ function App() {
         {phase === "playing" && (
           <button className="gbtn" onClick={() => setPhase("checked")} disabled={!allPlaced} style={{
             width:"100%", padding:14, borderRadius:12,
-            background:allPlaced?"linear-gradient(135deg,#C9A84C,#9A7828)":"#0C1422",
-            border:allPlaced?"none":"1px solid #192236",
-            color:allPlaced?"#06080E":"#273045",
+            background:allPlaced?"linear-gradient(135deg,#C9A84C,#9A7828)":"#EDE8E0",
+            border:allPlaced?"none":"1px solid #D0C8BC",
+            color:allPlaced?"#06080E":"#B0A890",
             fontSize:13, letterSpacing:2.5, fontWeight:600,
           }}>ПРОВЕРИТЬ</button>
         )}
@@ -676,7 +676,7 @@ function App() {
             {cas.type === "signs" && (
               <>
                 <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Cinzel',serif", fontSize:11, letterSpacing:2.5,
-                  color:signsScore===cas.planets.length?"#C9A84C":"#8FBA88" }}>
+                  color:signsScore===cas.planets.length?"#B08828":"#4A9040" }}>
                   {signsScore===cas.planets.length?"✦ ИДЕАЛЬНО ✦":signsScore>=cas.planets.length/2?"ПОЧТИ ВЕРНО":"ПОПРОБУЙ ЕЩЁ"}
                 </div>
                 {cas.planets.map(pid => {
@@ -686,17 +686,17 @@ function App() {
                   return (
                     <div key={pid} style={{
                       marginBottom:7, padding:"11px 13px",
-                      background:correct?"rgba(76,175,80,.05)":"rgba(207,100,80,.05)",
-                      border:`1px solid ${correct?"rgba(76,175,80,.14)":"rgba(207,100,80,.14)"}`,
+                      background:correct?"rgba(60,140,70,.05)":"rgba(180,70,50,.04)",
+                      border:`1px solid ${correct?"rgba(60,140,70,.18)":"rgba(180,70,50,.15)"}`,
                       borderRadius:11,
                     }}>
                       <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:4 }}>
                         <span style={{ fontSize:15, color:p.color, fontFamily:"serif" }}>{p.glyph}</span>
                         <span style={{ fontFamily:"'Cinzel',serif", fontSize:10, color:p.color }}>{p.name}</span>
-                        {!correct&&<span style={{ fontSize:10, color:"#CF645055" }}>{pz?.glyph}{pz?.name} → {cz?.glyph}{cz?.name}</span>}
-                        <span style={{ marginLeft:"auto", color:correct?"#5CBF78":"#CF6450", fontSize:14 }}>{correct?"✓":"✗"}</span>
+                        {!correct&&<span style={{ fontSize:10, color:"#CF645088" }}>{pz?.glyph}{pz?.name} → {cz?.glyph}{cz?.name}</span>}
+                        <span style={{ marginLeft:"auto", color:correct?"#4A9040":"#CF6450", fontSize:14 }}>{correct?"✓":"✗"}</span>
                       </div>
-                      <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13, lineHeight:1.55, color:"#726858", margin:0 }}>
+                      <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13, lineHeight:1.55, color:"#605040", margin:0 }}>
                         {cas.explanations[pid]}
                       </p>
                     </div>
@@ -714,26 +714,26 @@ function App() {
               return (
                 <div style={{
                   marginBottom:10, padding:"14px",
-                  background:ok?"rgba(76,175,80,.05)":"rgba(207,100,80,.05)",
-                  border:`1px solid ${ok?"rgba(76,175,80,.14)":"rgba(207,100,80,.14)"}`,
+                  background:ok?"rgba(60,140,70,.05)":"rgba(180,70,50,.04)",
+                  border:`1px solid ${ok?"rgba(60,140,70,.18)":"rgba(180,70,50,.15)"}`,
                   borderRadius:11,
                 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
                     <span style={{ fontSize:22, color:ca.color, fontFamily:"serif" }}>{ca.glyph}</span>
-                    <span style={{ fontFamily:"'Cinzel',serif", fontSize:11, color:"#C9A84C" }}>{cp[0]?.name} – {cp[1]?.name}</span>
-                    <span style={{ marginLeft:"auto", color:ok?"#5CBF78":"#CF6450", fontSize:16 }}>{ok?"✓":"✗"}</span>
+                    <span style={{ fontFamily:"'Cinzel',serif", fontSize:11, color:"#B08828" }}>{cp[0]?.name} – {cp[1]?.name}</span>
+                    <span style={{ marginLeft:"auto", color:ok?"#4A9040":"#CF6450", fontSize:16 }}>{ok?"✓":"✗"}</span>
                   </div>
                   {!aspectResult.pairOk && (
-                    <div style={{ fontSize:11, color:"#CF645055", marginBottom:7 }}>
+                    <div style={{ fontSize:11, color:"#CF645090", marginBottom:7 }}>
                       Выбрал: {pp.map(p=>p?.glyph+p?.name).join(" + ")} — нужно: {cp.map(p=>p?.glyph+p?.name).join(" + ")}
                     </div>
                   )}
                   {aspectResult.pairOk && !aspectResult.aspectOk && fa && (
-                    <div style={{ fontSize:11, color:"#CF645055", marginBottom:7 }}>
+                    <div style={{ fontSize:11, color:"#CF645090", marginBottom:7 }}>
                       Верные планеты, но аспект {fa.glyph}{fa.name} → нужно {ca.glyph}{ca.name}
                     </div>
                   )}
-                  <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13.5, lineHeight:1.55, color:"#726858", margin:0 }}>
+                  <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13.5, lineHeight:1.55, color:"#605040", margin:0 }}>
                     {cas.explanation}
                   </p>
                 </div>
@@ -742,8 +742,8 @@ function App() {
 
             <div style={{ display:"flex", gap:8, marginTop:8 }}>
               <button className="gbtn" onClick={retry} style={{
-                flex:1, padding:13, borderRadius:12, background:"#0C1422",
-                border:"1px solid #192236", color:"#8A9AAC", fontSize:10, letterSpacing:2,
+                flex:1, padding:13, borderRadius:12, background:"#FDFAF5",
+                border:"1px solid #DDD8CC", color:"#908070", fontSize:10, letterSpacing:2,
               }}>СНОВА</button>
               <button className="gbtn" onClick={() => goTo(caseIdx<CASES.length-1?caseIdx+1:0)} style={{
                 flex:2, padding:13, borderRadius:12,
