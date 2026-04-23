@@ -14,7 +14,7 @@
 <body>
   <div id="root"></div>
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect, useRef } = React;
 
 const ZODIAC = [
   { id:"aries",       glyph:"♈", name:"Овен"      },
@@ -63,6 +63,31 @@ function getAspectId(zid1, zid2) {
 }
 
 const CASES = [
+  // ── Дело: Семь улик ────────────────────────────────────────────
+  {
+    id:"case_001", type:"multi_aspect", quest:0, questStep:1, difficulty:6,
+    title:"Дело: Семь улик",
+    description:"Два ключевых игрока уже на доске. Расставь остальных — и семь улик укажут куда.",
+    hints:[
+      "Полон идей — но каждый старт даётся через сопротивление. Чужие проекты взлетают легко, его — только через препятствие.",
+      "Читает людей насквозь и знает об этом. Говорит редко — но точно в центр.",
+      "Замечает дисгармонию в пространстве раньше всего остального. Грубость воспринимает как эстетическое нарушение.",
+      "В любви ищет резонанс, почти невыразимый словами. Влюбляется в образ — и разочаровывается когда реальность не совпадает.",
+      "Берётся за дело широко, с размахом. Заряжает энтузиазмом всех вокруг — и сам без этого подъёма не действует.",
+      "Мыслит масштабно — но когда копает, уходит в самую глубину. За широкой улыбкой всегда скрыт острый внутренний вопрос.",
+      "В отношениях ищет красоту и равновесие — а в действии нужна сцена, публика и аплодисменты.",
+    ],
+    planetPool:["sun","mercury","pluto","venus","mars","jupiter"],
+    prePlaced:{ saturn:"gemini", neptune:"aquarius" },
+    answers:{ sun:"sagittarius", mercury:"scorpio", pluto:"scorpio", venus:"libra", mars:"leo", jupiter:"leo" },
+    correctAspects:[
+      { pair:["sun","saturn"],    type:"opposition"  },
+      { pair:["mercury","pluto"], type:"conjunction" },
+      { pair:["venus","neptune"], type:"trine"       },
+      { pair:["mars","jupiter"],  type:"conjunction" },
+    ],
+    explanation:"",
+  },
   // ── Блок 1: Только Солнце ──────────────────────────────────────
   {
     id:"q1_01", type:"signs", quest:1, questStep:1, difficulty:1,
@@ -353,6 +378,11 @@ function App() {
   const [phase, setPhase]     = useState("playing");
   const [placements, setPlacements] = useState({});
   const [sel, setSel]         = useState(null);
+  const [hintIdx, setHintIdx]           = useState(0);
+  const [hintsUnlocked, setHintsUnlocked] = useState(1);
+  const [timeLeft, setTimeLeft]         = useState(120);
+  const [timedOut, setTimedOut]         = useState(false);
+  const timerRef = useRef(null);
 
   const cas = CASES[caseIdx];
 
@@ -384,6 +414,7 @@ function App() {
   const allPlaced = (() => {
     if (cas.type === "signs")        return cas.planets.every(pid => placements[pid]);
     if (cas.type === "aspect_build") return Object.keys(placements).length >= maxAspPlacements;
+    if (cas.type === "multi_aspect") return cas.planetPool.every(pid => placements[pid]);
     if (cas.type === "ruler")        return !!placements[cas.answer?.planet];
     return false;
   })();
@@ -416,6 +447,29 @@ function App() {
     return { pairOk, aspectId, aspectOk: pairOk && aspectId === cas.correctAspect };
   })();
 
+  const liveAspects = (() => {
+    if (cas.type !== "multi_aspect") return null;
+    return cas.correctAspects.map(({ pair, type }) => {
+      const z1 = aspAll[pair[0]], z2 = aspAll[pair[1]];
+      if (!z1 || !z2) return null;
+      const p1 = innerEdge(ZI[z1]), p2 = innerEdge(ZI[z2]);
+      const aspectId = getAspectId(z1, z2);
+      return { x1:p1.x, y1:p1.y, x2:p2.x, y2:p2.y, aspectId, correctType: type };
+    }).filter(Boolean);
+  })();
+
+  const multiAspectResults = (() => {
+    if (phase !== "checked" || cas.type !== "multi_aspect") return null;
+    return cas.correctAspects.map(({ pair, type }) => {
+      const z1 = aspAll[pair[0]], z2 = aspAll[pair[1]];
+      if (!z1 || !z2) return { pair, type, ok: false, aspectId: null };
+      const aspectId = getAspectId(z1, z2);
+      return { pair, type, ok: aspectId === type, aspectId };
+    });
+  })();
+
+  const hints = cas.hints || [];
+
   const handleSector = (zid) => {
     if (phase !== "playing") return;
     if ((preZ2pArr[zid] || []).length > 0) return;
@@ -445,8 +499,21 @@ function App() {
     setSel(pid);
   };
 
-  const goTo  = (i) => { setCaseIdx(i); setPhase("playing"); setPlacements({}); setSel(null); };
-  const retry = ()  => { setPhase("playing"); setPlacements({}); setSel(null); };
+  const resetHintsTimer = () => { setHintIdx(0); setHintsUnlocked(1); setTimeLeft(120); setTimedOut(false); };
+  const goTo  = (i) => { setCaseIdx(i); setPhase("playing"); setPlacements({}); setSel(null); resetHintsTimer(); };
+  const retry = ()  => { setPhase("playing"); setPlacements({}); setSel(null); resetHintsTimer(); };
+
+  useEffect(() => {
+    clearInterval(timerRef.current);
+    if (phase !== "playing") return;
+    timerRef.current = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) { clearInterval(timerRef.current); setPhase("checked"); setTimedOut(true); return 0; }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [phase, caseIdx]);
 
   const { hintText, hintColor } = (() => {
     if (phase !== "playing") return { hintText:"", hintColor:"#B0A898" };
@@ -487,27 +554,75 @@ function App() {
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 18px 5px" }}>
         <span style={{ fontFamily:"'Cinzel',serif", color:"#B08828", fontSize:10, letterSpacing:4 }}>CHARTCRAFT</span>
-        <div style={{ display:"flex", gap:4 }}>
-          {CASES.map((_,i) => (
-            <div key={i} onClick={() => goTo(i)} style={{
-              width:i===caseIdx?14:4, height:4, borderRadius:2, cursor:"pointer",
-              background:i===caseIdx?"#B08828":i<caseIdx?"#90A060":"#D8D0C0", transition:"all .2s"
-            }}/>
-          ))}
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          {phase === "playing" && (
+            <span style={{
+              fontFamily:"'Cinzel',serif", fontSize:11, letterSpacing:1,
+              color: timeLeft <= 30 ? "#CF6450" : "#908070",
+              transition:"color .3s",
+            }}>
+              {`${Math.floor(timeLeft/60)}:${String(timeLeft%60).padStart(2,'0')}`}
+            </span>
+          )}
+          <div style={{ display:"flex", gap:4 }}>
+            {CASES.map((_,i) => (
+              <div key={i} onClick={() => goTo(i)} style={{
+                width:i===caseIdx?14:4, height:4, borderRadius:2, cursor:"pointer",
+                background:i===caseIdx?"#B08828":i<caseIdx?"#90A060":"#D8D0C0", transition:"all .2s"
+              }}/>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div style={{ margin:"0 12px 3px", padding:"10px 14px", background:"#FDFAF5", border:"1px solid #E0D8CC", borderRadius:12 }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
-          <span style={{ fontFamily:"'Cinzel',serif", color:"#B08828", fontSize:9.5, letterSpacing:1.5 }}>{cas.title}</span>
-          <span style={{ background:"rgba(80,140,80,.07)", border:"1px solid rgba(80,140,80,.25)", borderRadius:20, padding:"2px 9px", fontSize:9.5, color:"#508050" }}>
-            {DIFF_LABEL[cas.difficulty] || cas.difficulty}
+      {hints.length > 0 && (
+        <div style={{ display:"flex", alignItems:"center", gap:6, padding:"4px 12px 2px" }}>
+          <div className="tap" onClick={() => {
+            if (hintsUnlocked < hints.length) {
+              setHintIdx(hintsUnlocked);
+              setHintsUnlocked(h => h + 1);
+            }
+          }} style={{
+            display:"flex", alignItems:"center", gap:4, flexShrink:0,
+            background:"#FDFAF5", border:"1px solid #E0D8CC", borderRadius:8,
+            padding:"3px 8px", opacity: hintsUnlocked < hints.length ? 1 : 0.6,
+            cursor: hintsUnlocked < hints.length ? "pointer" : "default",
+          }}>
+            <span style={{ fontSize:12 }}>🔍</span>
+            <span style={{ fontFamily:"'Cinzel',serif", fontSize:9, color:"#B08828", letterSpacing:1 }}>
+              {hintsUnlocked}/{hints.length}
+            </span>
+          </div>
+          {hintsUnlocked > 1 && (
+            <>
+              <button onClick={() => setHintIdx(i => Math.max(0, i-1))} disabled={hintIdx===0}
+                className="gbtn" style={{ padding:"2px 7px", borderRadius:6, background:"#FDFAF5",
+                  border:"1px solid #E0D8CC", color:"#908070", fontSize:13, lineHeight:1 }}>‹</button>
+              <button onClick={() => setHintIdx(i => Math.min(hintsUnlocked-1, i+1))} disabled={hintIdx===hintsUnlocked-1}
+                className="gbtn" style={{ padding:"2px 7px", borderRadius:6, background:"#FDFAF5",
+                  border:"1px solid #E0D8CC", color:"#908070", fontSize:13, lineHeight:1 }}>›</button>
+            </>
+          )}
+          <span style={{ fontSize:12, fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic",
+            color:"#706050", lineHeight:1.4, flex:1 }}>
+            {hints[hintIdx]}
           </span>
         </div>
-        <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13.5, lineHeight:1.5, color:"#706050", margin:0 }}>
-          "{cas.description}"
-        </p>
-      </div>
+      )}
+
+      {cas.type !== "multi_aspect" && (
+        <div style={{ margin:"0 12px 3px", padding:"10px 14px", background:"#FDFAF5", border:"1px solid #E0D8CC", borderRadius:12 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
+            <span style={{ fontFamily:"'Cinzel',serif", color:"#B08828", fontSize:9.5, letterSpacing:1.5 }}>{cas.title}</span>
+            <span style={{ background:"rgba(80,140,80,.07)", border:"1px solid rgba(80,140,80,.25)", borderRadius:20, padding:"2px 9px", fontSize:9.5, color:"#508050" }}>
+              {DIFF_LABEL[cas.difficulty] || cas.difficulty}
+            </span>
+          </div>
+          <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13.5, lineHeight:1.5, color:"#706050", margin:0 }}>
+            "{cas.description}"
+          </p>
+        </div>
+      )}
 
       <div style={{ textAlign:"center", fontSize:11, height:17, transition:"color .2s", color:hintColor, padding:"0 16px" }}>
         {hintText}
@@ -593,6 +708,35 @@ function App() {
             );
           })()}
 
+          {liveAspects && liveAspects.map((la, i) => {
+            const ok = la.aspectId === la.correctType;
+            const a  = ASPECTS[la.aspectId] || null;
+            const color = phase==="checked"
+              ? (multiAspectResults?.[i]?.ok ? "#4A9040" : "#CF6450")
+              : (ok ? "#4A904060" : a ? a.color+"60" : "#B0902050");
+            return <line key={i} x1={la.x1} y1={la.y1} x2={la.x2} y2={la.y2}
+              stroke={color} strokeWidth={phase==="checked"?2.5:1.5}
+              strokeDasharray={phase==="playing"?"6 3":"none"}/>;
+          })}
+
+          {phase==="playing" && !sel && cas.type==="multi_aspect" && (() => {
+            const formed = (liveAspects || []).filter(la => la.aspectId === la.correctType).length;
+            const total  = cas.correctAspects.length;
+            return <>
+              <text x={CX} y={CY-4} textAnchor="middle" fontSize={22} fill={formed>0?"#B8922C":"#C8C0B0"} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>{formed}/{total}</text>
+              <text x={CX} y={CY+13} textAnchor="middle" fontSize={8} fill="#C8C0B0" style={{ userSelect:"none", letterSpacing:1 }}>АСПЕКТЫ</text>
+            </>;
+          })()}
+          {phase==="checked" && cas.type==="multi_aspect" && (() => {
+            const score = (multiAspectResults||[]).filter(r=>r.ok).length;
+            const total = cas.correctAspects.length;
+            return <>
+              <text x={CX} y={CY-3} textAnchor="middle" fontSize={26}
+                fill={score===total?"#B8922C":"#4A9040"}
+                style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>{score}/{total}</text>
+              <text x={CX} y={CY+13} textAnchor="middle" fontSize={8} fill="#C8C0B0" style={{ userSelect:"none", letterSpacing:1 }}>АСПЕКТЫ</text>
+            </>;
+          })()}
           {phase==="playing" && !sel && cas.type==="signs" && (
             <>
               <text x={CX} y={CY-4} textAnchor="middle" fontSize={9} fill="#C8C0B0" letterSpacing={3} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>CHART</text>
@@ -676,6 +820,57 @@ function App() {
 
         {phase === "checked" && (
           <div className="fu">
+            {timedOut && (
+              <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Cinzel',serif",
+                fontSize:11, letterSpacing:2.5, color:"#CF6450" }}>⏱ ВРЕМЯ ВЫШЛО</div>
+            )}
+            {cas.type === "multi_aspect" && multiAspectResults && (() => {
+              const score = multiAspectResults.filter(r=>r.ok).length;
+              const total = cas.correctAspects.length;
+              return (
+                <div>
+                  <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Cinzel',serif",
+                    fontSize:11, letterSpacing:2.5,
+                    color: score===total?"#B08828": score>=total/2?"#4A9040":"#CF6450" }}>
+                    {score===total?"✦ ВСЕ АСПЕКТЫ ✦": score>0?`${score} / ${total} АСПЕКТОВ`:"НЕТ ВЕРНЫХ"}
+                  </div>
+                  {multiAspectResults.map((r, i) => {
+                    const ca = ASPECTS[r.type];
+                    const fa = r.aspectId ? ASPECTS[r.aspectId] : null;
+                    const p0 = PLANETS[r.pair[0]], p1 = PLANETS[r.pair[1]];
+                    return (
+                      <div key={i} style={{
+                        marginBottom:7, padding:"10px 13px",
+                        background: r.ok?"rgba(60,140,70,.05)":"rgba(180,70,50,.04)",
+                        border:`1px solid ${r.ok?"rgba(60,140,70,.18)":"rgba(180,70,50,.15)"}`,
+                        borderRadius:11,
+                      }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                          <span style={{ fontSize:18, color:ca.color, fontFamily:"serif" }}>{ca.glyph}</span>
+                          <span style={{ fontFamily:"'Cinzel',serif", fontSize:10, color:"#B08828" }}>
+                            {p0?.name} – {p1?.name}
+                          </span>
+                          {!r.ok && fa && (
+                            <span style={{ fontSize:10, color:"#CF645088" }}>
+                              {fa.glyph}{fa.name} → {ca.glyph}{ca.name}
+                            </span>
+                          )}
+                          <span style={{ marginLeft:"auto", color:r.ok?"#4A9040":"#CF6450", fontSize:14 }}>
+                            {r.ok?"✓":"✗"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {cas.explanation ? (
+                    <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic",
+                      fontSize:13, lineHeight:1.55, color:"#605040", margin:"8px 0 0" }}>
+                      {cas.explanation}
+                    </p>
+                  ) : null}
+                </div>
+              );
+            })()}
             {cas.type === "signs" && (
               <>
                 <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Cinzel',serif", fontSize:11, letterSpacing:2.5,
