@@ -77,8 +77,8 @@ const CASES = [
       "Мыслит масштабно — но когда копает, уходит в самую глубину. За широкой улыбкой всегда скрыт острый внутренний вопрос.",
       "В отношениях ищет красоту и равновесие — а в действии нужна сцена, публика и аплодисменты.",
     ],
-    planetPool:["sun","mercury","pluto","venus","mars","jupiter"],
-    prePlaced:{ saturn:"gemini", neptune:"aquarius" },
+    planetPool:["sun","mercury","venus","mars"],
+    prePlaced:{ saturn:"gemini", neptune:"aquarius", jupiter:"leo", pluto:"scorpio" },
     answers:{ sun:"sagittarius", mercury:"scorpio", pluto:"scorpio", venus:"libra", mars:"leo", jupiter:"leo" },
     correctAspects:[
       { pair:["sun","saturn"],    type:"opposition"  },
@@ -719,24 +719,6 @@ function App() {
               strokeDasharray={phase==="playing"?"6 3":"none"}/>;
           })}
 
-          {phase==="playing" && !sel && cas.type==="multi_aspect" && (() => {
-            const formed = (liveAspects || []).filter(la => la.aspectId === la.correctType).length;
-            const total  = cas.correctAspects.length;
-            return <>
-              <text x={CX} y={CY-4} textAnchor="middle" fontSize={22} fill={formed>0?"#B8922C":"#C8C0B0"} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>{formed}/{total}</text>
-              <text x={CX} y={CY+13} textAnchor="middle" fontSize={8} fill="#C8C0B0" style={{ userSelect:"none", letterSpacing:1 }}>АСПЕКТЫ</text>
-            </>;
-          })()}
-          {phase==="checked" && cas.type==="multi_aspect" && (() => {
-            const score = (multiAspectResults||[]).filter(r=>r.ok).length;
-            const total = cas.correctAspects.length;
-            return <>
-              <text x={CX} y={CY-3} textAnchor="middle" fontSize={26}
-                fill={score===total?"#B8922C":"#4A9040"}
-                style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>{score}/{total}</text>
-              <text x={CX} y={CY+13} textAnchor="middle" fontSize={8} fill="#C8C0B0" style={{ userSelect:"none", letterSpacing:1 }}>АСПЕКТЫ</text>
-            </>;
-          })()}
           {phase==="playing" && !sel && cas.type==="signs" && (
             <>
               <text x={CX} y={CY-4} textAnchor="middle" fontSize={9} fill="#C8C0B0" letterSpacing={3} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>CHART</text>
