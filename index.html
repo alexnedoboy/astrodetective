@@ -106,7 +106,8 @@ const CASES = [
       "В детстве научился: если больно — двигайся дальше. Не останавливайся.",
     ],
     description:"Он врывается в комнату раньше чем открывает дверь. Первым берётся за любое дело — не потому что знает как, а потому что ждать невыносимо. Проигрывает легко: уже думает о следующем.",
-    planets:["mars","mercury","moon"], prePlaced:{},
+    planets:["mars","mercury","moon"], prePlaced:{ sun:"sagittarius", venus:"libra", saturn:"aquarius", neptune:"capricorn", uranus:"capricorn", pluto:"scorpio" },
+    staticLines:[["saturn","pluto"],["sun","venus"]],
     answers:{ mars:"aries", mercury:"virgo", moon:"cancer" },
     explanations:{ mars:"Марс в Овне — импульс, действие без раздумий.", mercury:"Меркурий в Деве — точность, анализ, молчаливая переработка информации.", moon:"Луна в Раке — глубокая эмоциональная память, трудно отпускает." },
   },
@@ -486,7 +487,7 @@ function App() {
 
   const handleSector = (zid) => {
     if (phase !== "playing") return;
-    if (cas.type !== "multi_aspect" && (preZ2pArr[zid] || []).length > 0) return;
+    if (cas.type === "aspect_build" && (preZ2pArr[zid] || []).length > 0) return;
     if (!sel) {
       const placed = z2pArr[zid] || [];
       if (placed.length === 0) return;
@@ -697,11 +698,13 @@ function App() {
                 {allPids.length > 0 && allPids.map((pid, idx) => {
                   const planet = PLANETS[pid];
                   const isPreP = prePids.includes(pid);
-                  const r      = allPids.length === 1 ? midR : midR + (idx === 0 ? 9 : -9);
+                  const n      = allPids.length;
+                  const rMin   = IR + 8, rMax = R_ZOD - 10;
+                  const r      = n === 1 ? midR : rMin + (rMax - rMin) * idx / (n - 1);
                   const p      = midPos(i, r);
-                  const fsize  = allPids.length === 1 ? (isPreP?20:22) : (isPreP?16:18);
+                  const fsize  = n <= 2 ? (isPreP?18:20) : n <= 4 ? (isPreP?12:14) : (isPreP?10:12);
                   return (
-                    <text key={pid} x={p.x} y={p.y+9} textAnchor="middle" fontSize={fsize}
+                    <text key={pid} x={p.x} y={p.y+fsize*0.4} textAnchor="middle" fontSize={fsize}
                       fill={isPreP?"#1A1A1A60":"#1A1A1A"}
                       style={{ userSelect:"none", fontFamily:"serif" }}>{planet.glyph}</text>
                   );
@@ -711,6 +714,14 @@ function App() {
           })}
 
           <circle cx={CX} cy={CY} r={R_ZOD} fill="none" stroke="#1A1A1A" strokeWidth={1.5}/>
+
+          {(cas.staticLines || []).map(([p1, p2], i) => {
+            const z1 = (cas.prePlaced || {})[p1] ?? placements[p1];
+            const z2 = (cas.prePlaced || {})[p2] ?? placements[p2];
+            if (!z1 || !z2) return null;
+            const pt1 = innerEdge(ZI[z1]), pt2 = innerEdge(ZI[z2]);
+            return <line key={i} x1={pt1.x} y1={pt1.y} x2={pt2.x} y2={pt2.y} stroke="#1A1A1A" strokeWidth={2} strokeLinecap="round"/>;
+          })}
 
           {liveAspect && (() => {
             const a = liveAspect.aspectId ? ASPECTS[liveAspect.aspectId] : null;
