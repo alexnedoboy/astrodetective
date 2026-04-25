@@ -8,7 +8,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    body { margin: 0; background: #181410; }
+    body { margin: 0; background: #FFF; }
   </style>
 </head>
 <body>
@@ -94,10 +94,11 @@ const CASES = [
   {
     id:"q1_01", type:"signs", quest:1, questStep:1, difficulty:1,
     title:"Портрет #1",
+    story:"У Джеффри случился форс-мажор на работе. Это отразилось на его отношениях с женой. Он долго молчал и не мог отпустить.",
     description:"Он врывается в комнату раньше чем открывает дверь. Первым берётся за любое дело — не потому что знает как, а потому что ждать невыносимо. Проигрывает легко: уже думает о следующем.",
-    planets:["sun"], prePlaced:{},
-    answers:{ sun:"aries" },
-    explanations:{ sun:"Солнце в Овне — архетип первопроходца. Импульс, инициатива, действие раньше раздумий. Овен не строит планов — он начинает." },
+    planets:["mars","mercury","moon"], prePlaced:{},
+    answers:{ mars:"aries", mercury:"virgo", moon:"cancer" },
+    explanations:{ mars:"Марс в Овне — импульс, действие без раздумий.", mercury:"Меркурий в Деве — точность, анализ, молчаливая переработка информации.", moon:"Луна в Раке — глубокая эмоциональная память, трудно отпускает." },
   },
   {
     id:"q1_02", type:"signs", quest:1, questStep:2, difficulty:1,
@@ -358,7 +359,7 @@ const EC = {
   air:   { rf:'#7898C8', glyph:'#FDFAF4' },
   water: { rf:'#9070C0', glyph:'#FDFAF4' },
 };
-const INNER_FILL = '#221E18';
+const INNER_FILL = '#FFF';
 
 function arcPath(i, r1, r2) {
   const s = toRad(180 - i*30), e = toRad(180 - (i+1)*30);
@@ -376,7 +377,7 @@ function innerEdge(i) {
 }
 
 function App() {
-  const [caseIdx, setCaseIdx] = useState(0);
+  const [caseIdx, setCaseIdx] = useState(1);
   const [phase, setPhase]     = useState("playing");
   const [placements, setPlacements] = useState({});
   const [sel, setSel]         = useState(null);
@@ -535,17 +536,16 @@ function App() {
   })();
 
   return (
-    <div style={{ background:"#181410", minHeight:"100vh", color:"#E0D8C8", maxWidth:420, margin:"0 auto", fontFamily:"Georgia,serif", display:"flex", flexDirection:"column" }}>
+    <div style={{ background:"#FFF", minHeight:"100vh", color:"#1A1A1A", maxWidth:420, margin:"0 auto", fontFamily:"'Comic Sans MS',cursive", display:"flex", flexDirection:"column" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap');
         *{box-sizing:border-box;}
         .sec path{transition:fill .12s;}
-        .sec:hover path{filter:brightness(1.5);}
+        .sec:hover path{filter:brightness(0.92);}
         .tap{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;}
         .tap:active{transform:scale(.93);}
-        .gbtn{border:none;font-family:'Cinzel',serif;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;}
-        .gbtn:hover:not(:disabled){filter:brightness(1.1);}
-        .gbtn:disabled{opacity:.25;cursor:default;}
+        .gbtn{border:none;font-family:'Comic Sans MS',cursive;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;}
+        .gbtn:hover:not(:disabled){opacity:0.85;}
+        .gbtn:disabled{opacity:.35;cursor:default;}
         .gbtn:active:not(:disabled){transform:scale(.96);}
         @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
         .fu{animation:fadeUp .3s ease forwards;}
@@ -554,12 +554,12 @@ function App() {
       `}</style>
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 18px 5px" }}>
-        <span style={{ fontFamily:"'Cinzel',serif", color:"#B08828", fontSize:10, letterSpacing:4 }}>CHARTCRAFT</span>
+        <span style={{ fontFamily:"'Comic Sans MS',cursive", color:"#1A1A1A", fontSize:12, letterSpacing:2, fontWeight:700 }}>CHARTCRAFT</span>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           {phase === "playing" && (
             <span style={{
-              fontFamily:"'Cinzel',serif", fontSize:11, letterSpacing:1,
-              color: timeLeft <= 30 ? "#CF6450" : "#706858",
+              fontFamily:"'Comic Sans MS',cursive", fontSize:12, letterSpacing:1,
+              color: timeLeft <= 30 ? "#CF4040" : "#555",
               transition:"color .3s",
             }}>
               {`${Math.floor(timeLeft/60)}:${String(timeLeft%60).padStart(2,'0')}`}
@@ -569,51 +569,21 @@ function App() {
             {CASES.map((_,i) => (
               <div key={i} onClick={() => goTo(i)} style={{
                 width:i===caseIdx?14:4, height:4, borderRadius:2, cursor:"pointer",
-                background:i===caseIdx?"#B08828":i<caseIdx?"#90A060":"#3A3428", transition:"all .2s"
+                background:i===caseIdx?"#1A1A1A":i<caseIdx?"#888":"#CCC", transition:"all .2s"
               }}/>
             ))}
           </div>
         </div>
       </div>
 
-      {hints.length > 0 && (
-        <div style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 14px 2px" }}>
-          <span className="tap" onClick={() => {
-            if (hintsUnlocked < hints.length) { setHintIdx(hintsUnlocked); setHintsUnlocked(h => h + 1); }
-          }} style={{ fontSize:21, flexShrink:0, opacity: hintsUnlocked < hints.length ? 1 : 0.4,
-            cursor: hintsUnlocked < hints.length ? "pointer" : "default" }}>🔍</span>
-          <span style={{ fontSize:12, fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic",
-            color:"#9A8E7A", lineHeight:1.4, flex:1 }}>
-            {hints[hintIdx]}
-          </span>
-          {hintsUnlocked > 1 && (
-            <div style={{ display:"flex", gap:4, flexShrink:0 }}>
-              <button onClick={() => setHintIdx(i => Math.max(0, i-1))} disabled={hintIdx===0}
-                className="gbtn" style={{ padding:"2px 8px", borderRadius:6, background:"transparent",
-                  border:"1px solid #38322A", color:"#706858", fontSize:13, lineHeight:1 }}>‹</button>
-              <button onClick={() => setHintIdx(i => Math.min(hintsUnlocked-1, i+1))} disabled={hintIdx===hintsUnlocked-1}
-                className="gbtn" style={{ padding:"2px 8px", borderRadius:6, background:"transparent",
-                  border:"1px solid #38322A", color:"#706858", fontSize:13, lineHeight:1 }}>›</button>
-            </div>
-          )}
-        </div>
-      )}
+      <div style={{ margin:"0 12px 6px", padding:"10px 12px", background:"#FFF", border:"2.5px solid #1A1A1A", borderRadius:12, display:"flex", gap:12, alignItems:"center" }}>
+        <img src="Avatar_01.png" style={{ width:80, height:80, objectFit:"contain", flexShrink:0 }}/>
+        <p style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:13.5, lineHeight:1.5, color:"#1A1A1A", margin:0, flex:1 }}>
+          {cas.story || cas.description}
+        </p>
+      </div>
 
-      {cas.type !== "multi_aspect" && (
-        <div style={{ margin:"0 12px 3px", padding:"10px 14px", background:"#221E18", border:"1px solid #38322A", borderRadius:12 }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>
-            <span style={{ fontFamily:"'Cinzel',serif", color:"#B08828", fontSize:9.5, letterSpacing:1.5 }}>{cas.title}</span>
-            <span style={{ background:"rgba(80,140,80,.15)", border:"1px solid rgba(80,140,80,.4)", borderRadius:20, padding:"2px 9px", fontSize:9.5, color:"#72A872" }}>
-              {DIFF_LABEL[cas.difficulty] || cas.difficulty}
-            </span>
-          </div>
-          <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13.5, lineHeight:1.5, color:"#9A8E7A", margin:0 }}>
-            "{cas.description}"
-          </p>
-        </div>
-      )}
-
-      <div style={{ textAlign:"center", fontSize:11, height:17, transition:"color .2s", color:hintColor, padding:"0 16px" }}>
+      <div style={{ textAlign:"center", fontSize:11, height:17, transition:"color .2s", color:"#555", padding:"0 16px", fontFamily:"'Comic Sans MS',cursive" }}>
         {hintText}
       </div>
 
@@ -625,8 +595,8 @@ function App() {
               <feComposite in="SourceGraphic" in2="blur" operator="over"/>
             </filter>
           </defs>
-          <rect x={0} y={0} width={370} height={370} fill="#181410"/>
-          <circle cx={CX} cy={CY} r={OR+1} fill="none" stroke="#4A4438" strokeWidth={1.5}/>
+          <rect x={0} y={0} width={370} height={370} fill="#FFF"/>
+          <circle cx={CX} cy={CY} r={OR+1} fill="none" stroke="#1A1A1A" strokeWidth={2.5}/>
 
           {ZODIAC.map((z,i) => {
             const playerPids  = z2pArr[z.id]    || [];
@@ -647,9 +617,9 @@ function App() {
             const anyWrong   = sectorWrong   || aspSectorWrong;
             const active = phase==="playing" && sel !== null && prePids.length === 0;
             const ec     = EC[ELEM[i]];
-            const fill   = anyCorrect?"#1E2E1E":anyWrong?"#2E1A18":INNER_FILL;
-            const stroke = anyCorrect?"#70C07860":anyWrong?"#D0806060":
-                           firstPlanet?"#C8B89040":"#4A4438";
+            const fill   = anyCorrect?"#D8F0D8":anyWrong?"#F0D8D8":INNER_FILL;
+            const stroke = anyCorrect?"#50A050":anyWrong?"#C04040":
+                           firstPlanet?"#1A1A1A":"#1A1A1A";
             const midR   = IR + 22;
             const ringMid = midPos(i, (R_ZOD + OR) / 2);
 
@@ -657,12 +627,12 @@ function App() {
               <g key={z.id} className="sec" onClick={() => handleSector(z.id)}
                 style={{ cursor: phase==="playing" && prePids.length===0 ? "pointer":"default" }}>
                 {/* Zodiac ring slice */}
-                <path d={arcPath(i, R_ZOD, OR)} fill={INNER_FILL} stroke="#4A4438" strokeWidth={1}/>
+                <path d={arcPath(i, R_ZOD, OR)} fill={INNER_FILL} stroke="#1A1A1A" strokeWidth={1}/>
                 {/* Inner interactive sector */}
-                <path d={arcPath(i, IR, R_ZOD)} fill={fill} stroke="#4A4438" strokeWidth={.8}/>
+                <path d={arcPath(i, IR, R_ZOD)} fill={fill} stroke="#1A1A1A" strokeWidth={1.2}/>
                 {/* Zodiac glyph inside ring */}
                 <text x={ringMid.x} y={ringMid.y+6} textAnchor="middle" fontSize={15}
-                  fill="#9A8E7A"
+                  fill="#1A1A1A"
                   style={{ userSelect:"none", fontFamily:"'Segoe UI Symbol','Apple Symbols','Symbola',serif" }}>{z.glyph}{'\uFE0E'}</text>
                 {allPids.length > 0 && allPids.map((pid, idx) => {
                   const planet = PLANETS[pid];
@@ -672,7 +642,7 @@ function App() {
                   const fsize  = allPids.length === 1 ? (isPreP?20:22) : (isPreP?16:18);
                   return (
                     <text key={pid} x={p.x} y={p.y+9} textAnchor="middle" fontSize={fsize}
-                      fill={isPreP?"#C8B89070":"#C8B890"}
+                      fill={isPreP?"#1A1A1A60":"#1A1A1A"}
                       style={{ userSelect:"none", fontFamily:"serif" }}>{planet.glyph}</text>
                   );
                 })}
@@ -680,7 +650,7 @@ function App() {
             );
           })}
 
-          <circle cx={CX} cy={CY} r={R_ZOD} fill="none" stroke="#4A4438" strokeWidth={1}/>
+          <circle cx={CX} cy={CY} r={R_ZOD} fill="none" stroke="#1A1A1A" strokeWidth={1.5}/>
 
           {liveAspect && (() => {
             const a = liveAspect.aspectId ? ASPECTS[liveAspect.aspectId] : null;
@@ -692,7 +662,7 @@ function App() {
               : (pairOk && aspOk ? "#4A904090" : a ? a.color+"80" : "#B0902060");
             return (
               <line x1={liveAspect.x1} y1={liveAspect.y1} x2={liveAspect.x2} y2={liveAspect.y2}
-                stroke={lineColor} strokeWidth={phase==="checked"?2.5:1.5}
+                stroke={lineColor} strokeWidth={phase==="checked"?3:2}
                 strokeDasharray={phase==="playing"?"6 3":"none"}/>
             );
           })()}
@@ -704,50 +674,50 @@ function App() {
               ? (multiAspectResults?.[i]?.ok ? "#4A9040" : "#CF6450")
               : (ok ? "#4A904060" : a ? a.color+"60" : "#B0902050");
             return <line key={i} x1={la.x1} y1={la.y1} x2={la.x2} y2={la.y2}
-              stroke={color} strokeWidth={phase==="checked"?2.5:1.5}
+              stroke={color} strokeWidth={phase==="checked"?3:2}
               strokeDasharray={phase==="playing"?"6 3":"none"}/>;
           })}
 
           {phase==="playing" && !sel && cas.type==="signs" && (
             <>
-              <text x={CX} y={CY-4} textAnchor="middle" fontSize={9} fill="#605848" letterSpacing={3} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>CHART</text>
-              <text x={CX} y={CY+10} textAnchor="middle" fontSize={9} fill="#605848" letterSpacing={3} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>CRAFT</text>
+              <text x={CX} y={CY-4} textAnchor="middle" fontSize={9} fill="#AAA" letterSpacing={3} style={{ fontFamily:"'Comic Sans MS',cursive", userSelect:"none" }}>CHART</text>
+              <text x={CX} y={CY+10} textAnchor="middle" fontSize={9} fill="#AAA" letterSpacing={3} style={{ fontFamily:"'Comic Sans MS',cursive", userSelect:"none" }}>CRAFT</text>
             </>
           )}
           {phase==="playing" && !sel && cas.type==="aspect_build" && (() => {
             const a = liveAspect?.aspectId ? ASPECTS[liveAspect.aspectId] : null;
-            if (!a) return <text x={CX} y={CY+12} textAnchor="middle" fontSize={30} fill="#605848" style={{ userSelect:"none" }}>?</text>;
+            if (!a) return <text x={CX} y={CY+12} textAnchor="middle" fontSize={30} fill="#CCC" style={{ userSelect:"none" }}>?</text>;
             const aspPids = Object.keys(aspAll);
             const pairOk = cas.correctPair.every(p => aspPids.includes(p));
             const aspOk  = liveAspect.aspectId === cas.correctAspect;
-            const c = pairOk && aspOk ? "#4A9040" : pairOk ? "#C87030" : a.color;
+            const c = pairOk && aspOk ? "#3A8030" : pairOk ? "#C07020" : "#555";
             return <>
               <text x={CX} y={CY-1} textAnchor="middle" fontSize={24} fill={c} style={{ fontFamily:"serif", userSelect:"none" }}>{a.glyph}</text>
-              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill={c+"AA"} style={{ userSelect:"none", letterSpacing:1.5, fontFamily:"'Cinzel',serif" }}>{a.deg}°</text>
+              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill={c+"AA"} style={{ userSelect:"none", letterSpacing:1.5, fontFamily:"'Comic Sans MS',cursive" }}>{a.deg}°</text>
             </>;
           })()}
           {phase==="playing" && sel && (
             <g className="pls">
-              <circle cx={CX} cy={CY} r={IR-7} fill="none" stroke="#C8B89050" strokeWidth={2}/>
-              <text x={CX} y={CY+12} textAnchor="middle" fontSize={30} fill="#C8B890"
+              <circle cx={CX} cy={CY} r={IR-7} fill="none" stroke="#1A1A1A40" strokeWidth={2}/>
+              <text x={CX} y={CY+12} textAnchor="middle" fontSize={30} fill="#1A1A1A"
                 filter="url(#glow)" style={{ userSelect:"none", fontFamily:"serif" }}>{selPlanet?.glyph}</text>
             </g>
           )}
           {phase==="checked" && cas.type==="signs" && (
             <>
               <text x={CX} y={CY-3} textAnchor="middle" fontSize={26}
-                fill={signsScore===cas.planets.length?"#B8922C":"#4A9040"}
-                style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>{signsScore}/{cas.planets.length}</text>
-              <text x={CX} y={CY+13} textAnchor="middle" fontSize={8} fill="#605848" style={{ userSelect:"none", letterSpacing:1 }}>ВЕРНО</text>
+                fill={signsScore===cas.planets.length?"#3A8030":"#555"}
+                style={{ fontFamily:"'Comic Sans MS',cursive", userSelect:"none" }}>{signsScore}/{cas.planets.length}</text>
+              <text x={CX} y={CY+13} textAnchor="middle" fontSize={8} fill="#888" style={{ userSelect:"none", letterSpacing:1 }}>ВЕРНО</text>
             </>
           )}
           {phase==="checked" && cas.type==="aspect_build" && (() => {
             const ok = aspectResult?.aspectOk;
             const a  = ASPECTS[cas.correctAspect];
             return <>
-              <circle cx={CX} cy={CY} r={IR-7} fill="none" stroke={ok?"#4CAF5060":"#CF645060"} strokeWidth={2}/>
-              <text x={CX} y={CY-1} textAnchor="middle" fontSize={22} fill={ok?"#B8922C":a.color} style={{ fontFamily:"serif", userSelect:"none" }}>{a.glyph}</text>
-              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill="#C0B8A8" style={{ userSelect:"none", letterSpacing:1 }}>{a.deg}°</text>
+              <circle cx={CX} cy={CY} r={IR-7} fill="none" stroke={ok?"#50A05080":"#C0404080"} strokeWidth={2}/>
+              <text x={CX} y={CY-1} textAnchor="middle" fontSize={22} fill={ok?"#3A8030":"#555"} style={{ fontFamily:"serif", userSelect:"none" }}>{a.glyph}</text>
+              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill="#888" style={{ userSelect:"none", letterSpacing:1 }}>{a.deg}°</text>
             </>;
           })()}
         </svg>
@@ -755,24 +725,25 @@ function App() {
 
       <div style={{ padding:"0 12px 20px", flex:1 }}>
         {phase === "playing" && (
-          <div style={{ display:"flex", flexWrap:"wrap", gap:7, marginBottom:10 }}>
+          <div style={{ display:"flex", justifyContent:"center", gap:20, marginBottom:12 }}>
             {chipPool.map(p => {
               const placed   = !!placements[p.id];
               const selected = sel === p.id;
               const isMax    = cas.type==="aspect_build" && Object.keys(placements).length >= maxAspPlacements && !placed;
               return (
                 <div key={p.id} className="tap" onClick={() => handleChip(p.id)} style={{
-                  display:"flex", flexDirection:"column", alignItems:"center", gap:4,
-                  padding:"10px 0", borderRadius:12,
-                  flex: chipPool.length <= 3 ? 1 : chipPool.length <= 5 ? "0 0 calc(20% - 6px)" : "0 0 calc(33.33% - 6px)",
-                  minWidth: chipPool.length > 3 ? 56 : "auto",
-                  background:selected?"#C8B89015":"#221E18",
-                  border:`1.5px solid ${selected?"#C8B890":placed?"#C8B89040":"#38322A"}`,
+                  display:"flex", flexDirection:"column", alignItems:"center", gap:6,
                   opacity: (placed && !selected) || isMax ? .3 : 1,
-                  boxShadow:selected?"0 0 14px #C8B89030":"none",
                 }}>
-                  <span style={{ fontSize:21, color:"#C8B890", lineHeight:1, fontFamily:"serif" }}>{p.glyph}</span>
-                  <span style={{ fontSize:9, color:"#706858" }}>{p.name}</span>
+                  <div style={{
+                    width:66, height:66, borderRadius:"50%",
+                    border:`3px solid #1A1A1A`,
+                    background: selected ? "#1A1A1A" : "#FFF",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                  }}>
+                    <span style={{ fontSize:30, color:selected?"#FFF":"#1A1A1A", fontFamily:"serif", lineHeight:1 }}>{p.glyph}</span>
+                  </div>
+                  <span style={{ fontSize:11, color:"#1A1A1A", fontFamily:"'Comic Sans MS',cursive", letterSpacing:0.5 }}>{p.name.toUpperCase()}</span>
                 </div>
               );
             })}
@@ -780,29 +751,44 @@ function App() {
         )}
 
         {phase === "playing" && (
-          <button className="gbtn" onClick={() => setPhase("checked")} disabled={!allPlaced} style={{
-            width:"100%", padding:14, borderRadius:12,
-            background:allPlaced?"linear-gradient(135deg,#C9A84C,#9A7828)":"#2A2418",
-            border:allPlaced?"none":"1px solid #38322A",
-            color:allPlaced?"#06080E":"#706858",
-            fontSize:13, letterSpacing:2.5, fontWeight:600,
-          }}>ПРОВЕРИТЬ</button>
+          <div style={{ display:"flex", gap:10, alignItems:"stretch" }}>
+            <button className="gbtn" onClick={() => setPhase("checked")} disabled={!allPlaced} style={{
+              flex:1, padding:14, borderRadius:12,
+              background:"#FFF",
+              border:allPlaced?"3px solid #1A1A1A":"2px solid #BBB",
+              color:allPlaced?"#1A1A1A":"#AAA",
+              fontSize:13, letterSpacing:2.5, fontWeight:700,
+            }}>ПРОВЕРИТЬ</button>
+            <div className="tap" style={{
+              display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+              gap:4, padding:"8px 12px", borderRadius:12,
+              border:"2.5px solid #1A1A1A", background:"#FFF", cursor:"pointer", minWidth:64,
+            }}>
+              <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+                <circle cx="13" cy="13" r="9" stroke="#1A1A1A" strokeWidth="2.5"/>
+                <line x1="19" y1="19" x2="30" y2="30" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round"/>
+                <ellipse cx="13" cy="13" rx="4" ry="2.5" stroke="#1A1A1A" strokeWidth="1.5"/>
+                <circle cx="13" cy="13" r="1.5" fill="#1A1A1A"/>
+              </svg>
+              <span style={{ fontSize:9, fontFamily:"'Comic Sans MS',cursive", fontWeight:700, letterSpacing:1, color:"#1A1A1A" }}>УЛИКИ</span>
+            </div>
+          </div>
         )}
 
         {phase === "checked" && (
           <div className="fu">
             {timedOut && (
-              <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Cinzel',serif",
-                fontSize:11, letterSpacing:2.5, color:"#CF6450" }}>⏱ ВРЕМЯ ВЫШЛО</div>
+              <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Comic Sans MS',cursive",
+                fontSize:11, letterSpacing:2.5, color:"#C04040" }}>⏱ ВРЕМЯ ВЫШЛО</div>
             )}
             {cas.type === "multi_aspect" && multiAspectResults && (() => {
               const score = multiAspectResults.filter(r=>r.ok).length;
               const total = multiAspectResults.length;
               return (
                 <div>
-                  <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Cinzel',serif",
+                  <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Comic Sans MS',cursive",
                     fontSize:11, letterSpacing:2.5,
-                    color: score===total?"#B08828": score>=total/2?"#4A9040":"#CF6450" }}>
+                    color: score===total?"#3A8030": score>=total/2?"#3A8030":"#C04040" }}>
                     {score===total?"✦ ИДЕАЛЬНО ✦": score>0?`${score} / ${total} ВЕРНО`:"ПОПРОБУЙ ЕЩЁ"}
                   </div>
                   {multiAspectResults.map((r) => {
@@ -812,15 +798,15 @@ function App() {
                     return (
                       <div key={r.pid} style={{
                         marginBottom:7, padding:"10px 13px",
-                        background: r.ok?"rgba(60,140,70,.12)":"rgba(180,70,50,.12)",
-                        border:`1px solid ${r.ok?"rgba(60,140,70,.38)":"rgba(180,70,50,.38)"}`,
+                        background: r.ok?"#F0FFF0":"#FFF0F0",
+                        border:`1.5px solid ${r.ok?"#50A050":"#C04040"}`,
                         borderRadius:11,
                       }}>
                         <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-                          <span style={{ fontSize:15, color:"#C8B890", fontFamily:"serif" }}>{p.glyph}</span>
-                          <span style={{ fontFamily:"'Cinzel',serif", fontSize:10, color:"#C8B890" }}>{p.name}</span>
-                          {!r.ok && <span style={{ fontSize:10, color:"#CF645088" }}>{pz?.glyph}{pz?.name} → {cz?.glyph}{cz?.name}</span>}
-                          <span style={{ marginLeft:"auto", color:r.ok?"#4A9040":"#CF6450", fontSize:14 }}>{r.ok?"✓":"✗"}</span>
+                          <span style={{ fontSize:15, color:"#1A1A1A", fontFamily:"serif" }}>{p.glyph}</span>
+                          <span style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:10, color:"#1A1A1A" }}>{p.name}</span>
+                          {!r.ok && <span style={{ fontSize:10, color:"#C04040" }}>{pz?.glyph}{pz?.name} → {cz?.glyph}{cz?.name}</span>}
+                          <span style={{ marginLeft:"auto", color:r.ok?"#3A8030":"#C04040", fontSize:14 }}>{r.ok?"✓":"✗"}</span>
                         </div>
                       </div>
                     );
@@ -830,8 +816,8 @@ function App() {
             })()}
             {cas.type === "signs" && (
               <>
-                <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Cinzel',serif", fontSize:11, letterSpacing:2.5,
-                  color:signsScore===cas.planets.length?"#B08828":"#4A9040" }}>
+                <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Comic Sans MS',cursive", fontSize:11, letterSpacing:2.5,
+                  color:signsScore===cas.planets.length?"#3A8030":"#1A1A1A" }}>
                   {signsScore===cas.planets.length?"✦ ИДЕАЛЬНО ✦":signsScore>=cas.planets.length/2?"ПОЧТИ ВЕРНО":"ПОПРОБУЙ ЕЩЁ"}
                 </div>
                 {cas.planets.map(pid => {
@@ -841,17 +827,17 @@ function App() {
                   return (
                     <div key={pid} style={{
                       marginBottom:7, padding:"11px 13px",
-                      background:correct?"rgba(60,140,70,.12)":"rgba(180,70,50,.12)",
-                      border:`1px solid ${correct?"rgba(60,140,70,.38)":"rgba(180,70,50,.38)"}`,
+                      background:correct?"#F0FFF0":"#FFF0F0",
+                      border:`1.5px solid ${correct?"#50A050":"#C04040"}`,
                       borderRadius:11,
                     }}>
                       <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:4 }}>
-                        <span style={{ fontSize:15, color:"#C8B890", fontFamily:"serif" }}>{p.glyph}</span>
-                        <span style={{ fontFamily:"'Cinzel',serif", fontSize:10, color:"#C8B890" }}>{p.name}</span>
-                        {!correct&&<span style={{ fontSize:10, color:"#CF645088" }}>{pz?.glyph}{pz?.name} → {cz?.glyph}{cz?.name}</span>}
-                        <span style={{ marginLeft:"auto", color:correct?"#4A9040":"#CF6450", fontSize:14 }}>{correct?"✓":"✗"}</span>
+                        <span style={{ fontSize:15, color:"#1A1A1A", fontFamily:"serif" }}>{p.glyph}</span>
+                        <span style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:10, color:"#1A1A1A" }}>{p.name}</span>
+                        {!correct&&<span style={{ fontSize:10, color:"#C04040" }}>{pz?.glyph}{pz?.name} → {cz?.glyph}{cz?.name}</span>}
+                        <span style={{ marginLeft:"auto", color:correct?"#3A8030":"#C04040", fontSize:14 }}>{correct?"✓":"✗"}</span>
                       </div>
-                      <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13, lineHeight:1.55, color:"#605040", margin:0 }}>
+                      <p style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:12, lineHeight:1.5, color:"#333", margin:0 }}>
                         {cas.explanations[pid]}
                       </p>
                     </div>
@@ -869,26 +855,26 @@ function App() {
               return (
                 <div style={{
                   marginBottom:10, padding:"14px",
-                  background:ok?"rgba(60,140,70,.12)":"rgba(180,70,50,.12)",
-                  border:`1px solid ${ok?"rgba(60,140,70,.38)":"rgba(180,70,50,.38)"}`,
+                  background:ok?"#F0FFF0":"#FFF0F0",
+                  border:`1.5px solid ${ok?"#50A050":"#C04040"}`,
                   borderRadius:11,
                 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
-                    <span style={{ fontSize:22, color:ca.color, fontFamily:"serif" }}>{ca.glyph}</span>
-                    <span style={{ fontFamily:"'Cinzel',serif", fontSize:11, color:"#B08828" }}>{cp[0]?.name} – {cp[1]?.name}</span>
-                    <span style={{ marginLeft:"auto", color:ok?"#4A9040":"#CF6450", fontSize:16 }}>{ok?"✓":"✗"}</span>
+                    <span style={{ fontSize:22, color:"#1A1A1A", fontFamily:"serif" }}>{ca.glyph}</span>
+                    <span style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:11, color:"#1A1A1A" }}>{cp[0]?.name} – {cp[1]?.name}</span>
+                    <span style={{ marginLeft:"auto", color:ok?"#3A8030":"#C04040", fontSize:16 }}>{ok?"✓":"✗"}</span>
                   </div>
                   {!aspectResult.pairOk && (
-                    <div style={{ fontSize:11, color:"#CF645090", marginBottom:7 }}>
+                    <div style={{ fontSize:11, color:"#C04040", marginBottom:7, fontFamily:"'Comic Sans MS',cursive" }}>
                       Выбрал: {pp.map(p=>p?.glyph+p?.name).join(" + ")} — нужно: {cp.map(p=>p?.glyph+p?.name).join(" + ")}
                     </div>
                   )}
                   {aspectResult.pairOk && !aspectResult.aspectOk && fa && (
-                    <div style={{ fontSize:11, color:"#CF645090", marginBottom:7 }}>
+                    <div style={{ fontSize:11, color:"#C04040", marginBottom:7, fontFamily:"'Comic Sans MS',cursive" }}>
                       Верные планеты, но аспект {fa.glyph}{fa.name} → нужно {ca.glyph}{ca.name}
                     </div>
                   )}
-                  <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:13.5, lineHeight:1.55, color:"#605040", margin:0 }}>
+                  <p style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:12, lineHeight:1.5, color:"#333", margin:0 }}>
                     {cas.explanation}
                   </p>
                 </div>
@@ -897,13 +883,13 @@ function App() {
 
             <div style={{ display:"flex", gap:8, marginTop:8 }}>
               <button className="gbtn" onClick={retry} style={{
-                flex:1, padding:13, borderRadius:12, background:"#221E18",
-                border:"1px solid #38322A", color:"#706858", fontSize:10, letterSpacing:2,
+                flex:1, padding:13, borderRadius:12, background:"#FFF",
+                border:"2px solid #1A1A1A", color:"#1A1A1A", fontSize:10, letterSpacing:2,
               }}>СНОВА</button>
               <button className="gbtn" onClick={() => goTo(caseIdx<CASES.length-1?caseIdx+1:0)} style={{
                 flex:2, padding:13, borderRadius:12,
-                background:"linear-gradient(135deg,#C9A84C,#9A7828)", border:"none",
-                color:"#06080E", fontSize:11, letterSpacing:2, fontWeight:600,
+                background:"#FFF", border:"3px solid #1A1A1A",
+                color:"#1A1A1A", fontSize:11, letterSpacing:2, fontWeight:700,
               }}>{caseIdx<CASES.length-1?"СЛЕДУЮЩИЙ →":"СНАЧАЛА ↺"}</button>
             </div>
           </div>
