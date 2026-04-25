@@ -7,6 +7,7 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet"/>
   <style>
     body { margin: 0; background: #FFF; }
   </style>
@@ -536,14 +537,14 @@ function App() {
   })();
 
   return (
-    <div style={{ background:"#FFF", minHeight:"100vh", color:"#1A1A1A", maxWidth:420, margin:"0 auto", fontFamily:"'Comic Sans MS',cursive", display:"flex", flexDirection:"column" }}>
+    <div style={{ background:"#FFF", minHeight:"100vh", color:"#1A1A1A", maxWidth:420, margin:"0 auto", fontFamily:"'Caveat',cursive", display:"flex", flexDirection:"column" }}>
       <style>{`
         *{box-sizing:border-box;}
         .sec path{transition:fill .12s;}
         .sec:hover path{filter:brightness(0.92);}
         .tap{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;}
         .tap:active{transform:scale(.93);}
-        .gbtn{border:none;font-family:'Comic Sans MS',cursive;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;}
+        .gbtn{border:none;font-family:'Caveat',cursive;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;}
         .gbtn:hover:not(:disabled){opacity:0.85;}
         .gbtn:disabled{opacity:.35;cursor:default;}
         .gbtn:active:not(:disabled){transform:scale(.96);}
@@ -554,11 +555,11 @@ function App() {
       `}</style>
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 18px 5px" }}>
-        <span style={{ fontFamily:"'Comic Sans MS',cursive", color:"#1A1A1A", fontSize:12, letterSpacing:2, fontWeight:700 }}>CHARTCRAFT</span>
+        <span style={{ fontFamily:"'Caveat',cursive", color:"#1A1A1A", fontSize:12, letterSpacing:2, fontWeight:700 }}>CHARTCRAFT</span>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           {phase === "playing" && (
             <span style={{
-              fontFamily:"'Comic Sans MS',cursive", fontSize:12, letterSpacing:1,
+              fontFamily:"'Caveat',cursive", fontSize:12, letterSpacing:1,
               color: timeLeft <= 30 ? "#CF4040" : "#555",
               transition:"color .3s",
             }}>
@@ -578,12 +579,12 @@ function App() {
 
       <div style={{ margin:"0 12px 6px", padding:"10px 12px", background:"#FFF", border:"2.5px solid #1A1A1A", borderRadius:12, display:"flex", gap:12, alignItems:"center" }}>
         <img src="Avatar_01.png" style={{ width:80, height:80, objectFit:"contain", flexShrink:0 }}/>
-        <p style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:13.5, lineHeight:1.5, color:"#1A1A1A", margin:0, flex:1 }}>
+        <p style={{ fontFamily:"'Caveat',cursive", fontSize:13.5, lineHeight:1.5, color:"#1A1A1A", margin:0, flex:1 }}>
           {cas.story || cas.description}
         </p>
       </div>
 
-      <div style={{ textAlign:"center", fontSize:11, height:17, transition:"color .2s", color:"#555", padding:"0 16px", fontFamily:"'Comic Sans MS',cursive" }}>
+      <div style={{ textAlign:"center", fontSize:11, height:17, transition:"color .2s", color:"#555", padding:"0 16px", fontFamily:"'Caveat',cursive" }}>
         {hintText}
       </div>
 
@@ -680,8 +681,8 @@ function App() {
 
           {phase==="playing" && !sel && cas.type==="signs" && (
             <>
-              <text x={CX} y={CY-4} textAnchor="middle" fontSize={9} fill="#AAA" letterSpacing={3} style={{ fontFamily:"'Comic Sans MS',cursive", userSelect:"none" }}>CHART</text>
-              <text x={CX} y={CY+10} textAnchor="middle" fontSize={9} fill="#AAA" letterSpacing={3} style={{ fontFamily:"'Comic Sans MS',cursive", userSelect:"none" }}>CRAFT</text>
+              <text x={CX} y={CY-4} textAnchor="middle" fontSize={9} fill="#AAA" letterSpacing={3} style={{ fontFamily:"'Caveat',cursive", userSelect:"none" }}>CHART</text>
+              <text x={CX} y={CY+10} textAnchor="middle" fontSize={9} fill="#AAA" letterSpacing={3} style={{ fontFamily:"'Caveat',cursive", userSelect:"none" }}>CRAFT</text>
             </>
           )}
           {phase==="playing" && !sel && cas.type==="aspect_build" && (() => {
@@ -693,7 +694,7 @@ function App() {
             const c = pairOk && aspOk ? "#3A8030" : pairOk ? "#C07020" : "#555";
             return <>
               <text x={CX} y={CY-1} textAnchor="middle" fontSize={24} fill={c} style={{ fontFamily:"serif", userSelect:"none" }}>{a.glyph}</text>
-              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill={c+"AA"} style={{ userSelect:"none", letterSpacing:1.5, fontFamily:"'Comic Sans MS',cursive" }}>{a.deg}°</text>
+              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill={c+"AA"} style={{ userSelect:"none", letterSpacing:1.5, fontFamily:"'Caveat',cursive" }}>{a.deg}°</text>
             </>;
           })()}
           {phase==="playing" && sel && (
@@ -707,7 +708,7 @@ function App() {
             <>
               <text x={CX} y={CY-3} textAnchor="middle" fontSize={26}
                 fill={signsScore===cas.planets.length?"#3A8030":"#555"}
-                style={{ fontFamily:"'Comic Sans MS',cursive", userSelect:"none" }}>{signsScore}/{cas.planets.length}</text>
+                style={{ fontFamily:"'Caveat',cursive", userSelect:"none" }}>{signsScore}/{cas.planets.length}</text>
               <text x={CX} y={CY+13} textAnchor="middle" fontSize={8} fill="#888" style={{ userSelect:"none", letterSpacing:1 }}>ВЕРНО</text>
             </>
           )}
@@ -743,7 +744,7 @@ function App() {
                   }}>
                     <span style={{ fontSize:30, color:selected?"#FFF":"#1A1A1A", fontFamily:"serif", lineHeight:1 }}>{p.glyph}</span>
                   </div>
-                  <span style={{ fontSize:11, color:"#1A1A1A", fontFamily:"'Comic Sans MS',cursive", letterSpacing:0.5 }}>{p.name.toUpperCase()}</span>
+                  <span style={{ fontSize:11, color:"#1A1A1A", fontFamily:"'Caveat',cursive", letterSpacing:0.5 }}>{p.name.toUpperCase()}</span>
                 </div>
               );
             })}
@@ -770,7 +771,7 @@ function App() {
                 <ellipse cx="13" cy="13" rx="4" ry="2.5" stroke="#1A1A1A" strokeWidth="1.5"/>
                 <circle cx="13" cy="13" r="1.5" fill="#1A1A1A"/>
               </svg>
-              <span style={{ fontSize:9, fontFamily:"'Comic Sans MS',cursive", fontWeight:700, letterSpacing:1, color:"#1A1A1A" }}>УЛИКИ</span>
+              <span style={{ fontSize:9, fontFamily:"'Caveat',cursive", fontWeight:700, letterSpacing:1, color:"#1A1A1A" }}>УЛИКИ</span>
             </div>
           </div>
         )}
@@ -778,7 +779,7 @@ function App() {
         {phase === "checked" && (
           <div className="fu">
             {timedOut && (
-              <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Comic Sans MS',cursive",
+              <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Caveat',cursive",
                 fontSize:11, letterSpacing:2.5, color:"#C04040" }}>⏱ ВРЕМЯ ВЫШЛО</div>
             )}
             {cas.type === "multi_aspect" && multiAspectResults && (() => {
@@ -786,7 +787,7 @@ function App() {
               const total = multiAspectResults.length;
               return (
                 <div>
-                  <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Comic Sans MS',cursive",
+                  <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Caveat',cursive",
                     fontSize:11, letterSpacing:2.5,
                     color: score===total?"#3A8030": score>=total/2?"#3A8030":"#C04040" }}>
                     {score===total?"✦ ИДЕАЛЬНО ✦": score>0?`${score} / ${total} ВЕРНО`:"ПОПРОБУЙ ЕЩЁ"}
@@ -804,7 +805,7 @@ function App() {
                       }}>
                         <div style={{ display:"flex", alignItems:"center", gap:7 }}>
                           <span style={{ fontSize:15, color:"#1A1A1A", fontFamily:"serif" }}>{p.glyph}</span>
-                          <span style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:10, color:"#1A1A1A" }}>{p.name}</span>
+                          <span style={{ fontFamily:"'Caveat',cursive", fontSize:10, color:"#1A1A1A" }}>{p.name}</span>
                           {!r.ok && <span style={{ fontSize:10, color:"#C04040" }}>{pz?.glyph}{pz?.name} → {cz?.glyph}{cz?.name}</span>}
                           <span style={{ marginLeft:"auto", color:r.ok?"#3A8030":"#C04040", fontSize:14 }}>{r.ok?"✓":"✗"}</span>
                         </div>
@@ -816,7 +817,7 @@ function App() {
             })()}
             {cas.type === "signs" && (
               <>
-                <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Comic Sans MS',cursive", fontSize:11, letterSpacing:2.5,
+                <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Caveat',cursive", fontSize:11, letterSpacing:2.5,
                   color:signsScore===cas.planets.length?"#3A8030":"#1A1A1A" }}>
                   {signsScore===cas.planets.length?"✦ ИДЕАЛЬНО ✦":signsScore>=cas.planets.length/2?"ПОЧТИ ВЕРНО":"ПОПРОБУЙ ЕЩЁ"}
                 </div>
@@ -833,11 +834,11 @@ function App() {
                     }}>
                       <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:4 }}>
                         <span style={{ fontSize:15, color:"#1A1A1A", fontFamily:"serif" }}>{p.glyph}</span>
-                        <span style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:10, color:"#1A1A1A" }}>{p.name}</span>
+                        <span style={{ fontFamily:"'Caveat',cursive", fontSize:10, color:"#1A1A1A" }}>{p.name}</span>
                         {!correct&&<span style={{ fontSize:10, color:"#C04040" }}>{pz?.glyph}{pz?.name} → {cz?.glyph}{cz?.name}</span>}
                         <span style={{ marginLeft:"auto", color:correct?"#3A8030":"#C04040", fontSize:14 }}>{correct?"✓":"✗"}</span>
                       </div>
-                      <p style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:12, lineHeight:1.5, color:"#333", margin:0 }}>
+                      <p style={{ fontFamily:"'Caveat',cursive", fontSize:12, lineHeight:1.5, color:"#333", margin:0 }}>
                         {cas.explanations[pid]}
                       </p>
                     </div>
@@ -861,20 +862,20 @@ function App() {
                 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
                     <span style={{ fontSize:22, color:"#1A1A1A", fontFamily:"serif" }}>{ca.glyph}</span>
-                    <span style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:11, color:"#1A1A1A" }}>{cp[0]?.name} – {cp[1]?.name}</span>
+                    <span style={{ fontFamily:"'Caveat',cursive", fontSize:11, color:"#1A1A1A" }}>{cp[0]?.name} – {cp[1]?.name}</span>
                     <span style={{ marginLeft:"auto", color:ok?"#3A8030":"#C04040", fontSize:16 }}>{ok?"✓":"✗"}</span>
                   </div>
                   {!aspectResult.pairOk && (
-                    <div style={{ fontSize:11, color:"#C04040", marginBottom:7, fontFamily:"'Comic Sans MS',cursive" }}>
+                    <div style={{ fontSize:11, color:"#C04040", marginBottom:7, fontFamily:"'Caveat',cursive" }}>
                       Выбрал: {pp.map(p=>p?.glyph+p?.name).join(" + ")} — нужно: {cp.map(p=>p?.glyph+p?.name).join(" + ")}
                     </div>
                   )}
                   {aspectResult.pairOk && !aspectResult.aspectOk && fa && (
-                    <div style={{ fontSize:11, color:"#C04040", marginBottom:7, fontFamily:"'Comic Sans MS',cursive" }}>
+                    <div style={{ fontSize:11, color:"#C04040", marginBottom:7, fontFamily:"'Caveat',cursive" }}>
                       Верные планеты, но аспект {fa.glyph}{fa.name} → нужно {ca.glyph}{ca.name}
                     </div>
                   )}
-                  <p style={{ fontFamily:"'Comic Sans MS',cursive", fontSize:12, lineHeight:1.5, color:"#333", margin:0 }}>
+                  <p style={{ fontFamily:"'Caveat',cursive", fontSize:12, lineHeight:1.5, color:"#333", margin:0 }}>
                     {cas.explanation}
                   </p>
                 </div>
