@@ -7,7 +7,7 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet"/>
   <style>
     body { margin: 0; background: #FFF; }
   </style>
@@ -96,6 +96,15 @@ const CASES = [
     id:"q1_01", type:"signs", quest:1, questStep:1, difficulty:1,
     title:"Портрет #1",
     story:"У Джеффри случился форс-мажор на работе. Это отразилось на его отношениях с женой. Он долго молчал и не мог отпустить.",
+    hints:[
+      "Он действует первым — потом думает. Промедление для него невыносимо.",
+      "В конфликте замолкает. Копит внутри, не выпускает наружу.",
+      "На работе — пробивной, инициативный. Дома — как будто другой человек.",
+      "Злится редко, но метко. Когда взрывается — сам удивляется силе реакции.",
+      "Жена говорит: 'Ты всегда убегаешь в работу когда нам плохо'.",
+      "Ему легче начать новое, чем разобраться со старым.",
+      "В детстве научился: если больно — двигайся дальше. Не останавливайся.",
+    ],
     description:"Он врывается в комнату раньше чем открывает дверь. Первым берётся за любое дело — не потому что знает как, а потому что ждать невыносимо. Проигрывает легко: уже думает о следующем.",
     planets:["mars","mercury","moon"], prePlaced:{},
     answers:{ mars:"aries", mercury:"virgo", moon:"cancer" },
@@ -386,6 +395,8 @@ function App() {
   const [hintsUnlocked, setHintsUnlocked] = useState(1);
   const [timeLeft, setTimeLeft]         = useState(120);
   const [timedOut, setTimedOut]         = useState(false);
+  const [usedHints, setUsedHints]       = useState(new Set());
+  const [openHint, setOpenHint]         = useState(null);
   const timerRef = useRef(null);
 
   const cas = CASES[caseIdx];
@@ -502,7 +513,7 @@ function App() {
     setSel(pid);
   };
 
-  const resetHintsTimer = () => { setHintIdx(0); setHintsUnlocked(1); setTimeLeft(120); setTimedOut(false); };
+  const resetHintsTimer = () => { setHintIdx(0); setHintsUnlocked(1); setTimeLeft(120); setTimedOut(false); setUsedHints(new Set()); setOpenHint(null); };
   const goTo  = (i) => { setCaseIdx(i); setPhase("playing"); setPlacements({}); setSel(null); resetHintsTimer(); };
   const retry = ()  => { setPhase("playing"); setPlacements({}); setSel(null); resetHintsTimer(); };
 
@@ -537,14 +548,14 @@ function App() {
   })();
 
   return (
-    <div style={{ background:"#FFF", minHeight:"100vh", color:"#1A1A1A", maxWidth:420, margin:"0 auto", fontFamily:"'Caveat',cursive", display:"flex", flexDirection:"column" }}>
+    <div style={{ background:"#FFF", minHeight:"100vh", color:"#1A1A1A", maxWidth:420, margin:"0 auto", fontFamily:"'Cinzel',serif", display:"flex", flexDirection:"column" }}>
       <style>{`
         *{box-sizing:border-box;}
         .sec path{transition:fill .12s;}
         .sec:hover path{filter:brightness(0.92);}
         .tap{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;}
         .tap:active{transform:scale(.93);}
-        .gbtn{border:none;font-family:'Caveat',cursive;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;}
+        .gbtn{border:none;font-family:'Cinzel',serif;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;}
         .gbtn:hover:not(:disabled){opacity:0.85;}
         .gbtn:disabled{opacity:.35;cursor:default;}
         .gbtn:active:not(:disabled){transform:scale(.96);}
@@ -555,11 +566,11 @@ function App() {
       `}</style>
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 18px 5px" }}>
-        <span style={{ fontFamily:"'Caveat',cursive", color:"#1A1A1A", fontSize:12, letterSpacing:2, fontWeight:700 }}>CHARTCRAFT</span>
+        <span style={{ fontFamily:"'Cinzel',serif", color:"#1A1A1A", fontSize:12, letterSpacing:2, fontWeight:700 }}>CHARTCRAFT</span>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           {phase === "playing" && (
             <span style={{
-              fontFamily:"'Caveat',cursive", fontSize:12, letterSpacing:1,
+              fontFamily:"'Cinzel',serif", fontSize:12, letterSpacing:1,
               color: timeLeft <= 30 ? "#CF4040" : "#555",
               transition:"color .3s",
             }}>
@@ -579,14 +590,62 @@ function App() {
 
       <div style={{ margin:"0 12px 6px", padding:"10px 12px", background:"#FFF", border:"2.5px solid #1A1A1A", borderRadius:12, display:"flex", gap:12, alignItems:"center" }}>
         <img src="Avatar_01.png" style={{ width:80, height:80, objectFit:"contain", flexShrink:0 }}/>
-        <p style={{ fontFamily:"'Caveat',cursive", fontSize:13.5, lineHeight:1.5, color:"#1A1A1A", margin:0, flex:1 }}>
+        <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:14, lineHeight:1.5, color:"#1A1A1A", margin:0, flex:1 }}>
           {cas.story || cas.description}
         </p>
       </div>
 
-      <div style={{ textAlign:"center", fontSize:11, height:17, transition:"color .2s", color:"#555", padding:"0 16px", fontFamily:"'Caveat',cursive" }}>
-        {hintText}
-      </div>
+      {cas.hints && cas.hints.length > 0 && (
+        <div style={{ display:"flex", alignItems:"center", padding:"2px 12px 4px" }}>
+          <span style={{ fontFamily:"'Cinzel',serif", fontSize:11, fontWeight:600, letterSpacing:1, color:"#1A1A1A", flexShrink:0, marginRight:8 }}>УЛИКИ:</span>
+          <div style={{ display:"flex", flex:1, justifyContent:"space-between" }}>
+            {cas.hints.map((_, i) => {
+              const used = usedHints.has(i);
+              return (
+                <div key={i} className="tap" onClick={() => { setUsedHints(s => { const n = new Set(s); n.add(i); return n; }); setOpenHint(i); }}
+                  style={{ opacity: used ? 1 : 0.25, cursor:"pointer" }}>
+                  <svg width="30" height="30" viewBox="0 0 34 34" fill="none">
+                    <circle cx="13" cy="13" r="9" stroke="#1A1A1A" strokeWidth="2.5"/>
+                    <line x1="19.5" y1="19.5" x2="30" y2="30" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round"/>
+                    <ellipse cx="13" cy="13" rx="4.5" ry="3" stroke="#1A1A1A" strokeWidth="1.6"/>
+                    <circle cx="13" cy="13" r="1.8" fill="#1A1A1A"/>
+                  </svg>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {openHint !== null && cas.hints && (
+        <div onClick={() => setOpenHint(null)} style={{
+          position:"fixed", inset:0, background:"rgba(0,0,0,0.55)",
+          display:"flex", alignItems:"center", justifyContent:"center", zIndex:200,
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background:"#FFF", border:"2.5px solid #1A1A1A", borderRadius:14,
+            padding:"22px 20px", maxWidth:320, width:"calc(100% - 40px)",
+          }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+              <svg width="22" height="22" viewBox="0 0 34 34" fill="none">
+                <circle cx="13" cy="13" r="9" stroke="#1A1A1A" strokeWidth="2.5"/>
+                <line x1="19.5" y1="19.5" x2="30" y2="30" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round"/>
+                <ellipse cx="13" cy="13" rx="4.5" ry="3" stroke="#1A1A1A" strokeWidth="1.6"/>
+                <circle cx="13" cy="13" r="1.8" fill="#1A1A1A"/>
+              </svg>
+              <span style={{ fontFamily:"'Cinzel',serif", fontSize:10, letterSpacing:2, color:"#1A1A1A" }}>УЛИКА {openHint + 1}</span>
+            </div>
+            <p style={{ fontFamily:"'Crimson Pro',Georgia,serif", fontStyle:"italic", fontSize:15, lineHeight:1.6, color:"#1A1A1A", margin:"0 0 18px" }}>
+              {cas.hints[openHint]}
+            </p>
+            <button className="gbtn" onClick={() => setOpenHint(null)} style={{
+              width:"100%", padding:"10px", borderRadius:10,
+              background:"#FFF", border:"2px solid #1A1A1A",
+              color:"#1A1A1A", fontSize:11, letterSpacing:2, fontWeight:600,
+            }}>ЗАКРЫТЬ</button>
+          </div>
+        </div>
+      )}
 
       <div style={{ display:"flex", justifyContent:"center" }}>
         <svg viewBox="0 0 370 370" width="100%" style={{ maxWidth:400, display:"block" }}>
@@ -681,8 +740,8 @@ function App() {
 
           {phase==="playing" && !sel && cas.type==="signs" && (
             <>
-              <text x={CX} y={CY-4} textAnchor="middle" fontSize={9} fill="#AAA" letterSpacing={3} style={{ fontFamily:"'Caveat',cursive", userSelect:"none" }}>CHART</text>
-              <text x={CX} y={CY+10} textAnchor="middle" fontSize={9} fill="#AAA" letterSpacing={3} style={{ fontFamily:"'Caveat',cursive", userSelect:"none" }}>CRAFT</text>
+              <text x={CX} y={CY-4} textAnchor="middle" fontSize={9} fill="#AAA" letterSpacing={3} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>CHART</text>
+              <text x={CX} y={CY+10} textAnchor="middle" fontSize={9} fill="#AAA" letterSpacing={3} style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>CRAFT</text>
             </>
           )}
           {phase==="playing" && !sel && cas.type==="aspect_build" && (() => {
@@ -694,7 +753,7 @@ function App() {
             const c = pairOk && aspOk ? "#3A8030" : pairOk ? "#C07020" : "#555";
             return <>
               <text x={CX} y={CY-1} textAnchor="middle" fontSize={24} fill={c} style={{ fontFamily:"serif", userSelect:"none" }}>{a.glyph}</text>
-              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill={c+"AA"} style={{ userSelect:"none", letterSpacing:1.5, fontFamily:"'Caveat',cursive" }}>{a.deg}°</text>
+              <text x={CX} y={CY+15} textAnchor="middle" fontSize={8} fill={c+"AA"} style={{ userSelect:"none", letterSpacing:1.5, fontFamily:"'Cinzel',serif" }}>{a.deg}°</text>
             </>;
           })()}
           {phase==="playing" && sel && (
@@ -708,7 +767,7 @@ function App() {
             <>
               <text x={CX} y={CY-3} textAnchor="middle" fontSize={26}
                 fill={signsScore===cas.planets.length?"#3A8030":"#555"}
-                style={{ fontFamily:"'Caveat',cursive", userSelect:"none" }}>{signsScore}/{cas.planets.length}</text>
+                style={{ fontFamily:"'Cinzel',serif", userSelect:"none" }}>{signsScore}/{cas.planets.length}</text>
               <text x={CX} y={CY+13} textAnchor="middle" fontSize={8} fill="#888" style={{ userSelect:"none", letterSpacing:1 }}>ВЕРНО</text>
             </>
           )}
@@ -725,6 +784,11 @@ function App() {
       </div>
 
       <div style={{ padding:"0 12px 20px", flex:1 }}>
+        {phase === "playing" && (
+          <div style={{ textAlign:"center", fontSize:11, marginBottom:8, color:"#888", fontFamily:"'Cinzel',serif", letterSpacing:0.5 }}>
+            {hintText}
+          </div>
+        )}
         {phase === "playing" && (
           <div style={{ display:"flex", justifyContent:"center", gap:20, marginBottom:12 }}>
             {chipPool.map(p => {
@@ -744,7 +808,7 @@ function App() {
                   }}>
                     <span style={{ fontSize:30, color:selected?"#FFF":"#1A1A1A", fontFamily:"serif", lineHeight:1 }}>{p.glyph}</span>
                   </div>
-                  <span style={{ fontSize:11, color:"#1A1A1A", fontFamily:"'Caveat',cursive", letterSpacing:0.5 }}>{p.name.toUpperCase()}</span>
+                  <span style={{ fontSize:11, color:"#1A1A1A", fontFamily:"'Cinzel',serif", letterSpacing:0.5 }}>{p.name.toUpperCase()}</span>
                 </div>
               );
             })}
@@ -752,34 +816,19 @@ function App() {
         )}
 
         {phase === "playing" && (
-          <div style={{ display:"flex", gap:10, alignItems:"stretch" }}>
-            <button className="gbtn" onClick={() => setPhase("checked")} disabled={!allPlaced} style={{
-              flex:1, padding:14, borderRadius:12,
-              background:"#FFF",
-              border:allPlaced?"3px solid #1A1A1A":"2px solid #BBB",
-              color:allPlaced?"#1A1A1A":"#AAA",
-              fontSize:13, letterSpacing:2.5, fontWeight:700,
-            }}>ПРОВЕРИТЬ</button>
-            <div className="tap" style={{
-              display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-              gap:4, padding:"8px 12px", borderRadius:12,
-              border:"2.5px solid #1A1A1A", background:"#FFF", cursor:"pointer", minWidth:64,
-            }}>
-              <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-                <circle cx="13" cy="13" r="9" stroke="#1A1A1A" strokeWidth="2.5"/>
-                <line x1="19" y1="19" x2="30" y2="30" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round"/>
-                <ellipse cx="13" cy="13" rx="4" ry="2.5" stroke="#1A1A1A" strokeWidth="1.5"/>
-                <circle cx="13" cy="13" r="1.5" fill="#1A1A1A"/>
-              </svg>
-              <span style={{ fontSize:9, fontFamily:"'Caveat',cursive", fontWeight:700, letterSpacing:1, color:"#1A1A1A" }}>УЛИКИ</span>
-            </div>
-          </div>
+          <button className="gbtn" onClick={() => setPhase("checked")} disabled={!allPlaced} style={{
+            width:"100%", padding:14, borderRadius:12,
+            background:"#FFF",
+            border:allPlaced?"3px solid #1A1A1A":"2px solid #BBB",
+            color:allPlaced?"#1A1A1A":"#AAA",
+            fontSize:13, letterSpacing:2.5, fontWeight:700,
+          }}>ПРОВЕРИТЬ</button>
         )}
 
         {phase === "checked" && (
           <div className="fu">
             {timedOut && (
-              <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Caveat',cursive",
+              <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Cinzel',serif",
                 fontSize:11, letterSpacing:2.5, color:"#C04040" }}>⏱ ВРЕМЯ ВЫШЛО</div>
             )}
             {cas.type === "multi_aspect" && multiAspectResults && (() => {
@@ -787,7 +836,7 @@ function App() {
               const total = multiAspectResults.length;
               return (
                 <div>
-                  <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Caveat',cursive",
+                  <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Cinzel',serif",
                     fontSize:11, letterSpacing:2.5,
                     color: score===total?"#3A8030": score>=total/2?"#3A8030":"#C04040" }}>
                     {score===total?"✦ ИДЕАЛЬНО ✦": score>0?`${score} / ${total} ВЕРНО`:"ПОПРОБУЙ ЕЩЁ"}
@@ -805,7 +854,7 @@ function App() {
                       }}>
                         <div style={{ display:"flex", alignItems:"center", gap:7 }}>
                           <span style={{ fontSize:15, color:"#1A1A1A", fontFamily:"serif" }}>{p.glyph}</span>
-                          <span style={{ fontFamily:"'Caveat',cursive", fontSize:10, color:"#1A1A1A" }}>{p.name}</span>
+                          <span style={{ fontFamily:"'Cinzel',serif", fontSize:10, color:"#1A1A1A" }}>{p.name}</span>
                           {!r.ok && <span style={{ fontSize:10, color:"#C04040" }}>{pz?.glyph}{pz?.name} → {cz?.glyph}{cz?.name}</span>}
                           <span style={{ marginLeft:"auto", color:r.ok?"#3A8030":"#C04040", fontSize:14 }}>{r.ok?"✓":"✗"}</span>
                         </div>
@@ -817,7 +866,7 @@ function App() {
             })()}
             {cas.type === "signs" && (
               <>
-                <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Caveat',cursive", fontSize:11, letterSpacing:2.5,
+                <div style={{ textAlign:"center", marginBottom:10, fontFamily:"'Cinzel',serif", fontSize:11, letterSpacing:2.5,
                   color:signsScore===cas.planets.length?"#3A8030":"#1A1A1A" }}>
                   {signsScore===cas.planets.length?"✦ ИДЕАЛЬНО ✦":signsScore>=cas.planets.length/2?"ПОЧТИ ВЕРНО":"ПОПРОБУЙ ЕЩЁ"}
                 </div>
@@ -834,11 +883,11 @@ function App() {
                     }}>
                       <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:4 }}>
                         <span style={{ fontSize:15, color:"#1A1A1A", fontFamily:"serif" }}>{p.glyph}</span>
-                        <span style={{ fontFamily:"'Caveat',cursive", fontSize:10, color:"#1A1A1A" }}>{p.name}</span>
+                        <span style={{ fontFamily:"'Cinzel',serif", fontSize:10, color:"#1A1A1A" }}>{p.name}</span>
                         {!correct&&<span style={{ fontSize:10, color:"#C04040" }}>{pz?.glyph}{pz?.name} → {cz?.glyph}{cz?.name}</span>}
                         <span style={{ marginLeft:"auto", color:correct?"#3A8030":"#C04040", fontSize:14 }}>{correct?"✓":"✗"}</span>
                       </div>
-                      <p style={{ fontFamily:"'Caveat',cursive", fontSize:12, lineHeight:1.5, color:"#333", margin:0 }}>
+                      <p style={{ fontFamily:"'Cinzel',serif", fontSize:12, lineHeight:1.5, color:"#333", margin:0 }}>
                         {cas.explanations[pid]}
                       </p>
                     </div>
@@ -862,20 +911,20 @@ function App() {
                 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
                     <span style={{ fontSize:22, color:"#1A1A1A", fontFamily:"serif" }}>{ca.glyph}</span>
-                    <span style={{ fontFamily:"'Caveat',cursive", fontSize:11, color:"#1A1A1A" }}>{cp[0]?.name} – {cp[1]?.name}</span>
+                    <span style={{ fontFamily:"'Cinzel',serif", fontSize:11, color:"#1A1A1A" }}>{cp[0]?.name} – {cp[1]?.name}</span>
                     <span style={{ marginLeft:"auto", color:ok?"#3A8030":"#C04040", fontSize:16 }}>{ok?"✓":"✗"}</span>
                   </div>
                   {!aspectResult.pairOk && (
-                    <div style={{ fontSize:11, color:"#C04040", marginBottom:7, fontFamily:"'Caveat',cursive" }}>
+                    <div style={{ fontSize:11, color:"#C04040", marginBottom:7, fontFamily:"'Cinzel',serif" }}>
                       Выбрал: {pp.map(p=>p?.glyph+p?.name).join(" + ")} — нужно: {cp.map(p=>p?.glyph+p?.name).join(" + ")}
                     </div>
                   )}
                   {aspectResult.pairOk && !aspectResult.aspectOk && fa && (
-                    <div style={{ fontSize:11, color:"#C04040", marginBottom:7, fontFamily:"'Caveat',cursive" }}>
+                    <div style={{ fontSize:11, color:"#C04040", marginBottom:7, fontFamily:"'Cinzel',serif" }}>
                       Верные планеты, но аспект {fa.glyph}{fa.name} → нужно {ca.glyph}{ca.name}
                     </div>
                   )}
-                  <p style={{ fontFamily:"'Caveat',cursive", fontSize:12, lineHeight:1.5, color:"#333", margin:0 }}>
+                  <p style={{ fontFamily:"'Cinzel',serif", fontSize:12, lineHeight:1.5, color:"#333", margin:0 }}>
                     {cas.explanation}
                   </p>
                 </div>
