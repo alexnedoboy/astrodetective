@@ -67,12 +67,11 @@
     border-radius: 16px;
     display: flex;
     gap: 12px;
-    align-items: flex-start;
+    align-items: stretch;
     width: calc(100% - 40px);
   }
   .desc-icon {
-    width: 60px;
-    height: 60px;
+    width: 72px;
     border-radius: 10px;
     overflow: hidden;
     flex-shrink: 0;
@@ -82,6 +81,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center top;
     display: block;
   }
   /* [2] smaller fonts in description */
@@ -562,20 +562,11 @@ function renderMarkers() {
       selectPlanet(planet);
     });
 
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('cx', pos.x);
-    circle.setAttribute('cy', pos.y);
-    circle.setAttribute('r', 15);
-    circle.setAttribute('fill', 'rgba(10,10,15,0.85)');
-    circle.setAttribute('stroke', info.color);
-    circle.setAttribute('stroke-width', '1.5');
-    grp.appendChild(circle);
-
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.setAttribute('x', pos.x);
-    text.setAttribute('y', pos.y + 6);
+    text.setAttribute('y', pos.y + 7);
     text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('font-size', '15');
+    text.setAttribute('font-size', '20');
     text.setAttribute('fill', info.color);
     text.setAttribute('pointer-events', 'none');
     text.textContent = info.symbol;
