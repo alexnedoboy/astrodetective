@@ -14,11 +14,8 @@
     --text: #f0ede8;
     --muted: rgba(240,237,232,0.45);
     --accent: rgba(255,255,255,0.06);
-    /* B&W only */
     --hi: #ffffff;
     --hi-dim: rgba(255,255,255,0.08);
-    --correct: rgba(255,255,255,0.9);
-    --wrong: rgba(255,255,255,0.3);
   }
 
   body {
@@ -47,7 +44,7 @@
     justify-content: space-between;
     align-items: baseline;
   }
-  .case-label { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; }
+  .case-label  { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; }
   .case-title  { font-size: 12px; color: var(--muted); text-align: center; flex: 1; padding: 0 8px; }
   .case-counter{ font-size: 12px; color: var(--muted); }
 
@@ -78,87 +75,66 @@
     background: var(--accent);
   }
   .desc-icon img {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     object-fit: cover;
     object-position: center top;
     display: block;
   }
-  /* [2] smaller fonts in description */
   .desc-text h2 {
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.3;
-    margin-bottom: 5px;
+    font-size: 13px; font-weight: 700;
+    line-height: 1.3; margin-bottom: 5px;
     color: var(--text);
   }
   .desc-text p {
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.5;
+    font-size: 11px; color: var(--muted); line-height: 1.5;
   }
 
   /* ── CHART AREA ── */
   .chart-wrap {
     position: relative;
-    width: 100%;
-    max-width: 390px;
+    width: 100%; max-width: 390px;
     margin: 8px auto 0;
     aspect-ratio: 1;
     user-select: none;
   }
   .chart-wrap img {
     width: 100%; height: 100%;
-    object-fit: contain;
-    display: block;
+    object-fit: contain; display: block;
     pointer-events: none;
   }
   .chart-svg {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
   }
-
-  /* [3] B&W zone highlights */
   .zone {
-    fill: transparent;
-    stroke: none;
-    cursor: pointer;
-    transition: fill 0.15s;
+    fill: transparent; stroke: none;
+    cursor: pointer; transition: fill 0.15s;
   }
-  .zone:hover   { fill: rgba(255,255,255,0.05); }
-  .zone.targeted{ fill: rgba(255,255,255,0.09); }
+  .zone:hover    { fill: rgba(255,255,255,0.05); }
+  .zone.targeted { fill: rgba(255,255,255,0.09); }
 
-  /* [5] planet markers are now clickable */
   .marker-group { cursor: pointer; }
-  .marker-group circle { transition: opacity 0.2s; }
-  .marker-group:hover circle { opacity: 0.75; }
+  .marker-group text { transition: opacity 0.2s; }
+  .marker-group:hover text { opacity: 0.6; }
 
-  /* instruction label */
   .chart-hint {
-    text-align: center;
-    font-size: 12px;
-    color: var(--muted);
-    margin: 5px 0 3px;
+    text-align: center; font-size: 12px;
+    color: var(--muted); margin: 5px 0 3px;
     letter-spacing: 0.03em;
   }
 
   /* ── PLANET TRAY ── */
   .planet-tray {
-    display: flex;
-    gap: 20px;
+    display: flex; gap: 16px;
     justify-content: center;
     padding: 6px 20px 4px;
   }
   .planet-token {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: opacity 0.2s;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+    cursor: pointer; transition: opacity 0.2s;
   }
   .planet-token.placed { opacity: 0.3; }
-  /* [3] white ring instead of gold */
   .planet-token.selected .token-circle {
     box-shadow: 0 0 0 2.5px var(--hi);
     background: var(--hi-dim);
@@ -173,71 +149,45 @@
     transition: box-shadow 0.2s, background 0.2s;
   }
   .token-label {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    text-transform: uppercase;
+    font-size: 10px; letter-spacing: 0.1em;
+    color: var(--muted); text-transform: uppercase;
   }
 
   /* ── BOTTOM BAR ── */
   .bottom-bar {
-    width: 100%;
-    max-width: 430px;
-    display: flex;
-    gap: 12px;
+    width: 100%; max-width: 430px;
+    display: flex; gap: 12px;
     padding: 10px 20px 28px;
   }
   .btn-clues {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    flex: 1; display: flex;
+    align-items: center; justify-content: center; gap: 8px;
     padding: 14px 10px;
-    border: 1.5px solid var(--border);
-    border-radius: 14px;
-    background: var(--surface);
-    color: var(--text);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
+    border: 1.5px solid var(--border); border-radius: 14px;
+    background: var(--surface); color: var(--text);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
   }
-  /* [4] new evidence icon, already B&W — invert for dark bg */
   .btn-clues img { width: 22px; height: 22px; object-fit: contain; }
   .btn-clues:hover { border-color: rgba(255,255,255,0.4); background: var(--hi-dim); }
 
   .btn-check {
-    flex: 1;
-    padding: 14px;
-    border-radius: 14px;
-    background: var(--surface);
-    color: var(--muted);
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    cursor: not-allowed;
-    border: 1.5px solid var(--border);
+    flex: 1; padding: 14px; border-radius: 14px;
+    background: var(--surface); color: var(--muted);
+    font-size: 15px; font-weight: 600; letter-spacing: 0.04em;
+    cursor: not-allowed; border: 1.5px solid var(--border);
     transition: background 0.3s, color 0.3s, border-color 0.3s;
   }
-  /* [3] white instead of gold for active check */
   .btn-check.ready {
-    background: var(--hi);
-    color: #0a0a0f;
-    cursor: pointer;
-    border-color: var(--hi);
+    background: var(--hi); color: #0a0a0a;
+    cursor: pointer; border-color: var(--hi);
   }
 
   /* ── OVERLAYS ── */
   .overlay {
-    display: none;
-    position: fixed; inset: 0;
-    z-index: 100;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(4px);
-    flex-direction: column;
-    justify-content: flex-end;
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+    flex-direction: column; justify-content: flex-end;
   }
   .overlay.open { display: flex; }
 
@@ -246,62 +196,48 @@
     border-radius: 24px 24px 0 0;
     border-top: 1px solid var(--border);
     padding: 20px 20px 40px;
-    max-height: 90dvh;
-    overflow-y: auto;
+    max-height: 90dvh; overflow-y: auto;
   }
   .sheet-handle {
-    width: 36px; height: 4px;
-    border-radius: 2px;
-    background: var(--border);
-    margin: 0 auto 20px;
+    width: 36px; height: 4px; border-radius: 2px;
+    background: var(--border); margin: 0 auto 20px;
   }
 
   /* ── RESULTS ── */
-  .results-title {
-    font-size: 18px; font-weight: 700;
-    text-align: center; margin-bottom: 4px;
+  .results-title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+  .results-subtitle { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 14px; }
+
+  .result-chart-wrap {
+    position: relative;
+    width: 100%; max-width: 310px;
+    margin: 0 auto 14px;
+    aspect-ratio: 1;
   }
-  .results-subtitle {
-    font-size: 13px; color: var(--muted);
-    text-align: center; margin-bottom: 18px;
+  .result-chart-wrap img {
+    width: 100%; height: 100%;
+    object-fit: contain; display: block;
+    pointer-events: none;
   }
-  .result-card {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 14px;
+  .result-chart-svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  .result-summary {
+    font-size: 13px; line-height: 1.65;
+    color: var(--muted);
+    padding: 14px 16px;
     background: var(--bg);
     border-radius: 14px;
     border: 1px solid var(--border);
-    margin-bottom: 10px;
+    margin-bottom: 4px;
   }
-  .result-icon {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 19px; flex-shrink: 0;
-  }
-  /* [3] B&W correct/wrong */
-  .result-icon.correct { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); }
-  .result-icon.wrong   { background: rgba(255,255,255,0.04); border: 1px solid var(--border); opacity: 0.6; }
-  .result-body { flex: 1; }
-  .result-planet { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-  .result-sign   { font-size: 12px; margin-bottom: 5px; }
-  .result-sign .correct-sign { color: var(--hi); }
-  .result-sign .wrong-sign   { color: var(--muted); text-decoration: line-through; }
-  .result-text   { font-size: 12px; color: var(--muted); line-height: 1.5; }
-  .result-badge {
-    width: 22px; height: 22px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; flex-shrink: 0;
-  }
-  .result-badge.correct { background: rgba(255,255,255,0.15); color: var(--hi); border: 1px solid rgba(255,255,255,0.4); }
-  .result-badge.wrong   { background: transparent; color: var(--muted); border: 1px solid var(--border); }
 
-  /* [3] white button */
   .btn-next {
     width: 100%; margin-top: 16px; padding: 16px;
     border-radius: 14px; border: none;
-    background: var(--hi);
-    color: #0a0a0f;
+    background: var(--hi); color: #0a0a0a;
     font-size: 16px; font-weight: 700;
     letter-spacing: 0.04em; cursor: pointer;
   }
@@ -309,17 +245,12 @@
   /* ── CLUES ── */
   .clues-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 16px; }
   .clue-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 14px;
-    background: var(--bg);
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: border-color 0.2s;
+    display: flex; align-items: center; gap: 12px; padding: 14px;
+    background: var(--bg); border-radius: 14px;
+    border: 1px solid var(--border); margin-bottom: 10px;
+    cursor: pointer; transition: border-color 0.2s;
   }
-  .clue-item.locked  { opacity: 0.4; cursor: default; }
-  /* [3] white border for revealed */
+  .clue-item.locked   { opacity: 0.4; cursor: default; }
   .clue-item.revealed { border-color: rgba(255,255,255,0.35); cursor: default; }
   .clue-num {
     width: 30px; height: 30px; border-radius: 50%;
@@ -344,57 +275,36 @@
 <!-- ── HEADER ── -->
 <div class="header">
   <div class="header-top">
-    <span class="case-label">Кейс №2350</span>
+    <span class="case-label" id="caseLabel">Кейс №2350</span>
     <span class="case-title">Разгадайте натальную карту по описанию</span>
     <span class="case-counter" id="counter">0/3</span>
   </div>
-  <div class="progress-bar" id="progressBar">
-    <div class="seg" data-idx="0"></div>
-    <div class="seg" data-idx="1"></div>
-    <div class="seg" data-idx="2"></div>
-  </div>
+  <div class="progress-bar" id="progressBar"></div>
 </div>
 
 <!-- ── DESCRIPTION CARD ── -->
 <div class="desc-card">
-  <!-- [1] real avatar image -->
   <div class="desc-icon">
     <img src="character avatar.png" alt="">
   </div>
   <div class="desc-text">
-    <h2 id="caseTitle">Он смеётся громче всех. Но фотографий с ним не существует.</h2>
-    <p id="caseBody">Говорит: «Момент важнее памяти». На вечеринках — душа компании. Ни в одном групповом чате нет его фото.</p>
+    <h2 id="caseTitle"></h2>
+    <p id="caseBody"></p>
   </div>
 </div>
 
 <!-- ── CHART ── -->
 <div class="chart-wrap" id="chartWrap">
-  <img src="Natal Chat Circle.png" alt="Натальная карта" id="chartImg">
-  <svg class="chart-svg" id="chartSvg" viewBox="0 0 390 390">
-    <!-- zones + markers injected by JS -->
-  </svg>
+  <img src="Natal Chat Circle 2.png" alt="Натальная карта" id="chartImg">
+  <svg class="chart-svg" id="chartSvg" viewBox="0 0 390 390"></svg>
 </div>
 <p class="chart-hint">Расположите планеты на карте</p>
 
-<!-- ── PLANET TRAY ── -->
-<div class="planet-tray" id="planetTray">
-  <div class="planet-token" data-planet="sun" onclick="selectPlanet('sun')">
-    <div class="token-circle">☉</div>
-    <span class="token-label">Солнце</span>
-  </div>
-  <div class="planet-token" data-planet="moon" onclick="selectPlanet('moon')">
-    <div class="token-circle">☽</div>
-    <span class="token-label">Луна</span>
-  </div>
-  <div class="planet-token" data-planet="mercury" onclick="selectPlanet('mercury')">
-    <div class="token-circle">☿</div>
-    <span class="token-label">Меркурий</span>
-  </div>
-</div>
+<!-- ── PLANET TRAY (dynamic) ── -->
+<div class="planet-tray" id="planetTray"></div>
 
 <!-- ── BOTTOM BAR ── -->
 <div class="bottom-bar">
-  <!-- [4] new evidence icon -->
   <button class="btn-clues" onclick="openClues()">
     <img src="Evidence.png" alt="">
     ОТКРЫТЬ УЛИКИ
@@ -406,9 +316,13 @@
 <div class="overlay" id="resultsOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="results-title" id="resultsTitle">Результаты</div>
+    <div class="results-title" id="resultsTitle"></div>
     <div class="results-subtitle" id="resultsSubtitle"></div>
-    <div id="resultCards"></div>
+    <div class="result-chart-wrap">
+      <img src="Natal Chat Circle 2.png" alt="">
+      <svg class="result-chart-svg" id="resultSvg" viewBox="0 0 390 390"></svg>
+    </div>
+    <div class="result-summary" id="resultSummary"></div>
     <button class="btn-next" onclick="nextCase()">Следующий кейс →</button>
   </div>
 </div>
@@ -418,35 +332,52 @@
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="clues-title">Улики</div>
-    <div class="clues-used" id="cluesUsed">Использовано: 0 из 3</div>
+    <div class="clues-used" id="cluesUsed"></div>
     <div id="clueList"></div>
     <button class="btn-close-clues" onclick="closeClues()">Закрыть</button>
   </div>
 </div>
 
 <script>
+// ── ALL PLANET DEFINITIONS ─────────────────────────────────────────
+const PLANET_INFO = {
+  sun:     { symbol: '☉', label: 'Солнце',   color: '#ffffff' },
+  moon:    { symbol: '☽', label: 'Луна',     color: '#cccccc' },
+  mercury: { symbol: '☿', label: 'Меркурий', color: '#aaaaaa' },
+  venus:   { symbol: '♀', label: 'Венера',   color: '#dddddd' },
+  mars:    { symbol: '♂', label: 'Марс',     color: '#bbbbbb' },
+  jupiter: { symbol: '♃', label: 'Юпитер',   color: '#cccccc' },
+  saturn:  { symbol: '♄', label: 'Сатурн',   color: '#aaaaaa' },
+};
+
 // ── GAME DATA ──────────────────────────────────────────────────────
 const CASES = [
   {
     id: 2350,
     title: "Он смеётся громче всех. Но фотографий с ним не существует.",
     body: 'Говорит: «Момент важнее памяти». На вечеринках — душа компании. Ни в одном групповом чате нет его фото.',
-    answer: { sun: 'libra', moon: 'gemini', mercury: 'virgo' },
+    // planets for this case
+    planets: ['sun', 'jupiter', 'mercury'],
+    answer: { sun: 'libra', jupiter: 'scorpio', mercury: 'scorpio' },
     clues: [
-      "Душа компании, лёгкий на подъём — воздушный знак. Весы или Близнецы?",
-      "Отсутствие фото — нежелание оставлять следы. Луна в двойственном знаке.",
-      "«Момент важнее памяти» — Меркурий в знаке анализа настоящего."
+      "Мог бы работать разведчиком или уйти в монастырь — но реализуется в дружбе и групповой активности.",
+      "По натуре тактичен, взвешен и вежлив — но иногда может сказануть что-нибудь колкое.",
+      "Личность широкая, оптимистичная, но самореализация тянет к тайнам и одиночеству.",
+      "Планета, которая управляет его внешним образом — стоит в доме монастырей и тайн. Там же его речь.",
+      "Солнце как будто бы всегда что-то взвешивает."
     ],
+    summary: 'Стрелец на Асценденте даёт громкую, оптимистичную маску. Но управитель этой маски — Юпитер — спрятан в 12-м доме, в доме тайн. Туда же ушёл Скорпионий Меркурий: речь есть, следов нет. Солнце в Весах в 11-м доме объясняет, почему он живёт в группе и является душой компании — но только снаружи.',
     results: {
-      sun:     { sign: 'libra',  label: 'Весы',     text: 'Солнце в Весах — обаятельный социальный магнит, живёт для людей и момента.' },
-      moon:    { sign: 'gemini', label: 'Близнецы', text: 'Луна в Близнецах — эмоции в постоянном движении, фото кажутся ловушкой.' },
-      mercury: { sign: 'virgo',  label: 'Дева',     text: 'Меркурий в Деве — острый аналитик, ценит точность, а не архивы.' }
+      sun:     { label: 'Весы' },
+      jupiter: { label: 'Скорпион' },
+      mercury: { label: 'Скорпион' },
     }
   },
   {
     id: 2351,
     title: "Она никогда не опаздывает. Даже когда хочет опоздать.",
     body: 'Список дел с утра. Будильник за 20 минут до будильника. При этом говорит, что завидует тем, кто живёт спонтанно.',
+    planets: ['sun', 'moon', 'mercury'],
     answer: { sun: 'virgo', moon: 'capricorn', mercury: 'virgo' },
     clues: [
       "Идеальный порядок и самодисциплина — земной знак с высокими стандартами.",
@@ -454,50 +385,45 @@ const CASES = [
       "Мышление чёткое, структурное — Меркурий в аналитическом знаке."
     ],
     results: {
-      sun:     { sign: 'virgo',     label: 'Дева',     text: 'Солнце в Деве — совершенство в мелочах, пунктуальность как базовая ценность.' },
-      moon:    { sign: 'capricorn', label: 'Козерог',  text: 'Луна в Козероге — строгая к себе изнутри, эмоции под контролем.' },
-      mercury: { sign: 'virgo',     label: 'Дева',     text: 'Меркурий в Деве — мыслит детально и системно, слова точны и взвешены.' }
+      sun:     { label: 'Дева',     text: 'Солнце в Деве — совершенство в мелочах, пунктуальность как базовая ценность.' },
+      moon:    { label: 'Козерог',  text: 'Луна в Козероге — строгая к себе изнутри, эмоции под контролем.' },
+      mercury: { label: 'Дева',     text: 'Меркурий в Деве — мыслит детально и системно, слова точны и взвешены.' },
     }
   }
 ];
 
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
-// SVG angles: 0°=right(3 o'clock), 90°=down, 180°=left, 270°=top(12 o'clock), CW positive
-// Aries at 11 o'clock → sector 240–270°; signs go counter-clockwise
+// Chart (Natal Chat Circle 2.png):
+// Scorpio at 9 o'clock (left, ASC/H1). Signs go CLOCKWISE visually
+// (counter-clockwise in zodiac order: Sco→Lib→Vir→Leo→Can→Gem→Tau→Ari→Pis→Aqu→Cap→Sag)
+// SVG: 0°=right(3h), 90°=down(6h), 180°=left(9h), 270°=top(12h), CW positive
+// 9h=180°, 10h=210°, 11h=240°, 12h=270°, 1h=300°, 2h=330°, 3h=0°,
+// 4h=30°, 5h=60°, 6h=90°, 7h=120°, 8h=150°
 const SIGNS = [
-  { id: 'aries',       label: 'Овен',     symbol: '♈', startDeg: 240 },
-  { id: 'taurus',      label: 'Телец',    symbol: '♉', startDeg: 210 },
-  { id: 'gemini',      label: 'Близнецы', symbol: '♊', startDeg: 180 },
-  { id: 'cancer',      label: 'Рак',      symbol: '♋', startDeg: 150 },
-  { id: 'leo',         label: 'Лев',      symbol: '♌', startDeg: 120 },
-  { id: 'virgo',       label: 'Дева',     symbol: '♍', startDeg:  90 },
-  { id: 'libra',       label: 'Весы',     symbol: '♎', startDeg:  60 },
-  { id: 'scorpio',     label: 'Скорпион', symbol: '♏', startDeg:  30 },
-  { id: 'sagittarius', label: 'Стрелец',  symbol: '♐', startDeg:   0 },
-  { id: 'capricorn',   label: 'Козерог',  symbol: '♑', startDeg: 330 },
-  { id: 'aquarius',    label: 'Водолей',  symbol: '♒', startDeg: 300 },
-  { id: 'pisces',      label: 'Рыбы',     symbol: '♓', startDeg: 270 },
+  { id: 'scorpio',     label: 'Скорпион', symbol: '♏', startDeg: 180 }, // 9→10h  H1
+  { id: 'libra',       label: 'Весы',     symbol: '♎', startDeg: 210 }, // 10→11h H12
+  { id: 'virgo',       label: 'Дева',     symbol: '♍', startDeg: 240 }, // 11→12h H11
+  { id: 'leo',         label: 'Лев',      symbol: '♌', startDeg: 270 }, // 12→1h  H10
+  { id: 'cancer',      label: 'Рак',      symbol: '♋', startDeg: 300 }, // 1→2h   H9
+  { id: 'gemini',      label: 'Близнецы', symbol: '♊', startDeg: 330 }, // 2→3h   H8
+  { id: 'taurus',      label: 'Телец',    symbol: '♉', startDeg:   0 }, // 3→4h   H7
+  { id: 'aries',       label: 'Овен',     symbol: '♈', startDeg:  30 }, // 4→5h   H6
+  { id: 'pisces',      label: 'Рыбы',     symbol: '♓', startDeg:  60 }, // 5→6h   H5
+  { id: 'aquarius',    label: 'Водолей',  symbol: '♒', startDeg:  90 }, // 6→7h   H4
+  { id: 'capricorn',   label: 'Козерог',  symbol: '♑', startDeg: 120 }, // 7→8h   H3
+  { id: 'sagittarius', label: 'Стрелец',  symbol: '♐', startDeg: 150 }, // 8→9h   H2
 ];
 
 const CX = 195, CY = 195;
-const R_OUTER = 188;   // outer click boundary (zodiac ring outer edge)
-const R_INNER = 70;    // inner click boundary (near inner clock circle) — [6] full sector clickable
-const R_ZODIAC = 130;  // inner edge of zodiac sign ring
-// [6] markers placed in the ring between zodiac signs and inner clock circle
-const R_MARKER = 108;
+const R_OUTER = 188;  // outer click boundary
+const R_INNER = 70;   // inner click boundary (covers full sector)
+const R_MARKER = 108; // where symbols are placed (inner planet ring)
 
 // ── STATE ─────────────────────────────────────────────────────────
 let caseIdx = 0;
 let selectedPlanet = null;
-let placements = {};
+let placements = {};      // { planetId: signId }
 let cluesRevealed = 0;
-
-// [3] B&W planet colors
-const PLANET_INFO = {
-  sun:     { symbol: '☉', label: 'Солнце',   color: '#ffffff' },
-  moon:    { symbol: '☽', label: 'Луна',     color: '#cccccc' },
-  mercury: { symbol: '☿', label: 'Меркурий', color: '#aaaaaa' },
-};
 
 // ── HELPERS ───────────────────────────────────────────────────────
 function degToRad(d) { return d * Math.PI / 180; }
@@ -507,26 +433,17 @@ function polarToXY(cx, cy, r, angleDeg) {
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 }
 
-function sectorPath(cx, cy, rOuter, rInner, startDeg, endDeg) {
-  const s1 = polarToXY(cx, cy, rOuter, startDeg);
-  const s2 = polarToXY(cx, cy, rOuter, endDeg);
-  const s3 = polarToXY(cx, cy, rInner, endDeg);
-  const s4 = polarToXY(cx, cy, rInner, startDeg);
-  const large = (endDeg - startDeg) > 180 ? 1 : 0;
-  return [
-    `M ${s1.x} ${s1.y}`,
-    `A ${rOuter} ${rOuter} 0 ${large} 1 ${s2.x} ${s2.y}`,
-    `L ${s3.x} ${s3.y}`,
-    `A ${rInner} ${rInner} 0 ${large} 0 ${s4.x} ${s4.y}`,
-    'Z'
-  ].join(' ');
+function sectorPath(cx, cy, rO, rI, s, e) {
+  const p1 = polarToXY(cx, cy, rO, s), p2 = polarToXY(cx, cy, rO, e);
+  const p3 = polarToXY(cx, cy, rI, e), p4 = polarToXY(cx, cy, rI, s);
+  const lg = (e - s) > 180 ? 1 : 0;
+  return `M ${p1.x} ${p1.y} A ${rO} ${rO} 0 ${lg} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rI} ${rI} 0 ${lg} 0 ${p4.x} ${p4.y} Z`;
 }
 
 // ── BUILD SVG ZONES ───────────────────────────────────────────────
 function buildZones() {
   const svg = document.getElementById('chartSvg');
   svg.innerHTML = '';
-
   SIGNS.forEach(sign => {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', sectorPath(CX, CY, R_OUTER, R_INNER, sign.startDeg, sign.startDeg + 30));
@@ -535,8 +452,6 @@ function buildZones() {
     path.addEventListener('click', () => placeOnZone(sign.id));
     svg.appendChild(path);
   });
-
-  // markers rendered on top
   const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   g.id = 'markersGroup';
   svg.appendChild(g);
@@ -547,40 +462,63 @@ function renderMarkers() {
   const g = document.getElementById('markersGroup');
   g.innerHTML = '';
 
+  // Group planets by sign to offset them if multiple in same sector
+  const bySign = {};
   Object.entries(placements).forEach(([planet, signId]) => {
+    if (!bySign[signId]) bySign[signId] = [];
+    bySign[signId].push(planet);
+  });
+
+  Object.entries(bySign).forEach(([signId, planets]) => {
     const sign = SIGNS.find(s => s.id === signId);
     if (!sign) return;
-    const mid = sign.startDeg + 15;
-    const pos = polarToXY(CX, CY, R_MARKER, mid);
-    const info = PLANET_INFO[planet];
+    const n = planets.length;
 
-    // [5] each marker is a clickable group → re-selects the planet
-    const grp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    grp.setAttribute('class', 'marker-group');
-    grp.addEventListener('click', e => {
-      e.stopPropagation();
-      selectPlanet(planet);
+    planets.forEach((planet, i) => {
+      const info = PLANET_INFO[planet];
+      const mid = sign.startDeg + 15;
+      // spread evenly within sector: 1→mid, 2→mid±8°, 3→mid-10°/mid/mid+10°
+      const spread = n === 1 ? 0 : (n === 2 ? 9 : 10);
+      const offset = n === 1 ? 0 : (i - (n - 1) / 2) * spread;
+      const pos = polarToXY(CX, CY, R_MARKER, mid + offset);
+
+      const grp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      grp.setAttribute('class', 'marker-group');
+      grp.addEventListener('click', e => { e.stopPropagation(); selectPlanet(planet); });
+
+      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('x', pos.x);
+      txt.setAttribute('y', pos.y + 7);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('font-size', '20');
+      txt.setAttribute('fill', info.color);
+      txt.setAttribute('pointer-events', 'none');
+      txt.textContent = info.symbol;
+      grp.appendChild(txt);
+      g.appendChild(grp);
     });
-
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('x', pos.x);
-    text.setAttribute('y', pos.y + 7);
-    text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('font-size', '20');
-    text.setAttribute('fill', info.color);
-    text.setAttribute('pointer-events', 'none');
-    text.textContent = info.symbol;
-    grp.appendChild(text);
-
-    g.appendChild(grp);
   });
+}
+
+// ── PLANET TRAY ───────────────────────────────────────────────────
+function renderTray() {
+  const c = CASES[caseIdx];
+  const tray = document.getElementById('planetTray');
+  tray.innerHTML = c.planets.map(p => {
+    const info = PLANET_INFO[p];
+    return `
+      <div class="planet-token" data-planet="${p}" onclick="selectPlanet('${p}')">
+        <div class="token-circle">${info.symbol}</div>
+        <span class="token-label">${info.label}</span>
+      </div>`;
+  }).join('');
 }
 
 // ── PLANET SELECTION ──────────────────────────────────────────────
 function selectPlanet(planet) {
   const token = document.querySelector(`[data-planet="${planet}"]`);
 
-  // if already placed — lift off chart, become selectable again
+  // lift off chart if already placed
   if (placements[planet]) {
     delete placements[planet];
     token.classList.remove('placed');
@@ -588,7 +526,7 @@ function selectPlanet(planet) {
     updateProgress();
   }
 
-  // toggle off if tapping the already-selected planet
+  // toggle off if tapping already-selected
   if (selectedPlanet === planet) {
     token.classList.remove('selected');
     selectedPlanet = null;
@@ -598,7 +536,7 @@ function selectPlanet(planet) {
 
   // deselect previous
   if (selectedPlanet) {
-    document.querySelector(`[data-planet="${selectedPlanet}"]`).classList.remove('selected');
+    document.querySelector(`[data-planet="${selectedPlanet}"]`)?.classList.remove('selected');
   }
 
   selectedPlanet = planet;
@@ -609,7 +547,6 @@ function selectPlanet(planet) {
 function highlightZones(on) {
   document.querySelectorAll('.zone').forEach(z => z.classList.toggle('targeted', on));
 }
-
 function clearZoneHighlights() {
   document.querySelectorAll('.zone').forEach(z => z.classList.remove('targeted'));
 }
@@ -617,33 +554,30 @@ function clearZoneHighlights() {
 // ── PLACE PLANET ──────────────────────────────────────────────────
 function placeOnZone(signId) {
   if (!selectedPlanet) return;
-
-  // if another planet is already in this sign, swap them
-  const existing = Object.keys(placements).find(p => placements[p] === signId);
-  if (existing && existing !== selectedPlanet) {
-    delete placements[existing];
-    document.querySelector(`[data-planet="${existing}"]`).classList.remove('placed');
-  }
-
+  // multiple planets per sign are now allowed — no swap logic
   const token = document.querySelector(`[data-planet="${selectedPlanet}"]`);
   placements[selectedPlanet] = signId;
   token.classList.remove('selected');
   token.classList.add('placed');
   selectedPlanet = null;
   clearZoneHighlights();
-
   renderMarkers();
   updateProgress();
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────
 function updateProgress() {
+  const total = CASES[caseIdx].planets.length;
   const placed = Object.keys(placements).length;
-  document.getElementById('counter').textContent = `${placed}/3`;
-  document.querySelectorAll('#progressBar .seg').forEach((seg, i) => {
-    seg.classList.toggle('filled', i < placed);
-  });
-  const ready = placed === 3;
+  document.getElementById('counter').textContent = `${placed}/${total}`;
+
+  // rebuild progress segments to match planet count
+  const bar = document.getElementById('progressBar');
+  bar.innerHTML = CASES[caseIdx].planets.map((_, i) =>
+    `<div class="seg${i < placed ? ' filled' : ''}"></div>`
+  ).join('');
+
+  const ready = placed === total;
   const btn = document.getElementById('btnCheck');
   btn.classList.toggle('ready', ready);
   btn.disabled = !ready;
@@ -651,46 +585,112 @@ function updateProgress() {
 
 // ── CHECK ──────────────────────────────────────────────────────────
 function checkAnswers() {
-  if (Object.keys(placements).length < 3) return;
-  const currentCase = CASES[caseIdx];
-  const answer = currentCase.answer;
+  const c = CASES[caseIdx];
+  if (Object.keys(placements).length < c.planets.length) return;
+
   let correct = 0;
-  let html = '';
+  c.planets.forEach(p => { if (placements[p] === c.answer[p]) correct++; });
+  const total = c.planets.length;
 
-  ['sun', 'moon', 'mercury'].forEach(planet => {
-    const info = PLANET_INFO[planet];
-    const res = currentCase.results[planet];
-    const userSign = placements[planet];
-    const isCorrect = userSign === answer[planet];
-    if (isCorrect) correct++;
-    const userLabel = SIGNS.find(s => s.id === userSign)?.label || '—';
+  document.getElementById('resultsTitle').textContent =
+    correct === total ? `${correct} из ${total} — Блестяще!` : `${correct} из ${total}`;
+  document.getElementById('resultsSubtitle').textContent =
+    correct === total ? 'Вы отлично чувствуете натальную карту.' :
+    correct >= total / 2 ? 'Почти угадали всё.' : 'Есть куда расти.';
 
-    html += `
-      <div class="result-card">
-        <div class="result-icon ${isCorrect ? 'correct' : 'wrong'}">${info.symbol}</div>
-        <div class="result-body">
-          <div class="result-planet">${info.label}</div>
-          <div class="result-sign">
-            ${isCorrect
-              ? `<span class="correct-sign">✓ ${res.label}</span>`
-              : `<span class="wrong-sign">${userLabel}</span> → <span class="correct-sign">${res.label}</span>`
-            }
-          </div>
-          <div class="result-text">${res.text}</div>
-        </div>
-        <div class="result-badge ${isCorrect ? 'correct' : 'wrong'}">${isCorrect ? '✓' : '✗'}</div>
-      </div>`;
+  renderResultChart(c, placements);
+
+  const summaryEl = document.getElementById('resultSummary');
+  summaryEl.textContent = c.summary || '';
+  summaryEl.style.display = c.summary ? 'block' : 'none';
+
+  document.getElementById('resultsOverlay').classList.add('open');
+}
+
+function renderResultChart(c, userPlacements) {
+  const svgEl = document.getElementById('resultSvg');
+  svgEl.innerHTML = '';
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+  // Build flat list of all markers: correct (at answer sign) + wrong (at user's wrong sign)
+  const allMarkers = [];
+  c.planets.forEach(planet => {
+    const correctSign = c.answer[planet];
+    const userSign    = userPlacements[planet];
+    allMarkers.push({ planet, signId: correctSign, isCorrect: true });
+    if (userSign !== correctSign) {
+      allMarkers.push({ planet, signId: userSign, isCorrect: false });
+    }
   });
 
-  // [3] no star emoji, just text score
-  const scoreText = correct === 3 ? '3 из 3 — Блестяще!' : correct === 2 ? '2 из 3 — Хорошо' : correct === 1 ? '1 из 3' : '0 из 3';
-  document.getElementById('resultsTitle').textContent = scoreText;
-  document.getElementById('resultsSubtitle').textContent =
-    correct === 3 ? 'Вы отлично чувствуете натальную карту.' :
-    correct === 2 ? 'Почти угадали всё.' :
-    correct === 1 ? 'Есть куда расти.' : 'Попробуйте ещё раз!';
-  document.getElementById('resultCards').innerHTML = html;
-  document.getElementById('resultsOverlay').classList.add('open');
+  // Group by sign
+  const bySign = {};
+  allMarkers.forEach(m => {
+    if (!bySign[m.signId]) bySign[m.signId] = [];
+    bySign[m.signId].push(m);
+  });
+
+  // Draw each sign's markers with spread
+  Object.entries(bySign).forEach(([signId, markers]) => {
+    const sign = SIGNS.find(s => s.id === signId);
+    if (!sign) return;
+    const n = markers.length;
+    markers.forEach((m, i) => {
+      const mid    = sign.startDeg + 15;
+      const spread = n === 1 ? 0 : n === 2 ? 9 : 10;
+      const offset = n === 1 ? 0 : (i - (n - 1) / 2) * spread;
+      const pos    = polarToXY(CX, CY, R_MARKER, mid + offset);
+      const info   = PLANET_INFO[m.planet];
+
+      if (m.isCorrect) {
+        // white circle + planet symbol
+        const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circ.setAttribute('cx', pos.x); circ.setAttribute('cy', pos.y);
+        circ.setAttribute('r', 15);
+        circ.setAttribute('fill', 'rgba(255,255,255,0.15)');
+        circ.setAttribute('stroke', 'rgba(255,255,255,0.75)');
+        circ.setAttribute('stroke-width', '1.5');
+        g.appendChild(circ);
+
+        const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        t.setAttribute('x', pos.x); t.setAttribute('y', pos.y + 7);
+        t.setAttribute('text-anchor', 'middle');
+        t.setAttribute('font-size', '19'); t.setAttribute('fill', '#ffffff');
+        t.textContent = info.symbol;
+        g.appendChild(t);
+      } else {
+        // red circle + dimmed symbol + X cross
+        const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circ.setAttribute('cx', pos.x); circ.setAttribute('cy', pos.y);
+        circ.setAttribute('r', 15);
+        circ.setAttribute('fill', 'rgba(180,40,40,0.25)');
+        circ.setAttribute('stroke', 'rgba(220,70,70,0.8)');
+        circ.setAttribute('stroke-width', '1.5');
+        g.appendChild(circ);
+
+        const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        t.setAttribute('x', pos.x); t.setAttribute('y', pos.y + 7);
+        t.setAttribute('text-anchor', 'middle');
+        t.setAttribute('font-size', '19'); t.setAttribute('fill', 'rgba(220,80,80,0.6)');
+        t.textContent = info.symbol;
+        g.appendChild(t);
+
+        // X lines
+        const d = 9;
+        [[pos.x-d, pos.y-d, pos.x+d, pos.y+d],
+         [pos.x+d, pos.y-d, pos.x-d, pos.y+d]].forEach(([x1,y1,x2,y2]) => {
+          const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          ln.setAttribute('x1',x1); ln.setAttribute('y1',y1);
+          ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
+          ln.setAttribute('stroke', 'rgba(220,60,60,0.95)');
+          ln.setAttribute('stroke-width', '2'); ln.setAttribute('stroke-linecap', 'round');
+          g.appendChild(ln);
+        });
+      }
+    });
+  });
+
+  svgEl.appendChild(g);
 }
 
 // ── NEXT CASE ─────────────────────────────────────────────────────
@@ -706,11 +706,11 @@ function loadCase() {
   selectedPlanet = null;
   cluesRevealed = 0;
 
-  document.querySelectorAll('.planet-token').forEach(t => t.classList.remove('selected', 'placed'));
-  document.querySelector('.case-label').textContent = `Кейс №${c.id}`;
+  document.getElementById('caseLabel').textContent = `Кейс №${c.id}`;
   document.getElementById('caseTitle').textContent = c.title;
   document.getElementById('caseBody').textContent  = c.body;
 
+  renderTray();
   updateProgress();
   renderMarkers();
   renderClues();
@@ -719,18 +719,16 @@ function loadCase() {
 // ── CLUES ─────────────────────────────────────────────────────────
 function renderClues() {
   const c = CASES[caseIdx];
-  let html = '';
-  c.clues.forEach((clue, i) => {
+  document.getElementById('clueList').innerHTML = c.clues.map((clue, i) => {
     const revealed = i < cluesRevealed;
     const locked   = !revealed && i > cluesRevealed;
-    html += `
+    return `
       <div class="clue-item ${revealed ? 'revealed' : ''} ${locked ? 'locked' : ''}"
            onclick="${!revealed && !locked ? `revealClue(${i})` : ''}">
         <div class="clue-num">${i + 1}</div>
-        <div class="clue-text">${revealed ? clue : (locked ? '🔒 Сначала откройте предыдущую' : '👆 Нажмите, чтобы открыть')}</div>
+        <div class="clue-text">${revealed ? clue : locked ? '🔒 Сначала откройте предыдущую' : '👆 Нажмите, чтобы открыть'}</div>
       </div>`;
-  });
-  document.getElementById('clueList').innerHTML = html;
+  }).join('');
   document.getElementById('cluesUsed').textContent = `Использовано: ${cluesRevealed} из ${c.clues.length}`;
 }
 
