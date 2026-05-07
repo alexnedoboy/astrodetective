@@ -44,6 +44,13 @@
     justify-content: space-between;
     align-items: baseline;
   }
+  .btn-home {
+    font-size: 18px; line-height: 1;
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); padding: 2px 4px 2px 0;
+    transition: color 0.15s;
+  }
+  .btn-home:hover { color: var(--text); }
   .case-label  { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; }
   .case-title  { font-size: 12px; color: var(--muted); text-align: center; flex: 1; padding: 0 8px; }
   .case-counter{ font-size: 12px; color: var(--muted); }
@@ -268,13 +275,135 @@
     background: transparent; color: var(--text);
     font-size: 15px; font-weight: 600; cursor: pointer;
   }
+
+  /* ── TITLE SCREEN ── */
+  #titleScreen {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end;
+    overflow: hidden;
+  }
+  .title-bg {
+    position: absolute; inset: 0;
+    background: url('Home picture.jpg') center/cover no-repeat;
+    filter: brightness(0.55);
+  }
+  .title-gradient {
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(10,10,10,0.15) 0%,
+      rgba(10,10,10,0.0)  30%,
+      rgba(10,10,10,0.55) 65%,
+      rgba(10,10,10,0.92) 100%
+    );
+  }
+  .title-content {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 430px;
+    padding: 0 24px 52px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .title-eyebrow {
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,255,255,0.45); margin-bottom: 10px;
+  }
+  .title-logo {
+    font-size: 38px; font-weight: 800;
+    letter-spacing: -0.02em; line-height: 1.05;
+    text-align: center; color: #ffffff;
+    margin-bottom: 10px;
+  }
+  .title-logo span { color: rgba(255,255,255,0.45); }
+  .title-tagline {
+    font-size: 13px; color: rgba(255,255,255,0.5);
+    text-align: center; line-height: 1.5;
+    margin-bottom: 36px; max-width: 260px;
+  }
+  .title-buttons {
+    width: 100%; display: flex; flex-direction: column; gap: 12px;
+  }
+  .btn-title-primary {
+    width: 100%; padding: 17px;
+    border-radius: 16px; border: none;
+    background: #ffffff; color: #0a0a0a;
+    font-size: 16px; font-weight: 700;
+    letter-spacing: 0.04em; cursor: pointer;
+    transition: transform 0.12s, opacity 0.12s;
+  }
+  .btn-title-primary:active { transform: scale(0.97); opacity: 0.88; }
+  .btn-title-secondary {
+    width: 100%; padding: 17px;
+    border-radius: 16px; border: 1.5px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75);
+    font-size: 16px; font-weight: 600;
+    letter-spacing: 0.04em; cursor: pointer;
+    transition: transform 0.12s, border-color 0.2s;
+  }
+  .btn-title-secondary:active { transform: scale(0.97); }
+
+  /* ── MODE SELECT SCREEN ── */
+  #modeScreen {
+    position: fixed; inset: 0; z-index: 190;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: var(--bg);
+  }
+  #modeScreen.open { display: flex; }
+  .mode-back {
+    position: absolute; top: 20px; left: 20px;
+    font-size: 13px; color: var(--muted); cursor: pointer;
+    padding: 8px 12px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface);
+  }
+  .mode-title {
+    font-size: 22px; font-weight: 700; margin-bottom: 8px; text-align: center;
+  }
+  .mode-subtitle {
+    font-size: 13px; color: var(--muted); text-align: center;
+    margin-bottom: 40px; max-width: 260px; line-height: 1.5;
+  }
+  .mode-soon-badge {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    background: rgba(255,255,255,0.08); color: var(--muted);
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 6px 14px; margin-bottom: 16px;
+  }
+  .mode-icon {
+    font-size: 52px; margin-bottom: 20px;
+  }
 </style>
 </head>
 <body>
 
+<!-- ── TITLE SCREEN ── -->
+<div id="titleScreen">
+  <div class="title-bg"></div>
+  <div class="title-gradient"></div>
+  <div class="title-content">
+    <div class="title-eyebrow">Астрология · Детектив</div>
+    <div class="title-logo">Астро<br><span>Детектив</span></div>
+    <div class="title-tagline">Раскрой личность через планеты и знаки зодиака</div>
+    <div class="title-buttons">
+      <button class="btn-title-primary" onclick="startRevealMode()">☽ Раскрыть карту</button>
+      <button class="btn-title-secondary" onclick="startLearningMode()">✦ Обучение</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LEARNING / COMING SOON SCREEN ── -->
+<div id="modeScreen">
+  <button class="mode-back" onclick="backToTitle()">← Назад</button>
+  <div class="mode-icon">🪐</div>
+  <div class="mode-soon-badge">Скоро</div>
+  <div class="mode-title">Режим обучения</div>
+  <div class="mode-subtitle">Здесь будут задания для изучения астрологии — знаки, планеты, дома и аспекты.</div>
+</div>
+
 <!-- ── HEADER ── -->
 <div class="header">
   <div class="header-top">
+    <button class="btn-home" onclick="goHome()" title="На главную">←</button>
     <span class="case-label" id="caseLabel">Кейс №2350</span>
     <span class="case-title">Разгадайте натальную карту по описанию</span>
     <span class="case-counter" id="counter">0/3</span>
@@ -825,9 +954,42 @@ function revealClue(idx) {
 function openClues()  { renderClues(); document.getElementById('cluesOverlay').classList.add('open'); }
 function closeClues() { document.getElementById('cluesOverlay').classList.remove('open'); }
 
+// ── TITLE SCREEN ──────────────────────────────────────────────────
+const gameElements = ['header', 'desc-card', 'chartWrap', 'chart-hint', 'planetTray', 'bottom-bar'];
+
+function setGameVisible(visible) {
+  document.querySelectorAll('.header, .desc-card, .chart-wrap, .chart-hint, .planet-tray, .bottom-bar')
+    .forEach(el => { el.style.display = visible ? '' : 'none'; });
+}
+
+function startRevealMode() {
+  document.getElementById('titleScreen').style.display = 'none';
+  setGameVisible(true);
+  loadCase();
+}
+
+function startLearningMode() {
+  document.getElementById('titleScreen').style.display = 'none';
+  document.getElementById('modeScreen').classList.add('open');
+}
+
+function backToTitle() {
+  document.getElementById('modeScreen').classList.remove('open');
+  document.getElementById('titleScreen').style.display = '';
+}
+
+function goHome() {
+  // close any open overlays
+  document.getElementById('resultsOverlay').classList.remove('open');
+  document.getElementById('cluesOverlay').classList.remove('open');
+  setGameVisible(false);
+  document.getElementById('titleScreen').style.display = '';
+  caseIdx = 0;
+}
+
 // ── INIT ──────────────────────────────────────────────────────────
 buildZones();
-loadCase();
+setGameVisible(false);   // hide game until mode is chosen
 </script>
 </body>
 </html>
