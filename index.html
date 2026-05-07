@@ -375,19 +375,52 @@ const CASES = [
   },
   {
     id: 2351,
-    title: "Она никогда не опаздывает. Даже когда хочет опоздать.",
-    body: 'Список дел с утра. Будильник за 20 минут до будильника. При этом говорит, что завидует тем, кто живёт спонтанно.',
-    planets: ['sun', 'moon', 'mercury'],
-    answer: { sun: 'virgo', moon: 'capricorn', mercury: 'virgo' },
+    title: "В детстве его творчество ограничивал отец, а теперь он сам строгий отец.",
+    body: 'Хотя при этом дома очень внимательный и заботливый.',
+    planets: ['saturn', 'moon'],
+    prePlaced: { sun: 'libra', jupiter: 'scorpio', mercury: 'scorpio' },
+    answer: { saturn: 'aries', moon: 'cancer' },
     clues: [
-      "Идеальный порядок и самодисциплина — земной знак с высокими стандартами.",
-      "Внутренняя жёсткость к себе — Луна в знаке долга и контроля.",
-      "Мышление чёткое, структурное — Меркурий в аналитическом знаке."
+      "Помнит дни рождения всех. Детей, жены, тёщи. Звонит первым.",
+      "В детской у его ребёнка всё по местам. Всегда. Он проверяет.",
+      "Его отец никогда не говорил «молодец». Он говорит — но только когда заслужил.",
+      "Планета ограничений стоит в доме детей и творчества. В знаке импульса — но импульс здесь не пускают.",
+      "Луна в своём знаке. В доме где любят до боли и боятся потерять."
+    ],
+    summary: 'Сатурн в Овне в 5-м доме в оппозиции к Солнцу — ограничение творчества и инициативы, унаследованное от отца. Оппозиция к Солнцу замыкает цикл: что получил, то и передаёт. Луна в Раке в 8-м — забота глубокая, почти поглощающая, со страхом потери.',
+    aspects: [
+      { planet1: 'saturn', planet2: 'sun',     type: 'opposition' },
+      { planet1: 'moon',   planet2: 'jupiter', type: 'trine' },
+      { planet1: 'moon',   planet2: 'mercury', type: 'trine' },
     ],
     results: {
-      sun:     { label: 'Дева',     text: 'Солнце в Деве — совершенство в мелочах, пунктуальность как базовая ценность.' },
-      moon:    { label: 'Козерог',  text: 'Луна в Козероге — строгая к себе изнутри, эмоции под контролем.' },
-      mercury: { label: 'Дева',     text: 'Меркурий в Деве — мыслит детально и системно, слова точны и взвешены.' },
+      saturn: { label: 'Овен' },
+      moon:   { label: 'Рак' },
+    }
+  },
+  {
+    id: 2352,
+    title: "В любви слишком расчётлив — но та же точность делает его репутацию в профессии.",
+    body: 'Когда берётся за дело — не отступает. Зарабатывает творчеством.',
+    planets: ['venus', 'mars'],
+    prePlaced: { sun: 'libra', jupiter: 'scorpio', mercury: 'scorpio', moon: 'cancer', saturn: 'aries' },
+    answer: { venus: 'virgo', mars: 'capricorn' },
+    clues: [
+      "В отношениях анализирует больше чем чувствует. Партнёры говорят — слишком в голове.",
+      "Его профессиональная репутация держится на деталях. Переделывает пока не идеально.",
+      "Энергия направлена в одну точку — и всегда в сторону заработка.",
+      "Планета красоты и любви стоит в доме карьеры. В знаке где всё взвешивают и критикуют.",
+      "Управитель дома творчества — во втором доме. В знаке где Марс в лучшей форме."
+    ],
+    summary: 'Венера в Деве в 10-м — любовь через критику, карьера через точность и эстетику. Марс в Козероге во 2-м — управитель 5-го дома творчества зарабатывает методично и целенаправленно. Творчество здесь не вдохновение — а инструмент.',
+    aspects: [
+      { planet1: 'moon',   planet2: 'jupiter', type: 'trine' },
+      { planet1: 'moon',   planet2: 'mercury', type: 'trine' },
+      { planet1: 'saturn', planet2: 'sun',     type: 'opposition' },
+    ],
+    results: {
+      venus: { label: 'Дева' },
+      mars:  { label: 'Козерог' },
     }
   }
 ];
@@ -459,39 +492,62 @@ function buildZones() {
 
 // ── RENDER MARKERS ────────────────────────────────────────────────
 function renderMarkers() {
+  const c = CASES[caseIdx];
   const g = document.getElementById('markersGroup');
   g.innerHTML = '';
 
-  // Group planets by sign to offset them if multiple in same sector
+  const allPlacements = { ...(c.prePlaced || {}), ...placements };
+
+  // Group by sign + compute positions
   const bySign = {};
-  Object.entries(placements).forEach(([planet, signId]) => {
+  Object.entries(allPlacements).forEach(([planet, signId]) => {
     if (!bySign[signId]) bySign[signId] = [];
-    bySign[signId].push(planet);
+    bySign[signId].push({ planet, isPrePlaced: !!(c.prePlaced?.[planet]) });
   });
 
-  Object.entries(bySign).forEach(([signId, planets]) => {
+  const markerPos = {};
+  Object.entries(bySign).forEach(([signId, items]) => {
     const sign = SIGNS.find(s => s.id === signId);
     if (!sign) return;
-    const n = planets.length;
-
-    planets.forEach((planet, i) => {
-      const info = PLANET_INFO[planet];
-      const mid = sign.startDeg + 15;
-      // spread evenly within sector: 1→mid, 2→mid±8°, 3→mid-10°/mid/mid+10°
+    const n = items.length;
+    items.forEach((item, i) => {
+      const mid    = sign.startDeg + 15;
       const spread = n === 1 ? 0 : (n === 2 ? 9 : 10);
       const offset = n === 1 ? 0 : (i - (n - 1) / 2) * spread;
-      const pos = polarToXY(CX, CY, R_MARKER, mid + offset);
+      markerPos[item.planet] = polarToXY(CX, CY, R_MARKER, mid + offset);
+    });
+  });
+
+  // Draw aspect lines FIRST (under markers) — only when both endpoints are placed
+  (c.aspects || []).forEach(asp => {
+    const p1 = markerPos[asp.planet1], p2 = markerPos[asp.planet2];
+    if (!p1 || !p2) return;
+    const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    ln.setAttribute('x1', p1.x); ln.setAttribute('y1', p1.y);
+    ln.setAttribute('x2', p2.x); ln.setAttribute('y2', p2.y);
+    ln.setAttribute('stroke', 'rgba(255,255,255,0.35)');
+    ln.setAttribute('stroke-width', '1.5');
+    g.appendChild(ln);
+  });
+
+  // Draw planet symbols ON TOP
+  Object.entries(bySign).forEach(([signId, items]) => {
+    items.forEach(item => {
+      const info = PLANET_INFO[item.planet];
+      const pos  = markerPos[item.planet];
 
       const grp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       grp.setAttribute('class', 'marker-group');
-      grp.addEventListener('click', e => { e.stopPropagation(); selectPlanet(planet); });
+      if (!item.isPrePlaced) {
+        grp.addEventListener('click', e => { e.stopPropagation(); selectPlanet(item.planet); });
+      }
 
       const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       txt.setAttribute('x', pos.x);
       txt.setAttribute('y', pos.y + 7);
       txt.setAttribute('text-anchor', 'middle');
       txt.setAttribute('font-size', '20');
-      txt.setAttribute('fill', info.color);
+      txt.setAttribute('fill', item.isPrePlaced ? 'rgba(255,255,255,0.35)' : info.color);
       txt.setAttribute('pointer-events', 'none');
       txt.textContent = info.symbol;
       grp.appendChild(txt);
@@ -610,10 +666,46 @@ function checkAnswers() {
 function renderResultChart(c, userPlacements) {
   const svgEl = document.getElementById('resultSvg');
   svgEl.innerHTML = '';
-  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
-  // Build flat list of all markers: correct (at answer sign) + wrong (at user's wrong sign)
+  // ── 1. Compute correct marker positions (for aspect lines) ──
+  const allCorrect = { ...(c.prePlaced || {}), ...c.answer };
+  const correctBySign = {};
+  Object.entries(allCorrect).forEach(([planet, signId]) => {
+    if (!correctBySign[signId]) correctBySign[signId] = [];
+    correctBySign[signId].push(planet);
+  });
+  const markerPos = {};
+  Object.entries(correctBySign).forEach(([signId, planets]) => {
+    const sign = SIGNS.find(s => s.id === signId);
+    if (!sign) return;
+    const n = planets.length;
+    planets.forEach((planet, i) => {
+      const mid    = sign.startDeg + 15;
+      const spread = n === 1 ? 0 : n === 2 ? 9 : 10;
+      const offset = n === 1 ? 0 : (i - (n - 1) / 2) * spread;
+      markerPos[planet] = polarToXY(CX, CY, R_MARKER, mid + offset);
+    });
+  });
+
+  // ── 2. Draw aspect lines UNDER markers ──
+  const gLines = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  (c.aspects || []).forEach(asp => {
+    const p1 = markerPos[asp.planet1], p2 = markerPos[asp.planet2];
+    if (!p1 || !p2) return;
+    const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    ln.setAttribute('x1', p1.x); ln.setAttribute('y1', p1.y);
+    ln.setAttribute('x2', p2.x); ln.setAttribute('y2', p2.y);
+    ln.setAttribute('stroke', 'rgba(255,255,255,0.4)');
+    ln.setAttribute('stroke-width', '1.5');
+    gLines.appendChild(ln);
+  });
+  svgEl.appendChild(gLines);
+
+  // ── 3. Build marker list: pre-placed + answer (correct) + wrong user placements ──
   const allMarkers = [];
+  Object.entries(c.prePlaced || {}).forEach(([planet, signId]) => {
+    allMarkers.push({ planet, signId, isCorrect: true });
+  });
   c.planets.forEach(planet => {
     const correctSign = c.answer[planet];
     const userSign    = userPlacements[planet];
@@ -623,15 +715,15 @@ function renderResultChart(c, userPlacements) {
     }
   });
 
-  // Group by sign
-  const bySign = {};
+  // Group by sign for spread
+  const markersBySign = {};
   allMarkers.forEach(m => {
-    if (!bySign[m.signId]) bySign[m.signId] = [];
-    bySign[m.signId].push(m);
+    if (!markersBySign[m.signId]) markersBySign[m.signId] = [];
+    markersBySign[m.signId].push(m);
   });
 
-  // Draw each sign's markers with spread
-  Object.entries(bySign).forEach(([signId, markers]) => {
+  const gM = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  Object.entries(markersBySign).forEach(([signId, markers]) => {
     const sign = SIGNS.find(s => s.id === signId);
     if (!sign) return;
     const n = markers.length;
@@ -643,54 +735,46 @@ function renderResultChart(c, userPlacements) {
       const info   = PLANET_INFO[m.planet];
 
       if (m.isCorrect) {
-        // white circle + planet symbol
         const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         circ.setAttribute('cx', pos.x); circ.setAttribute('cy', pos.y);
         circ.setAttribute('r', 15);
         circ.setAttribute('fill', 'rgba(255,255,255,0.15)');
         circ.setAttribute('stroke', 'rgba(255,255,255,0.75)');
         circ.setAttribute('stroke-width', '1.5');
-        g.appendChild(circ);
-
+        gM.appendChild(circ);
         const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         t.setAttribute('x', pos.x); t.setAttribute('y', pos.y + 7);
         t.setAttribute('text-anchor', 'middle');
         t.setAttribute('font-size', '19'); t.setAttribute('fill', '#ffffff');
         t.textContent = info.symbol;
-        g.appendChild(t);
+        gM.appendChild(t);
       } else {
-        // red circle + dimmed symbol + X cross
         const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         circ.setAttribute('cx', pos.x); circ.setAttribute('cy', pos.y);
         circ.setAttribute('r', 15);
         circ.setAttribute('fill', 'rgba(180,40,40,0.25)');
         circ.setAttribute('stroke', 'rgba(220,70,70,0.8)');
         circ.setAttribute('stroke-width', '1.5');
-        g.appendChild(circ);
-
+        gM.appendChild(circ);
         const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         t.setAttribute('x', pos.x); t.setAttribute('y', pos.y + 7);
         t.setAttribute('text-anchor', 'middle');
         t.setAttribute('font-size', '19'); t.setAttribute('fill', 'rgba(220,80,80,0.6)');
         t.textContent = info.symbol;
-        g.appendChild(t);
-
-        // X lines
+        gM.appendChild(t);
         const d = 9;
-        [[pos.x-d, pos.y-d, pos.x+d, pos.y+d],
-         [pos.x+d, pos.y-d, pos.x-d, pos.y+d]].forEach(([x1,y1,x2,y2]) => {
-          const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          ln.setAttribute('x1',x1); ln.setAttribute('y1',y1);
-          ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
-          ln.setAttribute('stroke', 'rgba(220,60,60,0.95)');
-          ln.setAttribute('stroke-width', '2'); ln.setAttribute('stroke-linecap', 'round');
-          g.appendChild(ln);
+        [[pos.x-d,pos.y-d,pos.x+d,pos.y+d],[pos.x+d,pos.y-d,pos.x-d,pos.y+d]].forEach(([x1,y1,x2,y2]) => {
+          const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+          l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+          l.setAttribute('stroke','rgba(220,60,60,0.95)');
+          l.setAttribute('stroke-width','2'); l.setAttribute('stroke-linecap','round');
+          gM.appendChild(l);
         });
       }
     });
   });
-
-  svgEl.appendChild(g);
+  svgEl.appendChild(gM);
 }
 
 // ── NEXT CASE ─────────────────────────────────────────────────────
