@@ -463,6 +463,39 @@
     border-left: 2px solid rgba(255,255,255,0.2);
     padding-left: 8px;
   }
+
+  /* ── QUESTION ROUNDS PANEL ── */
+  #questionRoundsPanel {
+    width: 100%;
+    max-width: 430px;
+    padding: 4px 16px 0;
+  }
+  .round-indicator {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .round-btn {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 12px;
+    padding: 11px 14px;
+    text-align: left;
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+    cursor: pointer;
+    display: block;
+    margin-bottom: 8px;
+    line-height: 1.35;
+    font-family: inherit;
+  }
+  .round-btn:active {
+    background: rgba(255,255,255,0.12);
+  }
 </style>
 </head>
 <body>
@@ -529,6 +562,12 @@
 
 <!-- ── PLANET TRAY (dynamic) ── -->
 <div class="planet-tray" id="planetTray"></div>
+
+<!-- ── QUESTION ROUNDS PANEL (question_rounds task) ── -->
+<div id="questionRoundsPanel" style="display:none">
+  <div class="round-indicator" id="roundIndicator"></div>
+  <div id="roundQuestionsList"></div>
+</div>
 
 <!-- ── CHARACTER SELECT SECTION (below chart) ── -->
 <div id="charSelectSection" style="display:none">
@@ -734,7 +773,48 @@ const QUESTION_TASK_1 = {
   scoring: { perfect: 1, good: [2, 3] },
 };
 
-const LEARNING_CASES = [CHARACTER_TASK, CHARACTER_TASK_2, QUESTION_TASK_1, ...CASES];
+const QUESTION_ROUNDS_TASK_1 = {
+  type: 'question_rounds',
+  id: 'learn-qq01',
+  title: 'Допрос #2',
+  description: 'Определи Венеру Тома.',
+  characterImg: 'Character 2.png',
+  planets: ['venus'],
+  prePlaced: {},
+  rounds: [
+    { round: 1, questions: [
+      { id: 'r1q1', question: "Том легко знакомится с новыми людьми?",           answer: "Не сразу. Наблюдает, присматривается. Но когда открывается — надолго." },
+      { id: 'r1q2', question: "Как Том тратит деньги — копит или тратит на удовольствия?", answer: "Любит тратить на красивые вещи и впечатления. Скупость раздражает — и в себе, и в других. Может купить что-то дорогое просто потому что понравилось.", relevant: true },
+      { id: 'r1q3', question: "Том быстро принимает решения или долго взвешивает?", answer: "Взвешивает. Любит обдумать со всех сторон прежде чем решить." },
+      { id: 'r1q4', question: "Том легко прощает или помнит обиды?",              answer: "Внешне прощает, но внутри помнит долго." },
+    ]},
+    { round: 2, questions: [
+      { id: 'r2q1', question: "Как Том ведёт себя когда злится?",                 answer: "Вспыхивает быстро, но отходит так же быстро. Не держит зла." },
+      { id: 'r2q2', question: "Том любит быть в центре внимания или держится в тени?", answer: "Любит. Когда в центре — оживает, становится ярче. В тени чувствует себя немного лишним.", relevant: true },
+      { id: 'r2q3', question: "Что важнее для Тома — логика или интуиция?",       answer: "Логика. Любит когда всё можно объяснить и разложить по полочкам." },
+      { id: 'r2q4', question: "Как Том относится к критике в свой адрес?",        answer: "Болезненно воспринимает, даже если виду не показывает." },
+    ]},
+    { round: 3, questions: [
+      { id: 'r3q1', question: "Том планирует будущее или живёт сегодняшним днём?", answer: "Планирует. Любит знать что впереди, неопределённость тревожит." },
+      { id: 'r3q2', question: "Как Том общается с незнакомыми — открыто или осторожно?", answer: "Осторожно поначалу. Тепло, но держит дистанцию пока не узнает человека." },
+      { id: 'r3q3', question: "Что Том ищет в близких отношениях?",               answer: "Хочет партнёра которым можно гордиться. Важно чтобы отношения выглядели красиво — и снаружи, и изнутри. Не терпит серости и быта без праздника.", relevant: true },
+      { id: 'r3q4', question: "Как Том справляется с неопределённостью?",         answer: "Плохо. Начинает контролировать всё что можно." },
+    ]},
+    { round: 4, questions: [
+      { id: 'r4q1', question: "Том легко меняет мнение или стоит на своём?",      answer: "Стоит на своём. Переубедить сложно, особенно если уже решил." },
+      { id: 'r4q2', question: "Как Том восстанавливается после стресса?",         answer: "Ему нужны люди — одиночество не помогает. Идёт туда где шумно и весело." },
+      { id: 'r4q3', question: "Что Том думает о правилах — соблюдает или обходит?", answer: "Соблюдает. Считает что правила существуют не просто так." },
+      { id: 'r4q4', question: "Как Том реагирует когда его не замечают?",         answer: "Обижается. Может стараться ещё больше чтобы привлечь внимание, или наоборот — демонстративно уйти. Равнодушие переносит тяжелее чем критику.", relevant: true },
+    ]},
+  ],
+  answer: { venus: 'leo' },
+  explanations: {
+    venus: "Венера во Льве — любовь через признание и восхищение. Тратит на красоту и удовольствия, оживает в центре внимания, хочет отношений которыми можно гордиться, равнодушие переносит тяжелее критики. Всё указывает на одно: Венера хочет сиять.",
+  },
+  scoring: { rounds_used: { "1": "perfect", "2": "good", "3": "ok", "4": "slow" } },
+};
+
+const LEARNING_CASES = [CHARACTER_TASK, CHARACTER_TASK_2, QUESTION_TASK_1, QUESTION_ROUNDS_TASK_1, ...CASES];
 
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
 const SIGNS = [
@@ -765,6 +845,8 @@ let selectedCharacter = null;
 let placements = {};           // { planetId: signId }
 let cluesRevealed = 0;
 let questionsAsked = [];       // array of asked question ids (question_select)
+let currentRound = 0;          // current round index (question_rounds)
+let roundsAsked = 0;           // how many rounds answered (question_rounds)
 
 function getCase() {
   return (taskMode === 'learn' ? LEARNING_CASES : CASES)[caseIdx];
@@ -953,6 +1035,10 @@ function checkAnswers() {
   }
   if (c.type === 'question_select') {
     checkQuestionTask(c);
+    return;
+  }
+  if (c.type === 'question_rounds') {
+    checkQuestionRoundsTask(c);
     return;
   }
 
@@ -1173,13 +1259,18 @@ function loadCase() {
   selectedCharacter = null;
   cluesRevealed = 0;
   questionsAsked = [];
+  currentRound = 0;
+  roundsAsked = 0;
   document.getElementById('questionHeadPanel').style.display = 'none';
   document.getElementById('btnQuestions').style.display = 'none';
+  document.getElementById('questionRoundsPanel').style.display = 'none';
 
   if (c.type === 'characterSelect') {
     loadCharacterTask(c);
   } else if (c.type === 'question_select') {
     loadQuestionTask(c);
+  } else if (c.type === 'question_rounds') {
+    loadQuestionRoundsTask(c);
   } else {
     document.getElementById('charSelectSection').style.display = 'none';
     document.getElementById('charPanelAbove').style.display = 'none';
@@ -1359,6 +1450,91 @@ function showAnswer(id) {
 function openQuestions()  { renderQuestions(); document.getElementById('questionsOverlay').classList.add('open'); }
 function closeQuestions() { document.getElementById('questionsOverlay').classList.remove('open'); }
 
+// ── QUESTION ROUNDS TASK ──────────────────────────────────────────
+function loadQuestionRoundsTask(task) {
+  currentRound = 0;
+  roundsAsked = 0;
+
+  document.querySelector('.desc-card').style.display = 'none';
+  document.getElementById('btnClues').style.display = 'none';
+  document.getElementById('btnQuestions').style.display = 'none';
+  document.getElementById('charSelectSection').style.display = 'none';
+  document.getElementById('charPanelAbove').style.display = 'none';
+
+  document.getElementById('questionHeadPanel').style.display = '';
+  document.getElementById('questionHeadImg').src = task.characterImg;
+  const badge = document.querySelector('.question-answer-badge');
+  badge.classList.remove('has-answer');
+  document.getElementById('questionAnswerText').textContent = 'Спроси меня и я всё отвечу';
+
+  document.getElementById('planetTray').style.display = '';
+  document.getElementById('questionRoundsPanel').style.display = '';
+
+  document.getElementById('caseLabel').textContent = task.title;
+  document.getElementById('caseSubtitle').textContent = task.description;
+  document.getElementById('chartHint').textContent = 'Расположите планету на карте';
+  document.getElementById('chartHint').style.display = '';
+
+  renderTray();
+  updateProgress();
+  renderMarkers();
+  renderRoundQuestions();
+}
+
+function renderRoundQuestions() {
+  const task = getCase();
+  const rounds = task.rounds;
+  const roundIdx = currentRound % rounds.length;
+  const round = rounds[roundIdx];
+
+  document.getElementById('roundIndicator').textContent =
+    `Раунд ${roundIdx + 1} из ${rounds.length}`;
+
+  document.getElementById('roundQuestionsList').innerHTML = round.questions.map(q =>
+    `<button class="round-btn" onclick="askRoundQuestion('${q.id}')">${q.question}</button>`
+  ).join('');
+}
+
+function askRoundQuestion(qId) {
+  const task = getCase();
+  let found = null;
+  for (const round of task.rounds) {
+    found = round.questions.find(q => q.id === qId);
+    if (found) break;
+  }
+  if (!found) return;
+
+  const badge = document.querySelector('.question-answer-badge');
+  badge.classList.add('has-answer');
+  document.getElementById('questionAnswerText').textContent = found.answer;
+
+  currentRound++;
+  roundsAsked++;
+  renderRoundQuestions();
+}
+
+function checkQuestionRoundsTask(task) {
+  const isCorrect = task.planets.every(p => placements[p] === task.answer[p]);
+  const n = roundsAsked;
+  const scoreKey = String(Math.min(n, 4) || 1);
+  const scoreLevel = task.scoring.rounds_used[scoreKey] || 'slow';
+  const labelMap = { perfect: '— Блестяще!', good: '— Хорошо!', ok: '— Неплохо', slow: '— Долго думал' };
+
+  document.getElementById('resultsTitle').textContent =
+    isCorrect ? `Верно! ${labelMap[scoreLevel]}` : 'Не совсем';
+  document.getElementById('resultsSubtitle').textContent =
+    n ? `Вопросов задано: ${n}` : 'Без вопросов — смело!';
+
+  renderResultChart(task, placements);
+
+  const summaryEl = document.getElementById('resultSummary');
+  summaryEl.textContent = task.explanations.venus || '';
+  summaryEl.style.display = 'block';
+
+  document.getElementById('charResultGrid').style.display = 'none';
+  document.getElementById('resultsOverlay').classList.add('open');
+}
+
 function checkQuestionTask(task) {
   const isCorrect = task.planets.every(p => placements[p] === task.answer[p]);
   const n = questionsAsked.length;
@@ -1392,6 +1568,7 @@ function setGameVisible(visible) {
     document.getElementById('charPanelAbove').style.display = 'none';
     document.getElementById('questionHeadPanel').style.display = 'none';
     document.getElementById('btnQuestions').style.display = 'none';
+    document.getElementById('questionRoundsPanel').style.display = 'none';
   }
 }
 
