@@ -104,6 +104,10 @@
     aspect-ratio: 1;
     user-select: none;
   }
+  .chart-wrap.forecast {
+    max-width: 260px;
+    margin: 4px auto 0;
+  }
   .chart-wrap img {
     width: 100%; height: 100%;
     object-fit: contain; display: block;
@@ -478,31 +482,31 @@
     color: var(--text);
   }
   .forecast-question {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
-    padding: 10px 20px 4px;
+    padding: 6px 16px 2px;
     line-height: 1.4;
   }
   .forecast-options {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 0 20px 12px;
+    gap: 6px;
+    padding: 0 16px 8px;
   }
   .forecast-option {
     width: 100%;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 14px;
-    padding: 12px 14px;
+    border-radius: 12px;
+    padding: 9px 12px;
     text-align: left;
     color: var(--text);
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 12px;
+    line-height: 1.45;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: flex-start;
   }
   .forecast-option:active { background: rgba(255,255,255,0.08); }
@@ -511,12 +515,12 @@
     border-color: rgba(255,255,255,0.45);
   }
   .forecast-option-letter {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--muted);
     flex-shrink: 0;
     padding-top: 1px;
-    min-width: 14px;
+    min-width: 12px;
   }
   .forecast-option.selected .forecast-option-letter {
     color: var(--hi);
@@ -666,10 +670,6 @@
 
 <!-- ── FORECAST PANEL ── -->
 <div id="forecastPanel" style="display:none">
-  <div class="forecast-situation-wrap" id="forecastSituationWrap">
-    <img class="forecast-char-img" id="forecastCharImg" src="" alt="">
-    <div class="forecast-situation-text" id="forecastSituationText"></div>
-  </div>
   <p class="forecast-question" id="forecastQuestion"></p>
   <div class="forecast-options" id="forecastOptions"></div>
 </div>
@@ -939,10 +939,10 @@ const FORECAST_TASK_1 = {
   situation: 'На корпоративной вечеринке коллега пошутил над ней при всех — задел что-то личное. Она улыбнулась и промолчала. Вечер продолжился как ни в чём не бывало.',
   question: 'Как скорее всего будут развиваться события дальше?',
   options: [
-    { id: 'A', text: 'На следующий день напишет ему резкое сообщение — прямо и без обиняков объяснит что это было неприемлемо.' },
-    { id: 'B', text: 'К утру отпустит. Не в её характере держать обиды — жизнь слишком короткая.' },
-    { id: 'C', text: 'Внешне продолжит общаться нормально. Внутри — зафиксирует. В подходящий момент скажет ровно то что нужно: точно, без лишних слов, один на один. После этого разговора отношения станут другими — и оба это почувствуют.' },
-    { id: 'D', text: 'На следующий день поговорит с ним тет-а-тет — скажет что было неприятно, но мягко, без претензий, и сразу закроет тему.' },
+    { id: 'A', text: 'Напишет резкое сообщение — прямо объяснит, что это неприемлемо.' },
+    { id: 'B', text: 'К утру отпустит. Не в её характере держать обиды.' },
+    { id: 'C', text: 'Внешне — всё как прежде. Внутри зафиксирует и в нужный момент скажет точно, один на один.' },
+    { id: 'D', text: 'Поговорит тет-а-тет: скажет что было неприятно, мягко и без претензий.' },
   ],
   correctOption: 'C',
   explanation: 'Венера в Скорпионе не прощает и не забывает. Внешняя маска спокойствия — её стихия. Зафиксирует обиду и найдёт момент для точного, выверенного удара. Меркурий в Весах добавит элегантности: слова будут точными, разговор — тет-а-тет, без публичного скандала.',
@@ -1471,7 +1471,7 @@ let selectedForecastOption = null;
 function loadForecastTask(task) {
   selectedForecastOption = null;
 
-  document.querySelector('.desc-card').style.display = 'none';
+  // Скрыть ненужные элементы
   document.getElementById('btnClues').style.display = 'none';
   document.getElementById('btnQuestions').style.display = 'none';
   document.getElementById('charSelectSection').style.display = 'none';
@@ -1480,7 +1480,9 @@ function loadForecastTask(task) {
   document.getElementById('questionRoundsPanel').style.display = 'none';
   document.getElementById('planetTray').style.display = 'none';
   document.getElementById('suspectSection').style.display = 'none';
+  document.getElementById('chartHint').style.display = 'none';
 
+  // Desc-card вверху: аватар + название планет + ситуация
   const hints = Object.entries(task.prePlaced).map(([p, s]) => {
     const pLabel = PLANET_INFO[p]?.label || p;
     const sign = SIGNS.find(sg => sg.id === s);
@@ -1488,15 +1490,16 @@ function loadForecastTask(task) {
     const preposition = s === 'leo' ? 'во' : 'в';
     return `${pLabel} ${preposition} ${sLabel}`;
   });
-  const chartHint = document.getElementById('chartHint');
-  chartHint.textContent = hints.join(' · ');
-  chartHint.style.display = '';
+  document.getElementById('descCharImg').src = task.characterImg;
+  document.getElementById('caseTitle').textContent = hints.join(' · ');
+  document.getElementById('caseBody').textContent = task.situation;
+  document.querySelector('.desc-card').style.display = '';
 
-  document.getElementById('forecastPanel').style.display = '';
-  document.getElementById('forecastCharImg').src = task.characterImg;
-  document.getElementById('forecastSituationText').textContent = task.situation;
+  // Компактная карта
+  document.getElementById('chartWrap').classList.add('forecast');
+
+  // Варианты ответов
   document.getElementById('forecastQuestion').textContent = task.question;
-
   const letters = ['А', 'Б', 'В', 'Г'];
   document.getElementById('forecastOptions').innerHTML = task.options.map((opt, i) =>
     `<button class="forecast-option" id="fopt-${opt.id}" onclick="selectForecastOption('${opt.id}')">
@@ -1504,11 +1507,7 @@ function loadForecastTask(task) {
       <span>${opt.text}</span>
     </button>`
   ).join('');
-
-  document.getElementById('chartWrap').style.order  = '1';
-  document.getElementById('chartHint').style.order  = '2';
-  document.getElementById('forecastPanel').style.order = '3';
-  document.querySelector('.bottom-bar').style.order = '4';
+  document.getElementById('forecastPanel').style.display = '';
 
   document.getElementById('caseLabel').textContent    = task.title;
   document.getElementById('caseSubtitle').textContent = 'Прочитай карту и предскажи поведение';
@@ -1576,6 +1575,7 @@ function loadCase() {
   document.getElementById('questionRoundsPanel').style.display = 'none';
   document.getElementById('suspectSection').style.display = 'none';
   document.getElementById('forecastPanel').style.display = 'none';
+  document.getElementById('chartWrap').classList.remove('forecast');
   document.querySelector('.result-chart-wrap').style.display = '';
   ['questionHeadPanel', 'questionRoundsPanel', 'chartWrap', 'chartHint', 'planetTray', 'forecastPanel'].forEach(id => {
     document.getElementById(id).style.order = '';
