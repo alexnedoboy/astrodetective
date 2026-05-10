@@ -452,6 +452,76 @@
     color: rgba(255,255,255,0.92);
   }
 
+  /* ── FORECAST PANEL ── */
+  .forecast-situation-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 20px 0;
+  }
+  .forecast-char-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.15);
+  }
+  .forecast-situation-text {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text);
+  }
+  .forecast-question {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 10px 20px 4px;
+    line-height: 1.4;
+  }
+  .forecast-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 20px 12px;
+  }
+  .forecast-option {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 12px 14px;
+    text-align: left;
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .forecast-option:active { background: rgba(255,255,255,0.08); }
+  .forecast-option.selected {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.45);
+  }
+  .forecast-option-letter {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+    padding-top: 1px;
+    min-width: 14px;
+  }
+  .forecast-option.selected .forecast-option-letter {
+    color: var(--hi);
+  }
+
   /* ── QUESTION LIST (in modal) ── */
   .question-item {
     display: flex;
@@ -592,6 +662,16 @@
 <div id="questionRoundsPanel" style="display:none">
   <div class="round-indicator" id="roundIndicator"></div>
   <div id="roundQuestionsList"></div>
+</div>
+
+<!-- ── FORECAST PANEL ── -->
+<div id="forecastPanel" style="display:none">
+  <div class="forecast-situation-wrap" id="forecastSituationWrap">
+    <img class="forecast-char-img" id="forecastCharImg" src="" alt="">
+    <div class="forecast-situation-text" id="forecastSituationText"></div>
+  </div>
+  <p class="forecast-question" id="forecastQuestion"></p>
+  <div class="forecast-options" id="forecastOptions"></div>
 </div>
 
 <!-- ── CHARACTER SELECT SECTION (below chart) ── -->
@@ -850,22 +930,40 @@ const PLANET_IDENTIFY_TASK_1 = {
   explanation: 'Луна в Раке — планета в родном знаке. Рак усиливает лунную восприимчивость до предела: чужие эмоции воспринимаются как свои, граница между «я чувствую» и «они чувствуют» размыта.',
 };
 
-const LEARNING_CASES = [CHARACTER_TASK_2, PLANET_IDENTIFY_TASK_1, QUESTION_ROUNDS_TASK_1, ...CASES];
+const FORECAST_TASK_1 = {
+  type: 'forecast',
+  id: 'learn-fc01',
+  title: 'Прогноз',
+  characterImg: 'Character 4.png',
+  prePlaced: { venus: 'scorpio', mercury: 'libra' },
+  situation: 'На корпоративной вечеринке коллега пошутил над ней при всех — задел что-то личное. Она улыбнулась и промолчала. Вечер продолжился как ни в чём не бывало.',
+  question: 'Как скорее всего будут развиваться события дальше?',
+  options: [
+    { id: 'A', text: 'На следующий день напишет ему резкое сообщение — прямо и без обиняков объяснит что это было неприемлемо.' },
+    { id: 'B', text: 'К утру отпустит. Не в её характере держать обиды — жизнь слишком короткая.' },
+    { id: 'C', text: 'Внешне продолжит общаться нормально. Внутри — зафиксирует. В подходящий момент скажет ровно то что нужно: точно, без лишних слов, один на один. После этого разговора отношения станут другими — и оба это почувствуют.' },
+    { id: 'D', text: 'На следующий день поговорит с ним тет-а-тет — скажет что было неприятно, но мягко, без претензий, и сразу закроет тему.' },
+  ],
+  correctOption: 'C',
+  explanation: 'Венера в Скорпионе не прощает и не забывает. Внешняя маска спокойствия — её стихия. Зафиксирует обиду и найдёт момент для точного, выверенного удара. Меркурий в Весах добавит элегантности: слова будут точными, разговор — тет-а-тет, без публичного скандала.',
+};
+
+const LEARNING_CASES = [FORECAST_TASK_1, CHARACTER_TASK_2, PLANET_IDENTIFY_TASK_1, QUESTION_ROUNDS_TASK_1, ...CASES];
 
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
 const SIGNS = [
-  { id: 'scorpio',     label: 'Скорпион', symbol: '♏', startDeg: 180 }, // 9→10h  H1
-  { id: 'libra',       label: 'Весы',     symbol: '♎', startDeg: 210 }, // 10→11h H12
-  { id: 'virgo',       label: 'Дева',     symbol: '♍', startDeg: 240 }, // 11→12h H11
-  { id: 'leo',         label: 'Лев',      symbol: '♌', startDeg: 270 }, // 12→1h  H10
-  { id: 'cancer',      label: 'Рак',      symbol: '♋', startDeg: 300 }, // 1→2h   H9
-  { id: 'gemini',      label: 'Близнецы', symbol: '♊', startDeg: 330 }, // 2→3h   H8
-  { id: 'taurus',      label: 'Телец',    symbol: '♉', startDeg:   0 }, // 3→4h   H7
-  { id: 'aries',       label: 'Овен',     symbol: '♈', startDeg:  30 }, // 4→5h   H6
-  { id: 'pisces',      label: 'Рыбы',     symbol: '♓', startDeg:  60 }, // 5→6h   H5
-  { id: 'aquarius',    label: 'Водолей',  symbol: '♒', startDeg:  90 }, // 6→7h   H4
-  { id: 'capricorn',   label: 'Козерог',  symbol: '♑', startDeg: 120 }, // 7→8h   H3
-  { id: 'sagittarius', label: 'Стрелец',  symbol: '♐', startDeg: 150 }, // 8→9h   H2
+  { id: 'scorpio',     label: 'Скорпион', prep: 'Скорпионе', symbol: '♏', startDeg: 180 }, // 9→10h  H1
+  { id: 'libra',       label: 'Весы',     prep: 'Весах',     symbol: '♎', startDeg: 210 }, // 10→11h H12
+  { id: 'virgo',       label: 'Дева',     prep: 'Деве',      symbol: '♍', startDeg: 240 }, // 11→12h H11
+  { id: 'leo',         label: 'Лев',      prep: 'Льве',      symbol: '♌', startDeg: 270 }, // 12→1h  H10
+  { id: 'cancer',      label: 'Рак',      prep: 'Раке',      symbol: '♋', startDeg: 300 }, // 1→2h   H9
+  { id: 'gemini',      label: 'Близнецы', prep: 'Близнецах', symbol: '♊', startDeg: 330 }, // 2→3h   H8
+  { id: 'taurus',      label: 'Телец',    prep: 'Тельце',    symbol: '♉', startDeg:   0 }, // 3→4h   H7
+  { id: 'aries',       label: 'Овен',     prep: 'Овне',      symbol: '♈', startDeg:  30 }, // 4→5h   H6
+  { id: 'pisces',      label: 'Рыбы',     prep: 'Рыбах',     symbol: '♓', startDeg:  60 }, // 5→6h   H5
+  { id: 'aquarius',    label: 'Водолей',  prep: 'Водолее',   symbol: '♒', startDeg:  90 }, // 6→7h   H4
+  { id: 'capricorn',   label: 'Козерог',  prep: 'Козероге',  symbol: '♑', startDeg: 120 }, // 7→8h   H3
+  { id: 'sagittarius', label: 'Стрелец',  prep: 'Стрельце',  symbol: '♐', startDeg: 150 }, // 8→9h   H2
 ];
 
 const CX = 195, CY = 195;
@@ -1089,6 +1187,10 @@ function updateProgress() {
 // ── CHECK ──────────────────────────────────────────────────────────
 function checkAnswers() {
   const c = getCase();
+  if (c.type === 'forecast') {
+    checkForecastTask(c);
+    return;
+  }
   if (c.type === 'characterSelect') {
     checkCharacterTask(c);
     return;
@@ -1307,6 +1409,90 @@ function renderResultChart(c, userPlacements) {
   svgEl.appendChild(gM);
 }
 
+// ── FORECAST TASK ─────────────────────────────────────────────────
+let selectedForecastOption = null;
+
+function loadForecastTask(task) {
+  selectedForecastOption = null;
+
+  document.querySelector('.desc-card').style.display = 'none';
+  document.getElementById('btnClues').style.display = 'none';
+  document.getElementById('btnQuestions').style.display = 'none';
+  document.getElementById('charSelectSection').style.display = 'none';
+  document.getElementById('charPanelAbove').style.display = 'none';
+  document.getElementById('questionHeadPanel').style.display = 'none';
+  document.getElementById('questionRoundsPanel').style.display = 'none';
+  document.getElementById('planetTray').style.display = 'none';
+  document.getElementById('suspectSection').style.display = 'none';
+
+  const hints = Object.entries(task.prePlaced).map(([p, s]) => {
+    const pLabel = PLANET_INFO[p]?.label || p;
+    const sign = SIGNS.find(sg => sg.id === s);
+    const sLabel = sign?.prep || sign?.label || s;
+    const preposition = s === 'leo' ? 'во' : 'в';
+    return `${pLabel} ${preposition} ${sLabel}`;
+  });
+  const chartHint = document.getElementById('chartHint');
+  chartHint.textContent = hints.join(' · ');
+  chartHint.style.display = '';
+
+  document.getElementById('forecastPanel').style.display = '';
+  document.getElementById('forecastCharImg').src = task.characterImg;
+  document.getElementById('forecastSituationText').textContent = task.situation;
+  document.getElementById('forecastQuestion').textContent = task.question;
+
+  const letters = ['А', 'Б', 'В', 'Г'];
+  document.getElementById('forecastOptions').innerHTML = task.options.map((opt, i) =>
+    `<button class="forecast-option" id="fopt-${opt.id}" onclick="selectForecastOption('${opt.id}')">
+      <span class="forecast-option-letter">${letters[i]}.</span>
+      <span>${opt.text}</span>
+    </button>`
+  ).join('');
+
+  document.getElementById('chartWrap').style.order  = '1';
+  document.getElementById('chartHint').style.order  = '2';
+  document.getElementById('forecastPanel').style.order = '3';
+  document.querySelector('.bottom-bar').style.order = '4';
+
+  document.getElementById('caseLabel').textContent    = task.title;
+  document.getElementById('caseSubtitle').textContent = 'Прочитай карту и предскажи поведение';
+
+  const btn = document.getElementById('btnCheck');
+  btn.classList.add('ready');
+  btn.disabled = false;
+
+  renderMarkers();
+}
+
+function selectForecastOption(id) {
+  selectedForecastOption = id;
+  document.querySelectorAll('.forecast-option').forEach(btn => {
+    btn.classList.toggle('selected', btn.id === `fopt-${id}`);
+  });
+}
+
+function checkForecastTask(task) {
+  if (!selectedForecastOption) return;
+  const isCorrect = selectedForecastOption === task.correctOption;
+  const letters = ['А', 'Б', 'В', 'Г'];
+  const correctIdx = task.options.findIndex(o => o.id === task.correctOption);
+  const correctLetter = letters[correctIdx];
+
+  document.getElementById('resultsTitle').textContent = isCorrect ? 'Верно!' : 'Не совсем';
+  document.getElementById('resultsSubtitle').textContent = isCorrect
+    ? 'Ты точно прочитал карту'
+    : `Правильный ответ: ${correctLetter}`;
+
+  document.querySelector('.result-chart-wrap').style.display = 'none';
+
+  const summaryEl = document.getElementById('resultSummary');
+  summaryEl.textContent = task.explanation;
+  summaryEl.style.display = 'block';
+
+  document.getElementById('charResultGrid').style.display = 'none';
+  document.getElementById('resultsOverlay').classList.add('open');
+}
+
 // ── NEXT CASE ─────────────────────────────────────────────────────
 function nextCase() {
   const cases = taskMode === 'learn' ? LEARNING_CASES : CASES;
@@ -1326,11 +1512,14 @@ function loadCase() {
   questionsAsked = [];
   currentRound = 0;
   roundsAsked = 0;
+  selectedForecastOption = null;
   document.getElementById('questionHeadPanel').style.display = 'none';
   document.getElementById('btnQuestions').style.display = 'none';
   document.getElementById('questionRoundsPanel').style.display = 'none';
   document.getElementById('suspectSection').style.display = 'none';
-  ['questionHeadPanel', 'questionRoundsPanel', 'chartWrap', 'chartHint', 'planetTray'].forEach(id => {
+  document.getElementById('forecastPanel').style.display = 'none';
+  document.querySelector('.result-chart-wrap').style.display = '';
+  ['questionHeadPanel', 'questionRoundsPanel', 'chartWrap', 'chartHint', 'planetTray', 'forecastPanel'].forEach(id => {
     document.getElementById(id).style.order = '';
   });
   document.querySelector('.bottom-bar').style.order = '';
@@ -1343,6 +1532,8 @@ function loadCase() {
     loadQuestionRoundsTask(c);
   } else if (c.type === 'planet_identify') {
     loadPlanetIdentifyTask(c);
+  } else if (c.type === 'forecast') {
+    loadForecastTask(c);
   } else {
     document.getElementById('charSelectSection').style.display = 'none';
     document.getElementById('charPanelAbove').style.display = 'none';
