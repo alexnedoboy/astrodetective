@@ -1264,6 +1264,10 @@ function loadCase() {
   document.getElementById('questionHeadPanel').style.display = 'none';
   document.getElementById('btnQuestions').style.display = 'none';
   document.getElementById('questionRoundsPanel').style.display = 'none';
+  ['questionHeadPanel', 'questionRoundsPanel', 'chartWrap', 'chartHint', 'planetTray'].forEach(id => {
+    document.getElementById(id).style.order = '';
+  });
+  document.querySelector('.bottom-bar').style.order = '';
 
   if (c.type === 'characterSelect') {
     loadCharacterTask(c);
@@ -1469,6 +1473,14 @@ function loadQuestionRoundsTask(task) {
 
   document.getElementById('planetTray').style.display = '';
   document.getElementById('questionRoundsPanel').style.display = '';
+
+  // layout: avatar+badge → questions → chart → planet tray → check button
+  document.getElementById('questionHeadPanel').style.order  = '1';
+  document.getElementById('questionRoundsPanel').style.order = '2';
+  document.getElementById('chartWrap').style.order          = '3';
+  document.getElementById('chartHint').style.order          = '4';
+  document.getElementById('planetTray').style.order         = '5';
+  document.querySelector('.bottom-bar').style.order         = '6';
 
   document.getElementById('caseLabel').textContent = task.title;
   document.getElementById('caseSubtitle').textContent = task.description;
