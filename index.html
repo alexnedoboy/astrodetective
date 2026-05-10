@@ -421,7 +421,7 @@
   <div class="header-top">
     <button class="btn-home" onclick="goHome()" title="На главную">←</button>
     <span class="case-label" id="caseLabel">Кейс №2350</span>
-    <span class="case-title">Разгадайте натальную карту по описанию</span>
+    <span class="case-title" id="caseSubtitle">Разгадайте натальную карту по описанию</span>
     <span class="case-counter" id="counter">0/3</span>
   </div>
   <div class="progress-bar" id="progressBar"></div>
@@ -438,6 +438,14 @@
   </div>
 </div>
 
+<!-- ── CHAR PANEL ABOVE CHART (character task only) ──
+     To revert: remove this block and restore .char-panel inside #charSelectSection -->
+<div id="charPanelAbove" style="display:none">
+  <div class="char-panel">
+    <p id="charPanelText">Тапните на персонажа, чтобы узнать его историю</p>
+  </div>
+</div>
+
 <!-- ── CHART ── -->
 <div class="chart-wrap" id="chartWrap">
   <img src="Natal Chat Circle 2.png" alt="Натальная карта" id="chartImg">
@@ -448,11 +456,10 @@
 <!-- ── PLANET TRAY (dynamic) ── -->
 <div class="planet-tray" id="planetTray"></div>
 
-<!-- ── CHARACTER SELECT SECTION ── -->
+<!-- ── CHARACTER SELECT SECTION (grid only, below chart) ── -->
+<!-- To revert panel back below chart: move #charPanelAbove into here above #charGrid,
+     then update loadCharacterTask() to show charSelectSection instead of charPanelAbove -->
 <div id="charSelectSection" style="display:none">
-  <div class="char-panel">
-    <p id="charPanelText">Тапните на персонажа, чтобы узнать его историю</p>
-  </div>
   <div class="char-grid" id="charGrid"></div>
 </div>
 
@@ -1042,10 +1049,12 @@ function loadCase() {
     loadCharacterTask(c);
   } else {
     document.getElementById('charSelectSection').style.display = 'none';
+    document.getElementById('charPanelAbove').style.display = 'none';
     document.getElementById('planetTray').style.display = '';
     document.getElementById('btnClues').style.display = '';
     document.querySelector('.desc-card').style.display = '';
     document.getElementById('chartHint').textContent = 'Расположите планеты на карте';
+    document.getElementById('caseSubtitle').textContent = 'Разгадайте натальную карту по описанию';
 
     document.getElementById('caseLabel').textContent = `Кейс №${c.id}`;
     document.getElementById('caseTitle').textContent = c.title;
@@ -1062,7 +1071,8 @@ function loadCharacterTask(task) {
   document.querySelector('.desc-card').style.display = 'none';
   document.getElementById('planetTray').style.display = 'none';
   document.getElementById('btnClues').style.display = 'none';
-  document.getElementById('chartHint').textContent = 'Натальная карта';
+  document.getElementById('chartHint').textContent = 'Тапните на голову, чтобы услышать историю персонажа';
+  document.getElementById('caseSubtitle').textContent = 'Определите кому принадлежит натальная карта';
 
   document.getElementById('caseLabel').textContent = 'Задание';
   document.getElementById('counter').textContent = '';
@@ -1075,6 +1085,8 @@ function loadCharacterTask(task) {
   const panelText = document.getElementById('charPanelText');
   panelText.textContent = 'Тапните на персонажа, чтобы узнать его историю';
   panelText.classList.remove('has-story');
+
+  document.getElementById('charPanelAbove').style.display = '';
 
   const grid = document.getElementById('charGrid');
   grid.innerHTML = task.characters.map((char, i) =>
@@ -1140,6 +1152,7 @@ function setGameVisible(visible) {
     .forEach(el => { el.style.display = visible ? '' : 'none'; });
   if (!visible) {
     document.getElementById('charSelectSection').style.display = 'none';
+    document.getElementById('charPanelAbove').style.display = 'none';
   }
 }
 
