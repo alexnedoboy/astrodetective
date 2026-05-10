@@ -334,13 +334,15 @@
     display: flex;
     align-items: flex-start;
   }
-  #charPanelText {
+  #charPanelText,
+  #charPanelTextBelow {
     font-size: 13px;
     line-height: 1.6;
     color: var(--muted);
     transition: color 0.2s;
   }
-  #charPanelText.has-story {
+  #charPanelText.has-story,
+  #charPanelTextBelow.has-story {
     color: var(--text);
   }
   .char-grid {
@@ -456,10 +458,12 @@
 <!-- ── PLANET TRAY (dynamic) ── -->
 <div class="planet-tray" id="planetTray"></div>
 
-<!-- ── CHARACTER SELECT SECTION (grid only, below chart) ── -->
-<!-- To revert panel back below chart: move #charPanelAbove into here above #charGrid,
-     then update loadCharacterTask() to show charSelectSection instead of charPanelAbove -->
+<!-- ── CHARACTER SELECT SECTION (below chart) ── -->
 <div id="charSelectSection" style="display:none">
+  <!-- Panel below chart — shown when task.panelAbove = false -->
+  <div class="char-panel" id="charPanelBelow" style="display:none">
+    <p id="charPanelTextBelow">Тапните на персонажа, чтобы узнать его историю</p>
+  </div>
   <div class="char-grid" id="charGrid"></div>
 </div>
 
@@ -589,6 +593,7 @@ const CASES = [
 const CHARACTER_TASK = {
   type: 'characterSelect',
   id: 'learn-1',
+  panelAbove: true,
   prePlaced: { venus: 'libra', mars: 'capricorn', mercury: 'scorpio' },
   correctCharacter: 0,
   characters: [
@@ -611,7 +616,13 @@ const CHARACTER_TASK = {
   ]
 };
 
-const LEARNING_CASES = [CHARACTER_TASK, ...CASES];
+const CHARACTER_TASK_2 = {
+  ...CHARACTER_TASK,
+  id: 'learn-2',
+  panelAbove: false,
+};
+
+const LEARNING_CASES = [CHARACTER_TASK, CHARACTER_TASK_2, ...CASES];
 
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
 const SIGNS = [
@@ -1053,7 +1064,9 @@ function loadCase() {
     document.getElementById('planetTray').style.display = '';
     document.getElementById('btnClues').style.display = '';
     document.querySelector('.desc-card').style.display = '';
-    document.getElementById('chartHint').textContent = 'Расположите планеты на карте';
+    const chartHint = document.getElementById('chartHint');
+    chartHint.textContent = 'Расположите планеты на карте';
+    chartHint.style.display = '';
     document.getElementById('caseSubtitle').textContent = 'Разгадайте натальную карту по описанию';
 
     document.getElementById('caseLabel').textContent = `Кейс №${c.id}`;
@@ -1071,7 +1084,13 @@ function loadCharacterTask(task) {
   document.querySelector('.desc-card').style.display = 'none';
   document.getElementById('planetTray').style.display = 'none';
   document.getElementById('btnClues').style.display = 'none';
-  document.getElementById('chartHint').textContent = 'Тапните на голову, чтобы услышать историю персонажа';
+  const chartHint = document.getElementById('chartHint');
+  if (task.panelAbove) {
+    chartHint.textContent = 'Тапните на голову, чтобы услышать историю персонажа';
+    chartHint.style.display = '';
+  } else {
+    chartHint.style.display = 'none';
+  }
   document.getElementById('caseSubtitle').textContent = 'Определите кому принадлежит натальная карта';
 
   document.getElementById('caseLabel').textContent = 'Задание';
@@ -1082,11 +1101,20 @@ function loadCharacterTask(task) {
 
   renderMarkers();
 
-  const panelText = document.getElementById('charPanelText');
-  panelText.textContent = 'Тапните на персонажа, чтобы узнать его историю';
-  panelText.classList.remove('has-story');
+  const panelTextAbove = document.getElementById('charPanelText');
+  panelTextAbove.textContent = 'Тапните на персонажа, чтобы узнать его историю';
+  panelTextAbove.classList.remove('has-story');
+  const panelTextBelow = document.getElementById('charPanelTextBelow');
+  panelTextBelow.textContent = 'Тапните на персонажа, чтобы узнать его историю';
+  panelTextBelow.classList.remove('has-story');
 
-  document.getElementById('charPanelAbove').style.display = '';
+  if (task.panelAbove) {
+    document.getElementById('charPanelAbove').style.display = '';
+    document.getElementById('charPanelBelow').style.display = 'none';
+  } else {
+    document.getElementById('charPanelAbove').style.display = 'none';
+    document.getElementById('charPanelBelow').style.display = '';
+  }
 
   const grid = document.getElementById('charGrid');
   grid.innerHTML = task.characters.map((char, i) =>
@@ -1106,9 +1134,13 @@ function selectCharacter(idx) {
   selectedCharacter = idx;
   const task = getCase();
 
-  const panelText = document.getElementById('charPanelText');
-  panelText.textContent = task.characters[idx].text;
-  panelText.classList.add('has-story');
+  const storyText = task.characters[idx].text;
+  const panelTextAbove = document.getElementById('charPanelText');
+  panelTextAbove.textContent = storyText;
+  panelTextAbove.classList.add('has-story');
+  const panelTextBelow = document.getElementById('charPanelTextBelow');
+  panelTextBelow.textContent = storyText;
+  panelTextBelow.classList.add('has-story');
 
   document.querySelectorAll('.char-head').forEach((el, i) => {
     el.classList.toggle('selected', i === idx);
