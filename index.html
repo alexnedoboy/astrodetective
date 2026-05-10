@@ -527,7 +527,7 @@
 <!-- ── DESCRIPTION CARD ── -->
 <div class="desc-card">
   <div class="desc-icon">
-    <img src="character avatar.png" alt="">
+    <img src="Character 3.png" alt="">
   </div>
   <div class="desc-text">
     <h2 id="caseTitle"></h2>
@@ -543,16 +543,6 @@
   </div>
 </div>
 
-<!-- ── QUESTION HEAD PANEL (question_select task) ── -->
-<div id="questionHeadPanel" style="display:none">
-  <div class="question-head-wrap">
-    <img class="question-head-img" id="questionHeadImg" src="" alt="">
-    <div class="question-answer-badge">
-      <p id="questionAnswerText">Спроси меня и я всё отвечу</p>
-    </div>
-  </div>
-</div>
-
 <!-- ── CHART ── -->
 <div class="chart-wrap" id="chartWrap">
   <img src="Natal Chat Circle 2.png" alt="Натальная карта" id="chartImg">
@@ -562,6 +552,16 @@
 
 <!-- ── PLANET TRAY (dynamic) ── -->
 <div class="planet-tray" id="planetTray"></div>
+
+<!-- ── QUESTION HEAD PANEL (question_rounds / question_select task) ── -->
+<div id="questionHeadPanel" style="display:none">
+  <div class="question-head-wrap">
+    <img class="question-head-img" id="questionHeadImg" src="" alt="">
+    <div class="question-answer-badge">
+      <p id="questionAnswerText">Спроси меня и я всё отвечу</p>
+    </div>
+  </div>
+</div>
 
 <!-- ── QUESTION ROUNDS PANEL (question_rounds task) ── -->
 <div id="questionRoundsPanel" style="display:none">
@@ -814,7 +814,7 @@ const QUESTION_ROUNDS_TASK_1 = {
   scoring: { rounds_used: { "1": "perfect", "2": "good", "3": "ok", "4": "slow" } },
 };
 
-const LEARNING_CASES = [CHARACTER_TASK, CHARACTER_TASK_2, QUESTION_TASK_1, QUESTION_ROUNDS_TASK_1, ...CASES];
+const LEARNING_CASES = [CHARACTER_TASK_2, QUESTION_ROUNDS_TASK_1, ...CASES];
 
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
 const SIGNS = [
@@ -1282,7 +1282,7 @@ function loadCase() {
     chartHint.style.display = '';
     document.getElementById('caseSubtitle').textContent = 'Разгадайте натальную карту по описанию';
 
-    document.getElementById('caseLabel').textContent = `Кейс №${c.id}`;
+    document.getElementById('caseLabel').textContent = `Улика №${c.id}`;
     document.getElementById('caseTitle').textContent = c.title;
     document.getElementById('caseBody').textContent  = c.body;
 
@@ -1306,7 +1306,7 @@ function loadCharacterTask(task) {
   }
   document.getElementById('caseSubtitle').textContent = 'Определите кому принадлежит натальная карта';
 
-  document.getElementById('caseLabel').textContent = 'Задание';
+  document.getElementById('caseLabel').textContent = 'Опознание';
   document.getElementById('counter').textContent = '';
 
   const bar = document.getElementById('progressBar');
