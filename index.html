@@ -108,6 +108,10 @@
     max-width: 260px;
     margin: 4px auto 0;
   }
+  .chart-wrap.compact {
+    max-width: 270px;
+    margin: 6px auto 0;
+  }
   .chart-wrap img {
     width: 100%; height: 100%;
     object-fit: contain; display: block;
@@ -567,18 +571,23 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
   }
+  #roundQuestionsList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
   .round-btn {
     width: 100%;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.10);
     border-radius: 12px;
-    padding: 11px 14px;
+    padding: 10px 12px;
     text-align: left;
-    font-size: 14px;
+    font-size: 13px;
     color: rgba(255,255,255,0.85);
     cursor: pointer;
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 0;
     line-height: 1.35;
     font-family: inherit;
   }
@@ -936,7 +945,8 @@ const FORECAST_TASK_1 = {
   title: 'Прогноз',
   characterImg: 'Character 4.png',
   prePlaced: { venus: 'scorpio', mercury: 'libra' },
-  situation: 'На корпоративной вечеринке коллега пошутил над ней при всех — задел что-то личное. Она улыбнулась и промолчала. Вечер продолжился как ни в чём не бывало.',
+  situationTitle: 'На корпоративной вечеринке коллега пошутил над ней при всех — задел что-то личное.',
+  situation: 'Она улыбнулась и промолчала. Вечер продолжился как ни в чём не бывало.',
   question: 'Как скорее всего будут развиваться события дальше?',
   options: [
     { id: 'A', text: 'Напишет резкое сообщение — прямо объяснит, что это неприемлемо.' },
@@ -1491,7 +1501,7 @@ function loadForecastTask(task) {
     return `${pLabel} ${preposition} ${sLabel}`;
   });
   document.getElementById('descCharImg').src = task.characterImg;
-  document.getElementById('caseTitle').textContent = hints.join(' · ');
+  document.getElementById('caseTitle').textContent = task.situationTitle || '';
   document.getElementById('caseBody').textContent = task.situation;
   document.querySelector('.desc-card').style.display = '';
 
@@ -1576,6 +1586,7 @@ function loadCase() {
   document.getElementById('suspectSection').style.display = 'none';
   document.getElementById('forecastPanel').style.display = 'none';
   document.getElementById('chartWrap').classList.remove('forecast');
+  document.getElementById('chartWrap').classList.remove('compact');
   document.querySelector('.result-chart-wrap').style.display = '';
   ['questionHeadPanel', 'questionRoundsPanel', 'chartWrap', 'chartHint', 'planetTray', 'forecastPanel'].forEach(id => {
     document.getElementById(id).style.order = '';
@@ -2070,13 +2081,14 @@ function loadQuestionRoundsTask(task) {
   document.getElementById('planetTray').style.display = '';
   document.getElementById('questionRoundsPanel').style.display = '';
 
-  // layout: avatar+badge → questions → chart → planet tray → check button
+  // layout: avatar+badge → chart → planet → questions → check button
   document.getElementById('questionHeadPanel').style.order  = '1';
-  document.getElementById('questionRoundsPanel').style.order = '2';
-  document.getElementById('chartWrap').style.order          = '3';
-  document.getElementById('chartHint').style.order          = '4';
-  document.getElementById('planetTray').style.order         = '5';
+  document.getElementById('chartWrap').style.order          = '2';
+  document.getElementById('chartHint').style.order          = '3';
+  document.getElementById('planetTray').style.order         = '4';
+  document.getElementById('questionRoundsPanel').style.order = '5';
   document.querySelector('.bottom-bar').style.order         = '6';
+  document.getElementById('chartWrap').classList.add('compact');
 
   document.getElementById('caseLabel').textContent = task.title;
   document.getElementById('caseSubtitle').textContent = task.description;
