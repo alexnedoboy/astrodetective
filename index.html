@@ -401,6 +401,68 @@
     border-color: rgba(220,70,70,0.8);
     opacity: 0.5;
   }
+
+  /* ── QUESTION HEAD PANEL ── */
+  .question-head-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+  .question-head-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.15);
+  }
+  .question-answer-badge {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 10px 14px;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+  }
+  .question-answer-badge p {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.45;
+  }
+  .question-answer-badge.has-answer p {
+    color: rgba(255,255,255,0.92);
+  }
+
+  /* ── QUESTION LIST (in modal) ── */
+  .question-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+  }
+  .question-item:active { background: rgba(255,255,255,0.04); }
+  .question-item.asked { cursor: default; }
+  .question-q {
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+  }
+  .question-item.asked .question-q {
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+  }
+  .question-a {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.4;
+    border-left: 2px solid rgba(255,255,255,0.2);
+    padding-left: 8px;
+  }
 </style>
 </head>
 <body>
@@ -448,6 +510,16 @@
   </div>
 </div>
 
+<!-- ── QUESTION HEAD PANEL (question_select task) ── -->
+<div id="questionHeadPanel" style="display:none">
+  <div class="question-head-wrap">
+    <img class="question-head-img" id="questionHeadImg" src="" alt="">
+    <div class="question-answer-badge">
+      <p id="questionAnswerText">Спроси меня и я всё отвечу</p>
+    </div>
+  </div>
+</div>
+
 <!-- ── CHART ── -->
 <div class="chart-wrap" id="chartWrap">
   <img src="Natal Chat Circle 2.png" alt="Натальная карта" id="chartImg">
@@ -473,6 +545,9 @@
     <img src="Evidence.png" alt="">
     ОТКРЫТЬ УЛИКИ
   </button>
+  <button class="btn-clues" id="btnQuestions" onclick="openQuestions()" style="display:none">
+    💬 ЗАДАТЬ ВОПРОС
+  </button>
   <button class="btn-check" id="btnCheck" onclick="checkAnswers()">Проверить →</button>
 </div>
 
@@ -489,6 +564,17 @@
     <div id="charResultGrid" style="display:none"></div>
     <div class="result-summary" id="resultSummary"></div>
     <button class="btn-next" onclick="nextCase()">Следующий кейс →</button>
+  </div>
+</div>
+
+<!-- ── QUESTIONS OVERLAY ── -->
+<div class="overlay" id="questionsOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="clues-title">Задай вопрос</div>
+    <div class="clues-used" id="questionsUsed"></div>
+    <div id="questionList"></div>
+    <button class="btn-close-clues" onclick="closeQuestions()">Закрыть</button>
   </div>
 </div>
 
@@ -622,7 +708,33 @@ const CHARACTER_TASK_2 = {
   panelAbove: false,
 };
 
-const LEARNING_CASES = [CHARACTER_TASK, CHARACTER_TASK_2, ...CASES];
+const QUESTION_TASK_1 = {
+  type: 'question_select',
+  id: 'learn-qv01',
+  title: 'Допрос #1',
+  description: 'Определи Венеру Тома.',
+  characterImg: 'Character 2.png',
+  planets: ['venus'],
+  prePlaced: {},
+  questions: [
+    { id: 1, question: "Как Том выражает симпатию — открыто или сдержанно?",          answer: "Очень открыто. Комплименты, жесты, хочет произвести впечатление. Расстраивается если усилия не замечают.", relevant: true },
+    { id: 2, question: "Том легко меняет планы или держится расписания?",              answer: "По расписанию. Неожиданные изменения выбивают из колеи.",                                                    relevant: false },
+    { id: 3, question: "Что важнее в партнёре — ум или уверенность и внешность?",     answer: "Притягивают яркие, умеющие себя подать люди. Любит когда партнёр вызывает восхищение у других.",           relevant: true },
+    { id: 4, question: "Как Том общается — перескакивает по темам или уходит вглубь?", answer: "Уходит вглубь. Поверхностные разговоры быстро надоедают.",                                                   relevant: false },
+    { id: 5, question: "Том оптимист или реалист?",                                    answer: "Реалист, иногда до пессимизма. Всегда просчитывает риски.",                                                   relevant: false },
+    { id: 6, question: "Как реагирует на конфликт — напролом или избегает?",           answer: "Предпочитает прояснять сразу, не копит.",                                                                     relevant: false },
+    { id: 7, question: "Как реагирует если романтические усилия не замечают?",         answer: "Болезненно. Без признания интерес быстро угасает.",                                                           relevant: true },
+    { id: 8, question: "Том быстро доверяет или проверяет со временем?",               answer: "Доверие строится долго. С новыми людьми закрыт.",                                                             relevant: false },
+  ],
+  relevantQuestions: [1, 3, 7],
+  answer: { venus: 'leo' },
+  explanations: {
+    venus: "Венера во Льве — любовь через признание и восхищение. Открытое выражение чувств, притяжение к ярким людям, болезненная реакция на невнимание. Лев хочет быть замеченным — и в любви это проявляется особенно сильно.",
+  },
+  scoring: { perfect: 1, good: [2, 3] },
+};
+
+const LEARNING_CASES = [CHARACTER_TASK, CHARACTER_TASK_2, QUESTION_TASK_1, ...CASES];
 
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
 const SIGNS = [
@@ -652,6 +764,7 @@ let selectedPlanet = null;
 let selectedCharacter = null;
 let placements = {};           // { planetId: signId }
 let cluesRevealed = 0;
+let questionsAsked = [];       // array of asked question ids (question_select)
 
 function getCase() {
   return (taskMode === 'learn' ? LEARNING_CASES : CASES)[caseIdx];
@@ -836,6 +949,10 @@ function checkAnswers() {
   const c = getCase();
   if (c.type === 'characterSelect') {
     checkCharacterTask(c);
+    return;
+  }
+  if (c.type === 'question_select') {
+    checkQuestionTask(c);
     return;
   }
 
@@ -1055,9 +1172,14 @@ function loadCase() {
   selectedPlanet = null;
   selectedCharacter = null;
   cluesRevealed = 0;
+  questionsAsked = [];
+  document.getElementById('questionHeadPanel').style.display = 'none';
+  document.getElementById('btnQuestions').style.display = 'none';
 
   if (c.type === 'characterSelect') {
     loadCharacterTask(c);
+  } else if (c.type === 'question_select') {
+    loadQuestionTask(c);
   } else {
     document.getElementById('charSelectSection').style.display = 'none';
     document.getElementById('charPanelAbove').style.display = 'none';
@@ -1178,6 +1300,89 @@ function revealClue(idx) {
 function openClues()  { renderClues(); document.getElementById('cluesOverlay').classList.add('open'); }
 function closeClues() { document.getElementById('cluesOverlay').classList.remove('open'); }
 
+// ── QUESTION SELECT TASK ──────────────────────────────────────────
+function loadQuestionTask(task) {
+  document.querySelector('.desc-card').style.display = 'none';
+  document.getElementById('btnClues').style.display = 'none';
+  document.getElementById('charSelectSection').style.display = 'none';
+  document.getElementById('charPanelAbove').style.display = 'none';
+
+  document.getElementById('questionHeadPanel').style.display = '';
+  document.getElementById('questionHeadImg').src = task.characterImg;
+  const badge = document.querySelector('.question-answer-badge');
+  badge.classList.remove('has-answer');
+  document.getElementById('questionAnswerText').textContent = 'Спроси меня и я всё отвечу';
+
+  document.getElementById('btnQuestions').style.display = '';
+  document.getElementById('planetTray').style.display = '';
+
+  document.getElementById('caseLabel').textContent = task.title;
+  document.getElementById('caseSubtitle').textContent = task.description;
+  document.getElementById('chartHint').textContent = 'Расположите планету на карте';
+  document.getElementById('chartHint').style.display = '';
+
+  renderTray();
+  updateProgress();
+  renderMarkers();
+}
+
+function renderQuestions() {
+  const c = getCase();
+  document.getElementById('questionList').innerHTML = c.questions.map(q => {
+    const asked = questionsAsked.includes(q.id);
+    return `
+      <div class="question-item ${asked ? 'asked' : ''}"
+           onclick="${asked ? `showAnswer(${q.id})` : `askQuestion(${q.id})`}">
+        <div class="question-q">${q.question}</div>
+        ${asked ? `<div class="question-a">${q.answer}</div>` : ''}
+      </div>`;
+  }).join('');
+  document.getElementById('questionsUsed').textContent =
+    `Задано вопросов: ${questionsAsked.length}`;
+}
+
+function askQuestion(id) {
+  if (!questionsAsked.includes(id)) questionsAsked.push(id);
+  showAnswer(id);
+}
+
+function showAnswer(id) {
+  const c = getCase();
+  const q = c.questions.find(q => q.id === id);
+  if (!q) return;
+  const badge = document.querySelector('.question-answer-badge');
+  badge.classList.add('has-answer');
+  document.getElementById('questionAnswerText').textContent = q.answer;
+  closeQuestions();
+}
+
+function openQuestions()  { renderQuestions(); document.getElementById('questionsOverlay').classList.add('open'); }
+function closeQuestions() { document.getElementById('questionsOverlay').classList.remove('open'); }
+
+function checkQuestionTask(task) {
+  const isCorrect = task.planets.every(p => placements[p] === task.answer[p]);
+  const n = questionsAsked.length;
+
+  let scoreLabel;
+  if (n <= task.scoring.perfect)            scoreLabel = '— Блестяще!';
+  else if (task.scoring.good.includes(n))   scoreLabel = '— Хороший результат';
+  else                                       scoreLabel = '— Есть куда расти';
+
+  document.getElementById('resultsTitle').textContent =
+    isCorrect ? `Верно! ${scoreLabel}` : 'Не совсем';
+  document.getElementById('resultsSubtitle').textContent =
+    `Вопросов задано: ${n}`;
+
+  renderResultChart(task, placements);
+
+  const summaryEl = document.getElementById('resultSummary');
+  summaryEl.textContent = task.explanations.venus || '';
+  summaryEl.style.display = 'block';
+
+  document.getElementById('charResultGrid').style.display = 'none';
+  document.getElementById('resultsOverlay').classList.add('open');
+}
+
 // ── TITLE SCREEN ──────────────────────────────────────────────────
 function setGameVisible(visible) {
   document.querySelectorAll('.header, .desc-card, .chart-wrap, .chart-hint, .planet-tray, .bottom-bar')
@@ -1185,6 +1390,8 @@ function setGameVisible(visible) {
   if (!visible) {
     document.getElementById('charSelectSection').style.display = 'none';
     document.getElementById('charPanelAbove').style.display = 'none';
+    document.getElementById('questionHeadPanel').style.display = 'none';
+    document.getElementById('btnQuestions').style.display = 'none';
   }
 }
 
