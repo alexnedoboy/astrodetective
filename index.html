@@ -104,16 +104,9 @@
     aspect-ratio: 1;
     user-select: none;
   }
-  .chart-wrap.char-select {
-    max-width: 300px;
-  }
   .chart-wrap.forecast {
     max-width: 260px;
     margin: 4px auto 0;
-  }
-  .chart-wrap.compact {
-    max-width: 270px;
-    margin: 6px auto 0;
   }
   .chart-wrap img {
     width: 100%; height: 100%;
@@ -190,7 +183,7 @@
   .btn-clues:hover { border-color: rgba(255,255,255,0.4); background: var(--hi-dim); }
 
   .btn-check {
-    flex: 1; padding: 14px; border-radius: 14px;
+    flex: 2; padding: 14px; border-radius: 14px;
     background: var(--surface); color: var(--muted);
     font-size: 15px; font-weight: 600; letter-spacing: 0.04em;
     cursor: not-allowed; border: 1.5px solid var(--border);
@@ -295,7 +288,7 @@
   }
   .suspect-circle-wrap { display: flex; justify-content: center; padding: 4px 0 8px; }
   .suspect-circle {
-    width: 72px; height: 72px; border-radius: 50%;
+    width: 68px; height: 68px; border-radius: 50%;
     border: 1.5px solid var(--border); background: var(--surface);
     display: flex; align-items: center; justify-content: center;
     font-size: 28px; transition: border-color 0.2s;
@@ -433,15 +426,16 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    padding: 12px 16px;
+    padding: 0 20px 4px;
+    width: 100%;
   }
   .question-head-img {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
     object-fit: cover;
+    object-position: center top;
     flex-shrink: 0;
-    border: 2px solid rgba(255,255,255,0.15);
   }
   .question-answer-badge {
     flex: 1;
@@ -702,7 +696,7 @@
     ОТКРЫТЬ УЛИКИ
   </button>
   <button class="btn-clues" id="btnQuestions" onclick="openQuestions()" style="display:none">
-    💬 ЗАДАТЬ ВОПРОС
+    ЗАДАТЬ ВОПРОСЫ
   </button>
   <button class="btn-check" id="btnCheck" onclick="checkAnswers()">Проверить →</button>
 </div>
@@ -727,7 +721,7 @@
 <div class="overlay" id="questionsOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="clues-title">Задай вопрос</div>
+    <div class="clues-title">Вопросы</div>
     <div class="clues-used" id="questionsUsed"></div>
     <div id="questionList"></div>
     <button class="btn-close-clues" onclick="closeQuestions()">Закрыть</button>
@@ -936,7 +930,8 @@ const PLANET_IDENTIFY_TASK_1 = {
   id: 'learn-id01',
   description: 'Определи планету по описанию',
   characterImg: 'Character 4.png',
-  body: 'Чужая боль физически отзывается в теле. Незнакомый плачет в метро — она уже чувствует комок в горле.',
+  title: 'Чужая боль физически отзывается в теле.',
+  body: 'Незнакомый плачет в метро — она уже чувствует комок в горле.',
   prePlaced: { moon: 'cancer', mars: 'taurus', venus: 'libra' },
   answer: 'moon',
   explanation: 'Луна в Раке — планета в родном знаке. Рак усиливает лунную восприимчивость до предела: чужие эмоции воспринимаются как свои, граница между «я чувствую» и «они чувствуют» размыта.',
@@ -975,7 +970,7 @@ const FIND_ERROR_TASK_1 = {
   },
 };
 
-const LEARNING_CASES = [FORECAST_TASK_1, CHARACTER_TASK, PLANET_IDENTIFY_TASK_1, QUESTION_ROUNDS_TASK_1, FIND_ERROR_TASK_1, ...CASES];
+const LEARNING_CASES = [FORECAST_TASK_1, CHARACTER_TASK, PLANET_IDENTIFY_TASK_1, QUESTION_TASK_1, FIND_ERROR_TASK_1, ...CASES];
 
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
 const SIGNS = [
@@ -1508,8 +1503,7 @@ function loadForecastTask(task) {
   document.getElementById('caseBody').textContent = task.situation;
   document.querySelector('.desc-card').style.display = '';
 
-  // Компактная карта
-  document.getElementById('chartWrap').classList.add('forecast');
+  // Карта — полный размер (как везде)
 
   // Варианты ответов
   document.getElementById('forecastQuestion').textContent = task.question;
@@ -1589,8 +1583,7 @@ function loadCase() {
   document.getElementById('suspectSection').style.display = 'none';
   document.getElementById('forecastPanel').style.display = 'none';
   document.getElementById('chartWrap').classList.remove('forecast');
-  document.getElementById('chartWrap').classList.remove('compact');
-  document.getElementById('chartWrap').classList.remove('char-select');
+  document.getElementById('chartWrap').classList.remove('selection');
   document.querySelector('.result-chart-wrap').style.display = '';
   ['questionHeadPanel', 'questionRoundsPanel', 'chartWrap', 'chartHint', 'planetTray', 'forecastPanel'].forEach(id => {
     document.getElementById(id).style.order = '';
@@ -1616,6 +1609,7 @@ function loadCase() {
     document.getElementById('btnClues').style.display = '';
     document.querySelector('.desc-card').style.display = '';
     document.querySelector('.desc-icon').style.display = '';
+    document.getElementById('descCharImg').src = 'Character 3.png';
     const chartHint = document.getElementById('chartHint');
     chartHint.textContent = 'Расположите планеты на карте';
     chartHint.style.display = '';
@@ -1636,7 +1630,6 @@ function loadCharacterTask(task) {
   document.querySelector('.desc-card').style.display = 'none';
   document.getElementById('planetTray').style.display = 'none';
   document.getElementById('btnClues').style.display = 'none';
-  document.getElementById('chartWrap').classList.add('char-select');
   const chartHint = document.getElementById('chartHint');
   if (task.panelAbove) {
     chartHint.textContent = 'Тапните на голову, чтобы услышать историю персонажа';
@@ -1736,7 +1729,7 @@ function loadPlanetIdentifyTask(task) {
   document.querySelector('.desc-card').style.display = '';
   document.querySelector('.desc-icon').style.display = '';
   document.getElementById('descCharImg').src = task.characterImg;
-  document.getElementById('caseTitle').textContent = '';
+  document.getElementById('caseTitle').textContent = task.title || '';
   document.getElementById('caseBody').textContent = task.body;
 
   document.getElementById('planetTray').style.display = 'none';
@@ -1868,8 +1861,9 @@ function renderPlanetIdentifyResultChart(task) {
 function loadFindErrorTask(task) {
   document.querySelector('.desc-card').style.display = '';
   document.querySelector('.desc-icon').style.display = 'none';
-  document.getElementById('caseTitle').textContent = '';
-  document.getElementById('caseBody').textContent = task.description;
+  const dotIdx = task.description.indexOf('. ');
+  document.getElementById('caseTitle').textContent = dotIdx !== -1 ? task.description.slice(0, dotIdx + 1) : task.description;
+  document.getElementById('caseBody').textContent  = dotIdx !== -1 ? task.description.slice(dotIdx + 2) : '';
 
   document.getElementById('planetTray').style.display = 'none';
   document.getElementById('btnClues').style.display = 'none';
@@ -2009,10 +2003,10 @@ function renderFindErrorResultChart(task) {
 
 // ── QUESTION SELECT TASK ──────────────────────────────────────────
 function loadQuestionTask(task) {
-  document.querySelector('.desc-card').style.display = 'none';
   document.getElementById('btnClues').style.display = 'none';
   document.getElementById('charSelectSection').style.display = 'none';
   document.getElementById('charPanelAbove').style.display = 'none';
+  document.querySelector('.desc-card').style.display = 'none';
 
   document.getElementById('questionHeadPanel').style.display = '';
   document.getElementById('questionHeadImg').src = task.characterImg;
@@ -2022,6 +2016,12 @@ function loadQuestionTask(task) {
 
   document.getElementById('btnQuestions').style.display = '';
   document.getElementById('planetTray').style.display = '';
+
+  document.getElementById('questionHeadPanel').style.order = '1';
+  document.getElementById('chartWrap').style.order          = '2';
+  document.getElementById('chartHint').style.order          = '3';
+  document.getElementById('planetTray').style.order         = '4';
+  document.querySelector('.bottom-bar').style.order         = '5';
 
   document.getElementById('caseLabel').textContent = task.title;
   document.getElementById('caseSubtitle').textContent = task.description;
@@ -2040,8 +2040,7 @@ function renderQuestions() {
     return `
       <div class="question-item ${asked ? 'asked' : ''}"
            onclick="${asked ? `showAnswer(${q.id})` : `askQuestion(${q.id})`}">
-        <div class="question-q">${q.question}</div>
-        ${asked ? `<div class="question-a">${q.answer}</div>` : ''}
+        <div class="question-q">${asked ? '✓ ' : ''}${q.question}</div>
       </div>`;
   }).join('');
   document.getElementById('questionsUsed').textContent =
@@ -2077,11 +2076,7 @@ function loadQuestionRoundsTask(task) {
   document.getElementById('charSelectSection').style.display = 'none';
   document.getElementById('charPanelAbove').style.display = 'none';
 
-  document.getElementById('questionHeadPanel').style.display = '';
-  document.getElementById('questionHeadImg').src = task.characterImg;
-  const badge = document.querySelector('.question-answer-badge');
-  badge.classList.remove('has-answer');
-  document.getElementById('questionAnswerText').textContent = 'Спроси меня и я всё отвечу';
+  document.getElementById('questionHeadPanel').style.display = 'none';
 
   document.getElementById('planetTray').style.display = '';
   document.getElementById('questionRoundsPanel').style.display = '';
@@ -2093,8 +2088,6 @@ function loadQuestionRoundsTask(task) {
   document.getElementById('planetTray').style.order         = '4';
   document.getElementById('questionRoundsPanel').style.order = '5';
   document.querySelector('.bottom-bar').style.order         = '6';
-  document.getElementById('chartWrap').classList.add('compact');
-
   document.getElementById('caseLabel').textContent = task.title;
   document.getElementById('caseSubtitle').textContent = task.description;
   document.getElementById('chartHint').textContent = 'Расположите планету на карте';
