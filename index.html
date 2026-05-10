@@ -104,6 +104,9 @@
     aspect-ratio: 1;
     user-select: none;
   }
+  .chart-wrap.char-select {
+    max-width: 300px;
+  }
   .chart-wrap.forecast {
     max-width: 260px;
     margin: 4px auto 0;
@@ -972,7 +975,7 @@ const FIND_ERROR_TASK_1 = {
   },
 };
 
-const LEARNING_CASES = [FORECAST_TASK_1, CHARACTER_TASK_2, PLANET_IDENTIFY_TASK_1, QUESTION_ROUNDS_TASK_1, FIND_ERROR_TASK_1, ...CASES];
+const LEARNING_CASES = [FORECAST_TASK_1, CHARACTER_TASK, PLANET_IDENTIFY_TASK_1, QUESTION_ROUNDS_TASK_1, FIND_ERROR_TASK_1, ...CASES];
 
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
 const SIGNS = [
@@ -1587,6 +1590,7 @@ function loadCase() {
   document.getElementById('forecastPanel').style.display = 'none';
   document.getElementById('chartWrap').classList.remove('forecast');
   document.getElementById('chartWrap').classList.remove('compact');
+  document.getElementById('chartWrap').classList.remove('char-select');
   document.querySelector('.result-chart-wrap').style.display = '';
   ['questionHeadPanel', 'questionRoundsPanel', 'chartWrap', 'chartHint', 'planetTray', 'forecastPanel'].forEach(id => {
     document.getElementById(id).style.order = '';
@@ -1632,6 +1636,7 @@ function loadCharacterTask(task) {
   document.querySelector('.desc-card').style.display = 'none';
   document.getElementById('planetTray').style.display = 'none';
   document.getElementById('btnClues').style.display = 'none';
+  document.getElementById('chartWrap').classList.add('char-select');
   const chartHint = document.getElementById('chartHint');
   if (task.panelAbove) {
     chartHint.textContent = 'Тапните на голову, чтобы услышать историю персонажа';
