@@ -276,6 +276,21 @@
     font-size: 15px; font-weight: 600; cursor: pointer;
   }
 
+  /* ── SUSPECT ── */
+  .suspect-label {
+    text-align: center; font-size: 11px;
+    letter-spacing: 0.1em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .suspect-circle-wrap { display: flex; justify-content: center; padding: 4px 0 8px; }
+  .suspect-circle {
+    width: 72px; height: 72px; border-radius: 50%;
+    border: 1.5px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; transition: border-color 0.2s;
+  }
+  .suspect-circle.has-suspect { border-color: rgba(255,255,255,0.5); }
+
   /* ── TITLE SCREEN ── */
   #titleScreen {
     position: fixed; inset: 0; z-index: 200;
@@ -527,7 +542,7 @@
 <!-- ── DESCRIPTION CARD ── -->
 <div class="desc-card">
   <div class="desc-icon">
-    <img src="Character 3.png" alt="">
+    <img id="descCharImg" src="Character 3.png" alt="">
   </div>
   <div class="desc-text">
     <h2 id="caseTitle"></h2>
@@ -549,6 +564,16 @@
   <svg class="chart-svg" id="chartSvg" viewBox="0 0 390 390"></svg>
 </div>
 <p class="chart-hint" id="chartHint">Расположите планеты на карте</p>
+
+<!-- ── SUSPECT SECTION (planet_identify task) ── -->
+<div id="suspectSection" style="display:none">
+  <p class="suspect-label">Подозреваемый</p>
+  <div class="suspect-circle-wrap">
+    <div class="suspect-circle" id="suspectCircle">
+      <span id="suspectSymbol"></span>
+    </div>
+  </div>
+</div>
 
 <!-- ── PLANET TRAY (dynamic) ── -->
 <div class="planet-tray" id="planetTray"></div>
@@ -814,7 +839,18 @@ const QUESTION_ROUNDS_TASK_1 = {
   scoring: { rounds_used: { "1": "perfect", "2": "good", "3": "ok", "4": "slow" } },
 };
 
-const LEARNING_CASES = [CHARACTER_TASK_2, QUESTION_ROUNDS_TASK_1, ...CASES];
+const PLANET_IDENTIFY_TASK_1 = {
+  type: 'planet_identify',
+  id: 'learn-id01',
+  description: 'Определи планету по описанию',
+  characterImg: 'Character 4.png',
+  body: 'Чужая боль физически отзывается в теле. Незнакомый плачет в метро — она уже чувствует комок в горле.',
+  prePlaced: { moon: 'cancer', mars: 'taurus', venus: 'libra' },
+  answer: 'moon',
+  explanation: 'Луна в Раке — планета в родном знаке. Рак усиливает лунную восприимчивость до предела: чужие эмоции воспринимаются как свои, граница между «я чувствую» и «они чувствуют» размыта.',
+};
+
+const LEARNING_CASES = [CHARACTER_TASK_2, PLANET_IDENTIFY_TASK_1, QUESTION_ROUNDS_TASK_1, ...CASES];
 
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
 const SIGNS = [
@@ -842,6 +878,7 @@ let caseIdx = 0;
 let taskMode = 'reveal';       // 'learn' | 'reveal'
 let selectedPlanet = null;
 let selectedCharacter = null;
+let selectedSuspect = null;
 let placements = {};           // { planetId: signId }
 let cluesRevealed = 0;
 let questionsAsked = [];       // array of asked question ids (question_select)
@@ -929,16 +966,39 @@ function renderMarkers() {
 
       const grp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       grp.setAttribute('class', 'marker-group');
-      if (!item.isPrePlaced && c.type !== 'characterSelect') {
+      if (c.type === 'planet_identify') {
+        grp.addEventListener('click', e => { e.stopPropagation(); selectSuspect(item.planet); });
+      } else if (!item.isPrePlaced && c.type !== 'characterSelect') {
         grp.addEventListener('click', e => { e.stopPropagation(); selectPlanet(item.planet); });
       }
+
+      if (c.type === 'planet_identify') {
+        const hit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        hit.setAttribute('cx', pos.x); hit.setAttribute('cy', pos.y); hit.setAttribute('r', 22);
+        hit.setAttribute('fill', 'transparent');
+        hit.setAttribute('pointer-events', 'all');
+        grp.appendChild(hit);
+
+        if (selectedSuspect === item.planet) {
+          const hl = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          hl.setAttribute('cx', pos.x); hl.setAttribute('cy', pos.y); hl.setAttribute('r', 16);
+          hl.setAttribute('fill', 'rgba(255,255,255,0.12)');
+          hl.setAttribute('stroke', 'rgba(255,255,255,0.5)'); hl.setAttribute('stroke-width', '1.5');
+          hl.setAttribute('pointer-events', 'none');
+          grp.appendChild(hl);
+        }
+      }
+
+      const fillColor = c.type === 'planet_identify'
+        ? (selectedSuspect === item.planet ? '#ffffff' : 'rgba(255,255,255,0.5)')
+        : (item.isPrePlaced ? 'rgba(255,255,255,0.35)' : info.color);
 
       const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       txt.setAttribute('x', pos.x);
       txt.setAttribute('y', pos.y + 7);
       txt.setAttribute('text-anchor', 'middle');
       txt.setAttribute('font-size', '20');
-      txt.setAttribute('fill', item.isPrePlaced ? 'rgba(255,255,255,0.35)' : info.color);
+      txt.setAttribute('fill', fillColor);
       txt.setAttribute('pointer-events', 'none');
       txt.textContent = info.symbol;
       grp.appendChild(txt);
@@ -1031,6 +1091,10 @@ function checkAnswers() {
   const c = getCase();
   if (c.type === 'characterSelect') {
     checkCharacterTask(c);
+    return;
+  }
+  if (c.type === 'planet_identify') {
+    checkPlanetIdentifyTask(c);
     return;
   }
   if (c.type === 'question_select') {
@@ -1257,6 +1321,7 @@ function loadCase() {
   placements = {};
   selectedPlanet = null;
   selectedCharacter = null;
+  selectedSuspect = null;
   cluesRevealed = 0;
   questionsAsked = [];
   currentRound = 0;
@@ -1264,6 +1329,7 @@ function loadCase() {
   document.getElementById('questionHeadPanel').style.display = 'none';
   document.getElementById('btnQuestions').style.display = 'none';
   document.getElementById('questionRoundsPanel').style.display = 'none';
+  document.getElementById('suspectSection').style.display = 'none';
   ['questionHeadPanel', 'questionRoundsPanel', 'chartWrap', 'chartHint', 'planetTray'].forEach(id => {
     document.getElementById(id).style.order = '';
   });
@@ -1275,6 +1341,8 @@ function loadCase() {
     loadQuestionTask(c);
   } else if (c.type === 'question_rounds') {
     loadQuestionRoundsTask(c);
+  } else if (c.type === 'planet_identify') {
+    loadPlanetIdentifyTask(c);
   } else {
     document.getElementById('charSelectSection').style.display = 'none';
     document.getElementById('charPanelAbove').style.display = 'none';
@@ -1394,6 +1462,138 @@ function revealClue(idx) {
 
 function openClues()  { renderClues(); document.getElementById('cluesOverlay').classList.add('open'); }
 function closeClues() { document.getElementById('cluesOverlay').classList.remove('open'); }
+
+// ── PLANET IDENTIFY TASK ──────────────────────────────────────────
+function loadPlanetIdentifyTask(task) {
+  document.querySelector('.desc-card').style.display = '';
+  document.getElementById('descCharImg').src = task.characterImg;
+  document.getElementById('caseTitle').textContent = '';
+  document.getElementById('caseBody').textContent = task.body;
+
+  document.getElementById('planetTray').style.display = 'none';
+  document.getElementById('btnClues').style.display = 'none';
+  document.getElementById('charSelectSection').style.display = 'none';
+  document.getElementById('charPanelAbove').style.display = 'none';
+  document.getElementById('questionHeadPanel').style.display = 'none';
+  document.getElementById('btnQuestions').style.display = 'none';
+  document.getElementById('questionRoundsPanel').style.display = 'none';
+
+  document.getElementById('caseLabel').textContent = 'Задание';
+  document.getElementById('caseSubtitle').textContent = task.description;
+  document.getElementById('counter').textContent = '';
+
+  const bar = document.getElementById('progressBar');
+  bar.innerHTML = '<div class="seg"></div>';
+
+  const chartHint = document.getElementById('chartHint');
+  chartHint.textContent = 'Тапните на планету';
+  chartHint.style.display = '';
+
+  const suspectCircle = document.getElementById('suspectCircle');
+  suspectCircle.classList.remove('has-suspect');
+  document.getElementById('suspectSymbol').textContent = '';
+  document.getElementById('suspectSection').style.display = '';
+
+  const btn = document.getElementById('btnCheck');
+  btn.classList.remove('ready');
+  btn.disabled = true;
+
+  renderMarkers();
+}
+
+function selectSuspect(planet) {
+  selectedSuspect = planet;
+  const info = PLANET_INFO[planet];
+  const suspectCircle = document.getElementById('suspectCircle');
+  suspectCircle.classList.add('has-suspect');
+  document.getElementById('suspectSymbol').textContent = info.symbol;
+  const btn = document.getElementById('btnCheck');
+  btn.classList.add('ready');
+  btn.disabled = false;
+  renderMarkers();
+}
+
+function checkPlanetIdentifyTask(task) {
+  if (!selectedSuspect) return;
+  const isCorrect = selectedSuspect === task.answer;
+
+  document.getElementById('resultsTitle').textContent = isCorrect ? 'Верно!' : 'Не совсем';
+  document.getElementById('resultsSubtitle').textContent = isCorrect
+    ? 'Вы правильно определили планету.'
+    : `Правильный ответ — ${PLANET_INFO[task.answer].label} в ${SIGNS.find(s => s.id === task.prePlaced[task.answer])?.label}`;
+
+  renderPlanetIdentifyResultChart(task);
+
+  const summaryEl = document.getElementById('resultSummary');
+  summaryEl.textContent = task.explanation || '';
+  summaryEl.style.display = task.explanation ? 'block' : 'none';
+
+  document.getElementById('charResultGrid').style.display = 'none';
+  document.getElementById('resultsOverlay').classList.add('open');
+}
+
+function renderPlanetIdentifyResultChart(task) {
+  const svgEl = document.getElementById('resultSvg');
+  svgEl.innerHTML = '';
+
+  const bySign = {};
+  Object.entries(task.prePlaced).forEach(([planet, signId]) => {
+    if (!bySign[signId]) bySign[signId] = [];
+    bySign[signId].push(planet);
+  });
+
+  const gM = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  Object.entries(bySign).forEach(([signId, planets]) => {
+    const sign = SIGNS.find(s => s.id === signId);
+    if (!sign) return;
+    const n = planets.length;
+    planets.forEach((planet, i) => {
+      const mid    = sign.startDeg + 15;
+      const spread = n === 1 ? 0 : n === 2 ? 9 : 10;
+      const offset = n === 1 ? 0 : (i - (n - 1) / 2) * spread;
+      const pos    = polarToXY(CX, CY, R_MARKER, mid + offset);
+      const info   = PLANET_INFO[planet];
+      const isAnswer   = planet === task.answer;
+      const isUserWrong = planet === selectedSuspect && !isAnswer;
+
+      const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circ.setAttribute('cx', pos.x); circ.setAttribute('cy', pos.y); circ.setAttribute('r', 15);
+      if (isAnswer) {
+        circ.setAttribute('fill', 'rgba(255,255,255,0.15)');
+        circ.setAttribute('stroke', 'rgba(255,255,255,0.75)');
+      } else if (isUserWrong) {
+        circ.setAttribute('fill', 'rgba(180,40,40,0.25)');
+        circ.setAttribute('stroke', 'rgba(220,70,70,0.8)');
+      } else {
+        circ.setAttribute('fill', 'rgba(255,255,255,0.04)');
+        circ.setAttribute('stroke', 'rgba(255,255,255,0.15)');
+      }
+      circ.setAttribute('stroke-width', '1.5');
+      gM.appendChild(circ);
+
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', pos.x); t.setAttribute('y', pos.y + 7);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-size', '19');
+      t.setAttribute('fill', isAnswer ? '#ffffff' : isUserWrong ? 'rgba(220,80,80,0.6)' : 'rgba(255,255,255,0.2)');
+      t.textContent = info.symbol;
+      gM.appendChild(t);
+
+      if (isUserWrong) {
+        const d = 9;
+        [[pos.x-d,pos.y-d,pos.x+d,pos.y+d],[pos.x+d,pos.y-d,pos.x-d,pos.y+d]].forEach(([x1,y1,x2,y2]) => {
+          const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+          l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+          l.setAttribute('stroke','rgba(220,60,60,0.95)');
+          l.setAttribute('stroke-width','2'); l.setAttribute('stroke-linecap','round');
+          gM.appendChild(l);
+        });
+      }
+    });
+  });
+  svgEl.appendChild(gM);
+}
 
 // ── QUESTION SELECT TASK ──────────────────────────────────────────
 function loadQuestionTask(task) {
@@ -1581,6 +1781,7 @@ function setGameVisible(visible) {
     document.getElementById('questionHeadPanel').style.display = 'none';
     document.getElementById('btnQuestions').style.display = 'none';
     document.getElementById('questionRoundsPanel').style.display = 'none';
+    document.getElementById('suspectSection').style.display = 'none';
   }
 }
 
