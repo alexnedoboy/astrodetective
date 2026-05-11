@@ -1814,9 +1814,6 @@ function loadForecastFillTask(task) {
   document.getElementById('caseBody').textContent = task.situation;
   document.querySelector('.desc-card').style.display = '';
 
-  // Компактная карта
-  document.getElementById('chartWrap').classList.add('forecast');
-
   // Fill-карточка
   renderFillCard(task);
   document.getElementById('forecastFillPanel').style.display = '';
