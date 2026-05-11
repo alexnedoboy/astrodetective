@@ -527,6 +527,96 @@
     color: var(--hi);
   }
 
+  /* ── FORECAST FILL PANEL ── */
+  #forecastFillPanel {
+    width: 100%;
+    max-width: 430px;
+    padding: 4px 16px 8px;
+  }
+  .forecast-fill-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .fill-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .fill-row:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+  }
+  .fill-row:active { background: rgba(255,255,255,0.03); }
+  .fill-prefix {
+    font-size: 14px;
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .fill-value {
+    flex: 1;
+    font-size: 14px;
+    color: rgba(255,255,255,0.28);
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    padding-bottom: 2px;
+    min-height: 22px;
+    line-height: 1.3;
+  }
+  .fill-value.filled {
+    color: var(--text);
+    border-bottom-color: rgba(255,255,255,0.4);
+  }
+  .fill-suffix {
+    font-size: 14px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .fill-chevron {
+    font-size: 16px;
+    color: rgba(255,255,255,0.3);
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  /* ── FILL DROPDOWN (bottom sheet) ── */
+  .fill-dropdown-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 99;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .fill-dropdown-sheet {
+    width: 100%;
+    max-width: 430px;
+    background: #1c1c1c;
+    border-radius: 20px 20px 0 0;
+    padding-bottom: 24px;
+  }
+  .fill-dropdown-handle {
+    width: 36px; height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    margin: 10px auto 4px;
+  }
+  .fill-dropdown-item {
+    padding: 14px 20px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text);
+    cursor: pointer;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    transition: background 0.1s;
+  }
+  .fill-dropdown-item:active { background: rgba(255,255,255,0.05); }
+  .fill-dropdown-item.is-selected { color: rgba(255,255,255,0.5); }
+
   /* ── QUESTION LIST (in modal) ── */
   .question-item {
     display: flex;
@@ -679,6 +769,19 @@
 <div id="forecastPanel" style="display:none">
   <p class="forecast-question" id="forecastQuestion"></p>
   <div class="forecast-options" id="forecastOptions"></div>
+</div>
+
+<!-- ── FORECAST FILL PANEL ── -->
+<div id="forecastFillPanel" style="display:none">
+  <div class="forecast-fill-card" id="forecastFillCard"></div>
+</div>
+
+<!-- ── FILL DROPDOWN OVERLAY ── -->
+<div class="fill-dropdown-overlay" id="fillDropdownOverlay" style="display:none" onclick="closeFillDropdown()">
+  <div class="fill-dropdown-sheet" onclick="event.stopPropagation()">
+    <div class="fill-dropdown-handle"></div>
+    <div id="fillDropdownItems"></div>
+  </div>
 </div>
 
 <!-- ── CHARACTER SELECT SECTION (below chart) ── -->
@@ -957,6 +1060,42 @@ const FORECAST_TASK_1 = {
   explanation: 'Венера в Скорпионе не прощает и не забывает. Внешняя маска спокойствия — её стихия. Зафиксирует обиду и найдёт момент для точного, выверенного удара. Меркурий в Весах добавит элегантности: слова будут точными, разговор — тет-а-тет, без публичного скандала.',
 };
 
+const FORECAST_FILL_TASK_1 = {
+  type: 'forecast_fill',
+  id: 'learn-ff01',
+  title: 'Прогноз',
+  characterImg: 'Character 4.png',
+  prePlaced: { venus: 'scorpio', mercury: 'libra' },
+  situationTitle: 'На корпоративной вечеринке коллега пошутил над ней при всех — задел что-то личное.',
+  situation: 'Она улыбнулась и промолчала. Вечер продолжился как ни в чём не бывало.',
+  rows: [
+    {
+      prefix: 'Скорее всего, она',
+      blankId: 0,
+      options: [
+        'даже не вспомнит ничего на следующий день',
+        'внешне не подаст виду, но внутри зафиксирует',
+        'устроит скандал',
+        'расплачется и будет долго переживать',
+      ],
+      correct: 1,
+    },
+    {
+      prefix: 'а позже',
+      blankId: 1,
+      suffix: '.',
+      options: [
+        'напишет резкое сообщение с претензией',
+        'в нужный момент вежливо и тактично скажет об обиде',
+        'извинится',
+        'будет общаться как ни в чём не бывало',
+      ],
+      correct: 1,
+    },
+  ],
+  explanation: 'Венера в Скорпионе не прощает и не забывает. Внешняя маска спокойствия — её стихия. Зафиксирует обиду и найдёт момент для точного, выверенного удара. Меркурий в Весах добавит элегантности: слова будут точными, разговор — тет-а-тет, без публичного скандала.',
+};
+
 const FIND_ERROR_TASK_1 = {
   id: 'qe_01',
   type: 'find_error',
@@ -971,7 +1110,7 @@ const FIND_ERROR_TASK_1 = {
   },
 };
 
-const LEARNING_CASES = [FORECAST_TASK_1, CHARACTER_TASK, PLANET_IDENTIFY_TASK_1, QUESTION_TASK_1, FIND_ERROR_TASK_1, ...CASES];
+const LEARNING_CASES = [FORECAST_FILL_TASK_1, FORECAST_TASK_1, CHARACTER_TASK, PLANET_IDENTIFY_TASK_1, QUESTION_TASK_1, FIND_ERROR_TASK_1, ...CASES];
 
 // ── SESSION: ВЕНЕРА В ЗНАКАХ ───────────────────────────────────────
 const SESSION_VENUS_CASES = [
@@ -1057,6 +1196,8 @@ const SESSION_VENUS_CASES = [
       { img: 'Character 4.png', text: 'Романтик. Создаёт атмосферу, ищет глубокое слияние, болезненно переживает потерю близости.' },
     ],
   },
+  // Упражнение 7 — Допрос #1 (Венера во Льве)
+  QUESTION_TASK_1,
 ];
 
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
@@ -1335,6 +1476,10 @@ function updateProgress() {
 // ── CHECK ──────────────────────────────────────────────────────────
 function checkAnswers() {
   const c = getCase();
+  if (c.type === 'forecast_fill') {
+    checkForecastFillTask(c);
+    return;
+  }
   if (c.type === 'forecast') {
     checkForecastTask(c);
     return;
@@ -1643,6 +1788,110 @@ function checkForecastTask(task) {
   document.getElementById('resultsOverlay').classList.add('open');
 }
 
+// ── FORECAST FILL TASK ────────────────────────────────────────────
+let fillSelections = {};
+let activeFillTask = null;
+let activeFillBlankId = null;
+
+function loadForecastFillTask(task) {
+  fillSelections = {};
+  activeFillTask = task;
+
+  document.getElementById('btnClues').style.display = 'none';
+  document.getElementById('btnQuestions').style.display = 'none';
+  document.getElementById('charSelectSection').style.display = 'none';
+  document.getElementById('charPanelAbove').style.display = 'none';
+  document.getElementById('questionHeadPanel').style.display = 'none';
+  document.getElementById('questionRoundsPanel').style.display = 'none';
+  document.getElementById('forecastPanel').style.display = 'none';
+  document.getElementById('planetTray').style.display = 'none';
+  document.getElementById('suspectSection').style.display = 'none';
+  document.getElementById('chartHint').style.display = 'none';
+
+  // Desc-card: аватар + ситуация
+  document.getElementById('descCharImg').src = task.characterImg;
+  document.getElementById('caseTitle').textContent = task.situationTitle || '';
+  document.getElementById('caseBody').textContent = task.situation;
+  document.querySelector('.desc-card').style.display = '';
+
+  // Компактная карта
+  document.getElementById('chartWrap').classList.add('forecast');
+
+  // Fill-карточка
+  renderFillCard(task);
+  document.getElementById('forecastFillPanel').style.display = '';
+
+  document.getElementById('caseLabel').textContent = task.title;
+  document.getElementById('caseSubtitle').textContent = 'Прочитай карту и составь прогноз';
+
+  const btn = document.getElementById('btnCheck');
+  btn.classList.remove('ready');
+  btn.disabled = true;
+
+  renderMarkers();
+}
+
+function renderFillCard(task) {
+  const card = document.getElementById('forecastFillCard');
+  card.innerHTML = task.rows.map(row => {
+    const sel = fillSelections[row.blankId];
+    const filled = sel !== undefined;
+    const valueText = filled ? row.options[sel] : '';
+    const suffix = row.suffix ? `<span class="fill-suffix">${row.suffix}</span>` : '';
+    return `<div class="fill-row" onclick="openFillDropdown(${row.blankId})">
+      <span class="fill-prefix">${row.prefix}</span>
+      <span class="fill-value${filled ? ' filled' : ''}" id="fill-val-${row.blankId}">${valueText}</span>
+      ${suffix}
+      <span class="fill-chevron">▾</span>
+    </div>`;
+  }).join('');
+}
+
+function openFillDropdown(blankId) {
+  if (!activeFillTask) return;
+  activeFillBlankId = blankId;
+  const row = activeFillTask.rows.find(r => r.blankId === blankId);
+  if (!row) return;
+  document.getElementById('fillDropdownItems').innerHTML = row.options.map((opt, i) => {
+    const isSel = fillSelections[blankId] === i;
+    return `<div class="fill-dropdown-item${isSel ? ' is-selected' : ''}" onclick="selectFillOption(${blankId}, ${i})">${opt}</div>`;
+  }).join('');
+  document.getElementById('fillDropdownOverlay').style.display = 'flex';
+}
+
+function selectFillOption(blankId, idx) {
+  fillSelections[blankId] = idx;
+  closeFillDropdown();
+  renderFillCard(activeFillTask);
+  const filled = Object.keys(fillSelections).length >= activeFillTask.rows.length;
+  const btn = document.getElementById('btnCheck');
+  btn.classList.toggle('ready', filled);
+  btn.disabled = !filled;
+}
+
+function closeFillDropdown() {
+  document.getElementById('fillDropdownOverlay').style.display = 'none';
+  activeFillBlankId = null;
+}
+
+function checkForecastFillTask(task) {
+  const allCorrect = task.rows.every(r => fillSelections[r.blankId] === r.correct);
+  document.getElementById('resultsTitle').textContent = allCorrect ? 'Верно!' : 'Не совсем';
+  if (allCorrect) {
+    document.getElementById('resultsSubtitle').textContent = 'Ты точно прочитал карту';
+  } else {
+    const r0 = task.rows[0], r1 = task.rows[1];
+    document.getElementById('resultsSubtitle').textContent =
+      `Она ${r0.options[r0.correct]}, а позже ${r1.options[r1.correct]}.`;
+  }
+  document.querySelector('.result-chart-wrap').style.display = 'none';
+  const summaryEl = document.getElementById('resultSummary');
+  summaryEl.textContent = task.explanation;
+  summaryEl.style.display = 'block';
+  document.getElementById('charResultGrid').style.display = 'none';
+  document.getElementById('resultsOverlay').classList.add('open');
+}
+
 // ── NEXT CASE ─────────────────────────────────────────────────────
 function nextCase() {
   const cases = taskMode === 'session' ? SESSION_VENUS_CASES : taskMode === 'learn' ? LEARNING_CASES : CASES;
@@ -1665,11 +1914,15 @@ function loadCase() {
   currentRound = 0;
   roundsAsked = 0;
   selectedForecastOption = null;
+  fillSelections = {};
+  activeFillTask = null;
+  document.getElementById('fillDropdownOverlay').style.display = 'none';
   document.getElementById('questionHeadPanel').style.display = 'none';
   document.getElementById('btnQuestions').style.display = 'none';
   document.getElementById('questionRoundsPanel').style.display = 'none';
   document.getElementById('suspectSection').style.display = 'none';
   document.getElementById('forecastPanel').style.display = 'none';
+  document.getElementById('forecastFillPanel').style.display = 'none';
   document.getElementById('chartWrap').classList.remove('forecast');
   document.getElementById('chartWrap').classList.remove('selection');
   document.querySelector('.result-chart-wrap').style.display = '';
@@ -1688,6 +1941,8 @@ function loadCase() {
     loadPlanetIdentifyTask(c);
   } else if (c.type === 'forecast') {
     loadForecastTask(c);
+  } else if (c.type === 'forecast_fill') {
+    loadForecastFillTask(c);
   } else if (c.type === 'find_error') {
     loadFindErrorTask(c);
   } else {
