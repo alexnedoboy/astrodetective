@@ -604,6 +604,7 @@
     <div class="title-buttons">
       <button class="btn-title-primary" onclick="startRevealMode()">☽ Раскрыть карту</button>
       <button class="btn-title-secondary" onclick="startLearningMode()">✦ Обучение</button>
+      <button class="btn-title-secondary" onclick="startSessionMode()">♀ Сессия</button>
     </div>
   </div>
 </div>
@@ -972,6 +973,92 @@ const FIND_ERROR_TASK_1 = {
 
 const LEARNING_CASES = [FORECAST_TASK_1, CHARACTER_TASK, PLANET_IDENTIFY_TASK_1, QUESTION_TASK_1, FIND_ERROR_TASK_1, ...CASES];
 
+// ── SESSION: ВЕНЕРА В ЗНАКАХ ───────────────────────────────────────
+const SESSION_VENUS_CASES = [
+  // Упражнение 1 — Подозреваемый
+  {
+    type: 'planet_identify',
+    id: 'sv-01',
+    description: 'Определи планету по описанию',
+    characterImg: 'Character 1.png',
+    title: 'Она замечает когда в комнате что-то изменилось.',
+    body: 'Переставили вазу, повесили новую картину. Физический дискомфорт выбивает её из состояния покоя сильнее чем конфликт. Она может помириться без слов — просто приготовить ужин.',
+    prePlaced: { moon: 'cancer', mars: 'aries', venus: 'taurus' },
+    answer: 'venus',
+    explanation: 'Почему не Луна: Луна — это эмоциональные потребности и ощущение безопасности. Более глубокий внутренний уровень, не чувственное восприятие мира. Почему не Марс: Марс — желание и действие. Он двигает к цели, не настраивает на гармонию.',
+  },
+  // Упражнение 2 — Улика №1: Венера в Весах
+  {
+    id: 'sv-02',
+    label: 'Улика №1',
+    characterImg: 'Character 2.png',
+    title: '',
+    body: 'Он никогда не принимает решений в одиночку — даже выбор ресторана становится переговорами. Злится редко, но его молчание красноречивее любого упрёка. В споре он не ищет победителя — он ищет формулировку с которой оба смогут согласиться.',
+    planets: ['venus'],
+    prePlaced: { sun: 'virgo', moon: 'taurus' },
+    answer: { venus: 'libra' },
+    summary: 'Весы — знак партнёрства и баланса. Венера здесь ищет не удовольствия, а справедливости в отношениях.',
+  },
+  // Упражнение 3 — Улика №2: Венера в Скорпионе
+  {
+    id: 'sv-03',
+    label: 'Улика №2',
+    characterImg: 'Character 4.png',
+    title: '',
+    body: 'Её привязанности формируются медленно, но однажды возникнув — становятся тотальными. Поверхностный разговор утомляет её быстрее чем молчание. Она не прощает предательства, даже если никогда не скажет об этом вслух.',
+    planets: ['venus'],
+    prePlaced: { sun: 'sagittarius', moon: 'virgo' },
+    answer: { venus: 'scorpio' },
+    summary: 'Скорпион — глубина, не широта. Венера здесь не ищет гармонии как в Весах, она ищет слияния и проверяет на прочность.',
+  },
+  // Упражнение 4 — Прогноз: Венера в Близнецах
+  {
+    type: 'forecast',
+    id: 'sv-04',
+    title: 'Прогноз',
+    characterImg: 'Character 1.png',
+    prePlaced: { venus: 'gemini' },
+    situationTitle: 'Партнёр не пришёл на важное событие.',
+    situation: 'Партнёр обещал прийти на важное для неё событие — и не пришёл.',
+    question: 'Как она отреагирует?',
+    options: [
+      { id: 'A', text: 'Замкнётся и будет избегать разговора несколько дней' },
+      { id: 'B', text: 'Напишет длинное сообщение — разберёт ситуацию по пунктам, объяснит что задело и что ей нужно' },
+      { id: 'C', text: 'Поговорит сразу, выскажет всё честно — но быстро переключится на другую тему и не будет держать обиду' },
+      { id: 'D', text: 'Внешне воспримет спокойно, но запомнит надолго' },
+    ],
+    correctOption: 'C',
+    explanation: 'C — Близнецы: слова и скорость. Говорит сразу, не копит, быстро переключается. A — ближе к Скорпиону или Раку: уход в себя, накопление. B — ближе к Деве или Весам: анализ и структурированное объяснение. D — ближе к Скорпиону: внешнее спокойствие, внутренняя память.',
+  },
+  // Упражнение 5 — Улика №3: Венера в Деве
+  {
+    id: 'sv-05',
+    label: 'Улика №3',
+    characterImg: 'Character 3.png',
+    title: '',
+    body: 'Его способ заботиться — делать что-то конкретное и полезное. Он замечает детали которые другие пропускают — не из тревоги, а из внимания. Красота для него в точности, а не в декоративности.',
+    planets: ['venus'],
+    prePlaced: { sun: 'libra', moon: 'taurus' },
+    answer: { venus: 'virgo' },
+    summary: 'Почему не Телец: Телец ищет чувственного удовольствия и стабильности. Дева замечает несовершенства и хочет их исправить — не из наслаждения, а из стремления к точности. Почему не Козерог: Козерог выстраивает структуру из амбиции и долгосрочной цели. Дева служит из внимания к деталям и желания быть полезной здесь и сейчас.',
+  },
+  // Упражнение 6 — Опознание (босс-кейс): Венера в Водолее
+  {
+    type: 'characterSelect',
+    id: 'sv-06',
+    panelAbove: true,
+    prePlaced: { venus: 'aquarius', sun: 'pisces', moon: 'libra' },
+    correctCharacter: 2,
+    summary: 'C — Водолей: ментальное притяжение, идеи как язык любви, дистанция как норма а не защита. A — больше похоже на Марс в Водолее или сильный Уран: одиночество как ценность, не дистанция. B — Венера в Весах: партнёрство и баланс, а не интеллектуальная близость. D — Венера в Раке или сильный Нептун: слияние и глубина чувств.',
+    characters: [
+      { img: 'Character 1.png', text: 'Художник-одиночка. Избегает обязательств, ценит независимость, в партнёре ищет прежде всего пространство.' },
+      { img: 'Character 2.png', text: 'Дипломат. Строит широкие связи, умеет найти общий язык с любым, ценит баланс и взаимность.' },
+      { img: 'Character 3.png', text: 'Исследователь. Влюбляется в идеи и в людей которые их воплощают. В отношениях ценит интеллектуальную близость, держит эмоциональную дистанцию — не из холодности, а из устройства.' },
+      { img: 'Character 4.png', text: 'Романтик. Создаёт атмосферу, ищет глубокое слияние, болезненно переживает потерю близости.' },
+    ],
+  },
+];
+
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
 const SIGNS = [
   { id: 'scorpio',     label: 'Скорпион', prep: 'Скорпионе', symbol: '♏', startDeg: 180 }, // 9→10h  H1
@@ -1008,6 +1095,7 @@ let currentRound = 0;          // current round index (question_rounds)
 let roundsAsked = 0;           // how many rounds answered (question_rounds)
 
 function getCase() {
+  if (taskMode === 'session') return SESSION_VENUS_CASES[caseIdx];
   return (taskMode === 'learn' ? LEARNING_CASES : CASES)[caseIdx];
 }
 
@@ -1316,7 +1404,7 @@ function checkCharacterTask(task) {
   }).join('') + '</div>';
 
   const summaryEl = document.getElementById('resultSummary');
-  summaryEl.textContent = correctChar.text;
+  summaryEl.textContent = task.summary || correctChar.text;
   summaryEl.style.display = 'block';
 
   document.getElementById('resultsOverlay').classList.add('open');
@@ -1557,7 +1645,7 @@ function checkForecastTask(task) {
 
 // ── NEXT CASE ─────────────────────────────────────────────────────
 function nextCase() {
-  const cases = taskMode === 'learn' ? LEARNING_CASES : CASES;
+  const cases = taskMode === 'session' ? SESSION_VENUS_CASES : taskMode === 'learn' ? LEARNING_CASES : CASES;
   caseIdx = (caseIdx + 1) % cases.length;
   document.getElementById('resultsOverlay').classList.remove('open');
   loadCase();
@@ -1615,7 +1703,8 @@ function loadCase() {
     chartHint.style.display = '';
     document.getElementById('caseSubtitle').textContent = 'Разгадайте натальную карту по описанию';
 
-    document.getElementById('caseLabel').textContent = `Улика №${c.id}`;
+    document.getElementById('caseLabel').textContent = c.label || `Улика №${c.id}`;
+    document.getElementById('descCharImg').src = c.characterImg || 'Character 3.png';
     document.getElementById('caseTitle').textContent = c.title;
     document.getElementById('caseBody').textContent  = c.body;
 
@@ -2201,6 +2290,14 @@ function startRevealMode() {
 function startLearningMode() {
   document.getElementById('titleScreen').style.display = 'none';
   taskMode = 'learn';
+  caseIdx = 0;
+  setGameVisible(true);
+  loadCase();
+}
+
+function startSessionMode() {
+  document.getElementById('titleScreen').style.display = 'none';
+  taskMode = 'session';
   caseIdx = 0;
   setGameVisible(true);
   loadCase();
