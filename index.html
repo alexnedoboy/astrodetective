@@ -111,9 +111,39 @@
   }
   /* reveal mode: slightly smaller chart */
   .chart-wrap.chart-small { max-width: 320px; }
-  /* reveal mode: description card moved below planets, above bottom buttons */
-  .desc-card.below { order: 1; margin-top: 22px; margin-bottom: 2px; }
-  .bottom-bar.after-desc { order: 2; }
+  /* reveal mode: stacked layout below planets — divider, Досье, описание, Улики, кнопка */
+  .reveal-divider {
+    order: 1;
+    width: calc(100% - 40px); max-width: 390px;
+    height: 1px; background: var(--border);
+    margin: 18px 0 4px;
+  }
+  .section-label {
+    width: calc(100% - 40px); max-width: 390px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin: 10px 0 6px;
+  }
+  #dossierLabel { order: 2; }
+  .desc-card.below { order: 3; margin-top: 0; margin-bottom: 2px; }
+  #cluesLabel { order: 4; }
+  .clue-grid {
+    order: 5;
+    width: calc(100% - 40px); max-width: 390px;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 10px; margin-top: 2px;
+  }
+  .clue-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 8px;
+    text-align: center; font-size: 11px; line-height: 1.4;
+    color: var(--muted); cursor: pointer; min-height: 60px;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s, color 0.2s, opacity 0.2s;
+  }
+  .clue-card.revealed { color: var(--text); border-color: rgba(255,255,255,0.3); cursor: default; }
+  .clue-card.locked { opacity: 0.4; cursor: default; }
+  .bottom-bar.after-desc { order: 6; }
   .chart-wrap img {
     width: 100%; height: 100%;
     object-fit: contain; display: block;
@@ -726,6 +756,12 @@
     <p id="caseBody"></p>
   </div>
 </div>
+
+<!-- ── REVEAL MODE: divider + section labels + clue grid (reveal task only) ── -->
+<div class="reveal-divider" id="revealDivider" style="display:none"></div>
+<div class="section-label" id="dossierLabel" style="display:none">Досье</div>
+<div class="section-label" id="cluesLabel" style="display:none">Улики</div>
+<div class="clue-grid" id="clueGrid" style="display:none"></div>
 
 <!-- ── CHAR PANEL ABOVE CHART (character task only) ──
      To revert: remove this block and restore .char-panel inside #charSelectSection -->
@@ -1919,6 +1955,10 @@ function loadCase() {
   document.querySelector('.desc-card').classList.remove('below');
   document.querySelector('.bottom-bar').classList.remove('after-desc');
   document.getElementById('chartWrap').classList.remove('chart-small');
+  ['revealDivider', 'dossierLabel', 'cluesLabel', 'clueGrid'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('btnCheck').textContent = 'Проверить →';
 
   if (c.type === 'characterSelect') {
     loadCharacterTask(c);
@@ -1938,16 +1978,19 @@ function loadCase() {
     document.getElementById('charSelectSection').style.display = 'none';
     document.getElementById('charPanelAbove').style.display = 'none';
     document.getElementById('planetTray').style.display = '';
-    document.getElementById('btnClues').style.display = '';
+    document.getElementById('btnClues').style.display = 'none';
     document.querySelector('.desc-card').style.display = '';
     document.querySelector('.desc-icon').style.display = '';
     document.querySelector('.desc-card').classList.add('below');
     document.querySelector('.bottom-bar').classList.add('after-desc');
     document.getElementById('chartWrap').classList.add('chart-small');
+    document.getElementById('revealDivider').style.display = '';
+    document.getElementById('dossierLabel').style.display = '';
+    document.getElementById('cluesLabel').style.display = '';
+    document.getElementById('clueGrid').style.display = '';
+    document.getElementById('btnCheck').textContent = 'Проверить карту →';
     document.getElementById('descCharImg').src = 'Character 3.png';
-    const chartHint = document.getElementById('chartHint');
-    chartHint.textContent = 'Расположите планеты на карте';
-    chartHint.style.display = '';
+    document.getElementById('chartHint').style.display = 'none';
     document.getElementById('caseSubtitle').textContent = 'Разгадайте натальную карту по описанию';
 
     document.getElementById('caseLabel').textContent = c.label || `Улика №${c.id}`;
@@ -1958,7 +2001,7 @@ function loadCase() {
     renderTray();
     updateProgress();
     renderMarkers();
-    renderClues();
+    renderClueGrid();
   }
 }
 
@@ -2059,6 +2102,25 @@ function revealClue(idx) {
 
 function openClues()  { renderClues(); document.getElementById('cluesOverlay').classList.add('open'); }
 function closeClues() { document.getElementById('cluesOverlay').classList.remove('open'); }
+
+// ── INLINE CLUE GRID (reveal mode) ──────────────────────────────────
+function renderClueGrid() {
+  const c = getCase();
+  document.getElementById('clueGrid').innerHTML = (c.clues || []).map((clue, i) => {
+    const revealed = i < cluesRevealed;
+    const locked   = !revealed && i > cluesRevealed;
+    const cls = revealed ? 'revealed' : locked ? 'locked' : '';
+    const txt = revealed ? clue : locked ? '🔒' : '👆 Открыть';
+    const onclick = (!revealed && !locked) ? `revealClueInline(${i})` : '';
+    return `<div class="clue-card ${cls}" onclick="${onclick}">${txt}</div>`;
+  }).join('');
+}
+
+function revealClueInline(idx) {
+  if (idx !== cluesRevealed) return;
+  cluesRevealed++;
+  renderClueGrid();
+}
 
 // ── PLANET IDENTIFY TASK ──────────────────────────────────────────
 function loadPlanetIdentifyTask(task) {
