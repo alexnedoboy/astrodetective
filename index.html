@@ -397,6 +397,10 @@
   #charPanelTextBelow.has-story {
     color: var(--text);
   }
+  /* panelAbove:false — облачко под рядом лиц (faces → bubble → кнопка) */
+  #charSelectSection { display: flex; flex-direction: column; }
+  #charSelectSection .char-grid { order: 1; }
+  #charSelectSection #charPanelBelow { order: 2; margin: 16px 20px 0; }
   .char-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -1284,38 +1288,34 @@ const DETECTIVE_CASES = [
 
   // ── РАУНД 4 — Допрос: Марс ──
   {
-    type: 'question_rounds',
+    type: 'question_select',
     id: 'det-ts-4',
     title: 'Допрос',
-    description: 'Определи Марс подозреваемой. 3 вопроса — не больше. Не каждый стоит своего места.',
+    description: 'Определи Марс подозреваемой',
     characterImg: 'character avatar.png',
     planets: ['mars'],
     prePlaced: { sun: 'sagittarius', moon: 'cancer', mercury: 'capricorn', venus: 'aquarius', jupiter: 'cancer', saturn: 'capricorn' },
-    rounds: [
-      { round: 1, questions: [
-        { id: 'r1q1', question: "Как вы ведёте себя, когда вас предали?", answer: "Я ничего не показываю. Но не забываю — никогда. И однажды отвечаю так, чтобы запомнили.", relevant: true },
-        { id: 'r1q2', question: "Чем вы заняты на отдыхе?", answer: "Уезжаю туда, где меня не достанут.", relevant: false },
-        { id: 'r1q3', question: "Как вы добиваетесь желаемого?", answer: "Тихо и до конца. Не распыляюсь — выбираю одну цель и иду в неё вся.", relevant: true },
-      ]},
-      { round: 2, questions: [
-        { id: 'r2q1', question: "Любите ли вы внимание?", answer: "Смотря чьё.", relevant: false },
-        { id: 'r2q2', question: "Что вас злит?", answer: "По мелочи — почти ничего. Но перейди черту — я становлюсь очень тихой. Это плохой знак.", relevant: true },
-        { id: 'r2q3', question: "Как вы относитесь к контролю?", answer: "Держу всё в своих руках. Доверие надо заслужить — проверяю долго.", relevant: true },
-      ]},
+    questions: [
+      { id: 1, question: "Как вы ведёте себя, когда вас предали?",   answer: "Я ничего не показываю. Но не забываю — никогда. И однажды отвечаю так, чтобы запомнили.", relevant: true },
+      { id: 2, question: "Чем вы заняты на отдыхе?",                  answer: "Уезжаю туда, где меня не достанут.",                                                       relevant: false },
+      { id: 3, question: "Как вы добиваетесь желаемого?",             answer: "Тихо и до конца. Не распыляюсь — выбираю одну цель и иду в неё вся.",                        relevant: true },
+      { id: 4, question: "Любите ли вы внимание?",                    answer: "Смотря чьё.",                                                                               relevant: false },
+      { id: 5, question: "Что вас злит?",                             answer: "По мелочи — почти ничего. Но перейди черту — я становлюсь очень тихой. Это плохой знак.",     relevant: true },
+      { id: 6, question: "Как вы относитесь к контролю?",             answer: "Держу всё в своих руках. Доверие надо заслужить — проверяю долго.",                          relevant: true },
     ],
-    relevantQuestions: ['r1q1', 'r1q3', 'r2q3'],
+    relevantQuestions: [1, 3, 5],
     answer: { mars: 'scorpio' },
     explanations: {
       mars: "Марс в Скорпионе — тихая, тотальная воля. Не забывает обид, бьёт метко и расчётливо, всё или ничего. Не Овен (взрывается сразу, публично, забывает быстро) и не Козерог (амбиция холодная, без эмоциональной тотальности).",
     },
-    scoring: { perfect: 1, good: [2, 3] },
+    scoring: { perfect: 3, good: [4, 5] },
   },
 
   // ── ФИНАЛ — Опознание: кто это? ──
   {
     type: 'characterSelect',
     id: 'det-ts-5',
-    panelAbove: true,
+    panelAbove: false,
     prePlaced: { sun: 'sagittarius', moon: 'cancer', mercury: 'capricorn', venus: 'aquarius', jupiter: 'cancer', saturn: 'capricorn', mars: 'scorpio' },
     correctCharacter: 3,
     characters: [
@@ -2058,11 +2058,13 @@ function loadCase() {
   });
   document.querySelector('.bottom-bar').style.order = '';
   document.querySelector('.desc-card').classList.remove('below');
+  document.getElementById('questionHeadPanel').classList.remove('below');
   document.querySelector('.bottom-bar').classList.remove('after-desc');
   document.getElementById('chartWrap').classList.remove('chart-small');
   ['revealDivider', 'dossierLabel'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
+  document.getElementById('dossierLabel').textContent = 'Досье';
   document.getElementById('btnCheck').textContent = 'Проверить →';
 
   if (c.type === 'characterSelect') {
@@ -2498,11 +2500,15 @@ function loadQuestionTask(task) {
   document.getElementById('btnQuestions').style.display = '';
   document.getElementById('planetTray').style.display = '';
 
-  document.getElementById('questionHeadPanel').style.order = '1';
-  document.getElementById('chartWrap').style.order          = '2';
-  document.getElementById('chartHint').style.order          = '3';
-  document.getElementById('planetTray').style.order         = '4';
-  document.querySelector('.bottom-bar').style.order         = '5';
+  // layout: chart → planets → divider → label → голова+ответы → кнопка
+  // (тот же стек, что и в режиме улик)
+  document.getElementById('chartWrap').classList.add('chart-small');
+  document.getElementById('questionHeadPanel').classList.add('below');
+  document.querySelector('.bottom-bar').classList.add('after-desc');
+  document.getElementById('questionHeadPanel').style.order = '3';
+  document.getElementById('revealDivider').style.display = '';
+  document.getElementById('dossierLabel').style.display = '';
+  document.getElementById('dossierLabel').textContent = 'Допрос';
 
   document.getElementById('caseLabel').textContent = task.title;
   document.getElementById('caseSubtitle').textContent = task.description;
@@ -2651,7 +2657,7 @@ function checkQuestionTask(task) {
   renderResultChart(task, placements);
 
   const summaryEl = document.getElementById('resultSummary');
-  summaryEl.textContent = task.explanations.venus || '';
+  summaryEl.textContent = task.explanations[task.planets[0]] || task.explanations.venus || '';
   summaryEl.style.display = 'block';
 
   document.getElementById('charResultGrid').style.display = 'none';
