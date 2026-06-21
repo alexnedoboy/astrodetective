@@ -39,6 +39,8 @@
     align-items: center;
     overflow-x: hidden;
     overflow-y: auto;
+    /* keep content clear of the iPhone notch / status bar in standalone PWA */
+    padding-top: env(safe-area-inset-top, 0px);
   }
 
   /* ── HEADER ── */
@@ -121,7 +123,7 @@
     margin: 4px auto 0;
   }
   /* reveal mode: slightly smaller chart */
-  .chart-wrap.chart-small { max-width: 320px; }
+  .chart-wrap.chart-small { max-width: 360px; }
   /* reveal mode: stacked layout below planets — divider, Досье, описание, Улики, кнопка */
   .reveal-divider {
     order: 1;
@@ -198,7 +200,7 @@
   .bottom-bar {
     width: 100%; max-width: 430px;
     display: flex; gap: 12px;
-    padding: 10px 20px 28px;
+    padding: 10px 20px calc(28px + env(safe-area-inset-bottom, 0px));
   }
   .btn-clues {
     flex: 1; display: flex;
@@ -332,7 +334,8 @@
     align-items: center; justify-content: space-between;
     background: var(--bg);
     overflow: hidden;
-    padding-bottom: 52px;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px));
   }
   .title-img-wrap {
     flex: 1; display: flex;
