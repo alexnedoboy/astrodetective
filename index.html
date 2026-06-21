@@ -728,6 +728,7 @@
       <button class="btn-title-primary" onclick="startRevealMode()">☽ Раскрыть карту</button>
       <button class="btn-title-secondary" onclick="startLearningMode()">✦ Обучение</button>
       <button class="btn-title-secondary" onclick="startSessionMode()">♀ Сессия</button>
+      <button class="btn-title-secondary" onclick="startDetectiveMode()">🔍 Дело</button>
     </div>
   </div>
 </div>
@@ -1220,6 +1221,112 @@ const SESSION_VENUS_CASES = [
   QUESTION_TASK_1,
 ];
 
+// ── DETECTIVE: ДЕЛО О ЗНАМЕНИТОСТИ (Тейлор Свифт) ──────────────────
+const DETECTIVE_CASES = [
+  // ── РАУНД 1 — Ядро: Солнце + Луна ──
+  {
+    id: 'det-ts-1',
+    title: "Снаружи — вечная дорога. Внутри — комната, где хранится всё.",
+    body: 'На публике говорит правду в лицо, не выносит клеток, проживает жизнь как историю с широким горизонтом. Но за закрытой дверью хранит каждое письмо, каждую старую обиду, запах прошлых лет. Ранит её не удар, а холод.',
+    planets: ['sun', 'moon'],
+    answer: { sun: 'sagittarius', moon: 'cancer' },
+    clues: [
+      "Светило — стихия огня: горячая, подвижная, стен не выносит.",
+      "Сердце — стихия воды: чувство глубже логики, память долгая.",
+      "Из трёх огней — не «я первый» (Овен) и не сцена (Лев): этот про даль и смысл.",
+      "Из трёх вод — не страсть-власть (Скорпион) и не растворение (Рыбы): эта про дом и защиту своих.",
+      "Светило: стрела за горизонт — знак странника и вечной дороги.",
+      "Сердце: панцирь и гнездо — знак, что хранит прошлое как святыню."
+    ],
+    summary: 'Солнце в Стрельце — свободная рассказчица, живущая как в пути. Луна в Раке — приватное «я» хранит прошлое и вьёт гнездо. Контраст публичной путешественницы и домашней хранительницы — её главная двойственность.',
+    results: { sun: { label: 'Стрелец' }, moon: { label: 'Рак' } }
+  },
+
+  // ── РАУНД 2 — Ум и сердце: Меркурий + Венера ──
+  {
+    id: 'det-ts-2',
+    title: "Думает как стратег. Любит как бунтарка.",
+    body: 'Ничего не скажет, не просчитав на годы вперёд; обошли — строит план и ждёт, пока созреет. А любит странно для такой расчётливой: ей нужен простор, а не объятия-клетка; влюбляется в непохожесть и в идеи, держит дистанцию даже в близости.',
+    planets: ['mercury', 'venus'],
+    prePlaced: { sun: 'sagittarius', moon: 'cancer' },
+    answer: { mercury: 'capricorn', venus: 'aquarius' },
+    clues: [
+      "Ум — стихия земли: практичный, не витает.",
+      "Чувство любви — стихия воздуха: через ум и слово, не через тело.",
+      "Из трёх земель — не чувственность (Телец) и не детали-сервис (Дева): про вершину и расчёт.",
+      "Из трёх воздухов — не баланс-партнёрство (Весы) и не лёгкий флирт (Близнецы): про свободу и непохожесть.",
+      "Ум: горный козёл, считающий шаги на годы вперёд — знак стратега и долгой игры.",
+      "Любовь: отстранённый новатор — любит на дистанции, влюбляется в идею и инаковость."
+    ],
+    summary: 'Меркурий в Козероге — холодный стратег, играющий вдолгую. Венера в Водолее — любит свободно, ценит непохожесть, держит эмоциональную дистанцию. Расчётливый ум и свободолюбивое сердце — не противоречие, а портрет.',
+    results: { mercury: { label: 'Козерог' }, venus: { label: 'Водолей' } }
+  },
+
+  // ── РАУНД 3 — Рост и предел: Юпитер + Сатурн ──
+  {
+    id: 'det-ts-3',
+    title: "Растёт на преданности. Закаляется на амбиции.",
+    body: 'Её щедрость — это забота о своих, и удача приходит через тех, кого она греет: смотри, как держится за неё её паства. А давит и закаляет её амбиция: работает как одержимая, строит империю кирпич за кирпичом, и боится не провала — а потери контроля над построенным.',
+    planets: ['jupiter', 'saturn'],
+    prePlaced: { sun: 'sagittarius', moon: 'cancer', mercury: 'capricorn', venus: 'aquarius' },
+    answer: { jupiter: 'cancer', saturn: 'capricorn' },
+    clues: [
+      "Планета роста — стихия воды: растёт через чувство и связь.",
+      "Планета предела — стихия земли: закаляется трудом и дисциплиной.",
+      "Рост: не страсть (Скорпион), не растворение (Рыбы) — через заботу о своих и верность племени.",
+      "Предел: не чувственность (Телец), не сервис (Дева) — через амбицию и власть над построенным.",
+      "Рост — в том же знаке, что уже стоящее Сердце (Луна). Удача приходит через преданность.",
+      "Предел — в том же знаке, что уже стоящий Ум (Меркурий). Здесь эта планета у себя дома, сильнее всего."
+    ],
+    summary: 'Юпитер в Раке усиливает Луну: рост через эмоциональную верность и преданность паствы. Сатурн в Козероге усиливает Меркурий: дисциплина, амбиция, контроль — строитель империи. Удвоенная вода и удвоенная земля — настоящая подпись карты.',
+    results: { jupiter: { label: 'Рак' }, saturn: { label: 'Козерог' } }
+  },
+
+  // ── РАУНД 4 — Допрос: Марс ──
+  {
+    type: 'question_rounds',
+    id: 'det-ts-4',
+    title: 'Допрос',
+    description: 'Определи Марс подозреваемой. 3 вопроса — не больше. Не каждый стоит своего места.',
+    characterImg: 'character avatar.png',
+    planets: ['mars'],
+    prePlaced: { sun: 'sagittarius', moon: 'cancer', mercury: 'capricorn', venus: 'aquarius', jupiter: 'cancer', saturn: 'capricorn' },
+    rounds: [
+      { round: 1, questions: [
+        { id: 'r1q1', question: "Как вы ведёте себя, когда вас предали?", answer: "Я ничего не показываю. Но не забываю — никогда. И однажды отвечаю так, чтобы запомнили.", relevant: true },
+        { id: 'r1q2', question: "Чем вы заняты на отдыхе?", answer: "Уезжаю туда, где меня не достанут.", relevant: false },
+        { id: 'r1q3', question: "Как вы добиваетесь желаемого?", answer: "Тихо и до конца. Не распыляюсь — выбираю одну цель и иду в неё вся.", relevant: true },
+      ]},
+      { round: 2, questions: [
+        { id: 'r2q1', question: "Любите ли вы внимание?", answer: "Смотря чьё.", relevant: false },
+        { id: 'r2q2', question: "Что вас злит?", answer: "По мелочи — почти ничего. Но перейди черту — я становлюсь очень тихой. Это плохой знак.", relevant: true },
+        { id: 'r2q3', question: "Как вы относитесь к контролю?", answer: "Держу всё в своих руках. Доверие надо заслужить — проверяю долго.", relevant: true },
+      ]},
+    ],
+    relevantQuestions: ['r1q1', 'r1q3', 'r2q3'],
+    answer: { mars: 'scorpio' },
+    explanations: {
+      mars: "Марс в Скорпионе — тихая, тотальная воля. Не забывает обид, бьёт метко и расчётливо, всё или ничего. Не Овен (взрывается сразу, публично, забывает быстро) и не Козерог (амбиция холодная, без эмоциональной тотальности).",
+    },
+    scoring: { perfect: 1, good: [2, 3] },
+  },
+
+  // ── ФИНАЛ — Опознание: кто это? ──
+  {
+    type: 'characterSelect',
+    id: 'det-ts-5',
+    panelAbove: true,
+    prePlaced: { sun: 'sagittarius', moon: 'cancer', mercury: 'capricorn', venus: 'aquarius', jupiter: 'cancer', saturn: 'capricorn', mars: 'scorpio' },
+    correctCharacter: 3,
+    characters: [
+      { img: 'Character 1.png', text: 'Билли Айлиш. Тоже Солнце в Стрельце — но её регистр это уход в себя и тьма, а не сентиментальный архив и не холодная стратегия на годы. Солнце совпало, остальная карта — нет.' },
+      { img: 'Character 2.png', text: 'Лорд. Солнце в Скорпионе, затворница. Уже на первом раунде мимо: мы поставили Стрельца.' },
+      { img: 'Character 3.png', text: 'Оливия Родриго. Солнце в Рыбах, сырая эмоция момента, а не десятилетняя стратегия и не строитель империи.' },
+      { img: 'Character 4.png', text: 'Тейлор Свифт. Стрелец-рассказчица + удвоенный Козерог (стратег, империя) + удвоенный Рак (память, преданность) + Скорпион-Марс («не забываю»). Это её карта.' },
+    ]
+  }
+];
+
 // ── ZODIAC CONFIG ─────────────────────────────────────────────────
 const SIGNS = [
   { id: 'scorpio',     label: 'Скорпион', prep: 'Скорпионе', symbol: '♏', startDeg: 180 }, // 9→10h  H1
@@ -1257,6 +1364,7 @@ let roundsAsked = 0;           // how many rounds answered (question_rounds)
 
 function getCase() {
   if (taskMode === 'session') return SESSION_VENUS_CASES[caseIdx];
+  if (taskMode === 'detective') return DETECTIVE_CASES[caseIdx];
   return (taskMode === 'learn' ? LEARNING_CASES : CASES)[caseIdx];
 }
 
@@ -1911,7 +2019,9 @@ function checkForecastFillTask(task) {
 
 // ── NEXT CASE ─────────────────────────────────────────────────────
 function nextCase() {
-  const cases = taskMode === 'session' ? SESSION_VENUS_CASES : taskMode === 'learn' ? LEARNING_CASES : CASES;
+  const cases = taskMode === 'session' ? SESSION_VENUS_CASES
+              : taskMode === 'detective' ? DETECTIVE_CASES
+              : taskMode === 'learn' ? LEARNING_CASES : CASES;
   caseIdx = (caseIdx + 1) % cases.length;
   document.getElementById('resultsOverlay').classList.remove('open');
   loadCase();
@@ -2580,6 +2690,14 @@ function startLearningMode() {
 function startSessionMode() {
   document.getElementById('titleScreen').style.display = 'none';
   taskMode = 'session';
+  caseIdx = 0;
+  setGameVisible(true);
+  loadCase();
+}
+
+function startDetectiveMode() {
+  document.getElementById('titleScreen').style.display = 'none';
+  taskMode = 'detective';
   caseIdx = 0;
   setGameVisible(true);
   loadCase();
