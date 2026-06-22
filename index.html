@@ -1797,12 +1797,13 @@ function checkCharacterTask(task) {
       setTimeout(launchConfetti, 220);
       return;
     }
-    // неверно: сначала разбор с подсветкой, затем мостик к приглушённой карточке
+    // неверно: сначала разбор с подсветкой, затем мостик к карточке (дело всё равно раскрыто)
     const btn = document.getElementById('btnResultsNext');
     btn.textContent = 'К карточке дела →';
     btn.onclick = function () {
       document.getElementById('resultsOverlay').classList.remove('open');
       showVictoryCard(task, grade);
+      setTimeout(launchConfetti, 220);
     };
     document.getElementById('resultsOverlay').classList.add('open');
     return;
@@ -1811,12 +1812,13 @@ function checkCharacterTask(task) {
   document.getElementById('resultsOverlay').classList.add('open');
 }
 
-// Грейд = потраченные улики + верность опознания (1–3 звезды)
+// Грейд = потраченные улики (1–3 звезды). Дело считается раскрытым в любом случае;
+// промах в опознании пишется в альбом (win), но не понижает «РАСКРЫТО».
 function detectiveGrade(isCorrect) {
   const clues = detectiveCluesUsed;
-  const stars = isCorrect ? (clues === 0 ? 3 : clues <= 3 ? 2 : 1) : 1;
-  const rankWin = { 3: 'Старший детектив', 2: 'Детектив', 1: 'Младший детектив' };
-  return { win: isCorrect, stars, rank: isCorrect ? rankWin[stars] : 'Стажёр', clues };
+  const stars = clues === 0 ? 3 : clues <= 3 ? 2 : 1;
+  const ranks = { 3: 'Старший детектив', 2: 'Детектив', 1: 'Младший детектив' };
+  return { win: isCorrect, stars, rank: ranks[stars], clues };
 }
 
 // Карточка падает в альбом в обоих исходах (UI альбома — фаза 2)
@@ -1835,8 +1837,8 @@ function saveToAlbum(task, grade) {
 function showVictoryCard(task, grade) {
   grade = grade || { win: true, stars: 3, rank: task.rank };
   const c = task.celebrity;
-  document.getElementById('victoryCard').classList.toggle('muted', !grade.win);
-  document.getElementById('vcSolved').textContent = grade.win ? '✓ РАСКРЫТО' : '✕ НЕ РАСКРЫТО';
+  document.getElementById('victoryCard').classList.remove('muted');
+  document.getElementById('vcSolved').textContent = '✓ РАСКРЫТО';
   document.getElementById('vcCaseNo').textContent = 'ДЕЛО №' + (task.caseNo || 47);
   document.getElementById('vcArt').src = c.art;
   document.getElementById('vcName').textContent = c.name;
