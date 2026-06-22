@@ -263,7 +263,11 @@
   }
   .vc-rank-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); margin: 0 0 2px; }
   .vc-rank { font-size: 14px; font-weight: 500; margin: 0; }
+  .vc-grade { font-size: 12px; letter-spacing: 2px; color: var(--hi); margin: 3px 0 0; }
   .vc-coll { font-size: 11px; color: #5F5E5A; margin: 0; }
+  /* проваленное опознание — приглушённая карточка */
+  .victory-card.muted { filter: grayscale(0.75) brightness(0.82); opacity: 0.9; }
+  .victory-card.muted .vc-grade { color: var(--muted); }
   #confettiCanvas {
     display: none; position: fixed; inset: 0;
     width: 100%; height: 100%;
@@ -449,8 +453,16 @@
     gap: 10px;
     padding: 12px 20px 4px;
   }
-  .char-head {
+  .char-cell {
     cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .char-name {
+    font-size: 10px; line-height: 1.2; text-align: center;
+    color: var(--muted);
+  }
+  .char-head {
+    width: 100%;
     border-radius: 50%;
     overflow: hidden;
     border: 2.5px solid transparent;
@@ -475,6 +487,9 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     padding: 4px 0 14px;
+  }
+  .char-result-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
   }
   .char-result-head {
     border-radius: 50%;
@@ -901,7 +916,7 @@
     </div>
     <div id="charResultGrid" style="display:none"></div>
     <div class="result-summary" id="resultSummary"></div>
-    <button class="btn-next" onclick="nextCase()">Следующий кейс →</button>
+    <button class="btn-next" id="btnResultsNext" onclick="nextCase()">Следующий кейс →</button>
   </div>
 </div>
 
@@ -913,7 +928,7 @@
       <div class="vc-frame">
         <div class="vc-top">
           <span class="vc-case" id="vcCaseNo">ДЕЛО №47</span>
-          <span class="vc-solved">✓ РАСКРЫТО</span>
+          <span class="vc-solved" id="vcSolved">✓ РАСКРЫТО</span>
         </div>
         <div class="vc-art"><img id="vcArt" src="" alt=""></div>
         <p class="vc-name" id="vcName"></p>
@@ -923,6 +938,7 @@
           <div>
             <p class="vc-rank-label">РАНГ</p>
             <p class="vc-rank" id="vcRank"></p>
+            <p class="vc-grade" id="vcGrade"></p>
           </div>
           <p class="vc-coll" id="vcColl"></p>
         </div>
@@ -1397,10 +1413,10 @@ const DETECTIVE_CASES = [
     prePlaced: { sun: 'sagittarius', moon: 'cancer', mercury: 'capricorn', venus: 'aquarius', jupiter: 'cancer', saturn: 'capricorn', mars: 'scorpio' },
     correctCharacter: 3,
     characters: [
-      { img: 'Character 1.png', text: 'Тихая, ироничная, тянется к темноте и странности. Не любит блеск, прячется от внимания, говорит шёпотом то, что другие боятся сказать вслух.' },
-      { img: 'Character 2.png', text: 'Затворница: появляется редко и по-крупному. Наблюдает мир со стороны, пишет холодновато-умно, держит дистанцию даже с поклонниками.' },
-      { img: 'Character 3.png', text: 'Молодая, на разрыв искренняя. Чувства — сразу и наотмашь, без многолетних расчётов. Живёт и поёт тем, что болит прямо сейчас.' },
-      { img: 'Taylor Swift Portrait.png', text: 'Из всего личного делает истории, которые поёт весь мир. Хранит каждую деталь прошлого и переписывает правила игры на годы вперёд — мягкая снаружи, несгибаемая внутри.' },
+      { name: 'Билли Айлиш',    img: 'celebs/billie.png', text: 'Тихая, ироничная, тянется к темноте и странности. Не любит блеск, прячется от внимания, говорит шёпотом то, что другие боятся сказать вслух.' },
+      { name: 'Лорд',           img: 'celebs/lorde.png',  text: 'Затворница: появляется редко и по-крупному. Наблюдает мир со стороны, пишет холодновато-умно, держит дистанцию даже с поклонниками.' },
+      { name: 'Оливия Родриго', img: 'celebs/olivia.png', text: 'Молодая, на разрыв искренняя. Чувства — сразу и наотмашь, без многолетних расчётов. Живёт и поёт тем, что болит прямо сейчас.' },
+      { name: 'Тейлор Свифт',   img: 'celebs/taylor.png', text: 'Из всего личного делает истории, которые поёт весь мир. Хранит каждую деталь прошлого и переписывает правила игры на годы вперёд — мягкая снаружи, несгибаемая внутри.' },
     ],
     summary: 'Это Тейлор Свифт. Стрелец-Солнце — рассказчица, делающая из жизни истории. Удвоенный Козерог (Меркурий + Сатурн) — стратег, строящий империю вдолгую; а рядом, в том же знаке, Уран и Нептун — целый козерожий стеллиум, расчёт возведённый в четвёртую степень. Удвоенный Рак (Луна + Юпитер) — память и преданность, она хранит всё. Скорпион-Марс не забывает обид, и Плутон там же, в Скорпионе — та же тёмная сила, удвоенная. Билли Айлиш тоже Стрелец-Солнце, но без земляной стратегии и водной сентиментальности — одного Солнца мало. Лорд — Скорпион-Солнце, Оливия Родриго — Рыбы: обе мимо уже на первом раунде.',
     // высшие планеты — контекст для карты-артефакта (НЕ дедуцируются):
@@ -1445,6 +1461,7 @@ let selectedErrorPlanet = null;
 let errorPlanetPlacement = null;
 let placements = {};           // { planetId: signId }
 let cluesRevealed = 0;
+let detectiveCluesUsed = 0;    // накопительно за прохождение дела (для грейда)
 let questionsAsked = [];       // array of asked question ids (question_select)
 let currentRound = 0;          // current round index (question_rounds)
 let roundsAsked = 0;           // how many rounds answered (question_rounds)
@@ -1691,6 +1708,9 @@ function updateProgress() {
 // ── CHECK ──────────────────────────────────────────────────────────
 function checkAnswers() {
   const c = getCase();
+  // сброс кнопки результата к дефолту (детектив-неверно её переопределяет)
+  const rn = document.getElementById('btnResultsNext');
+  if (rn) { rn.textContent = 'Следующий кейс →'; rn.onclick = nextCase; }
   if (c.type === 'forecast_fill') {
     checkForecastFillTask(c);
     return;
@@ -1760,31 +1780,69 @@ function checkCharacterTask(task) {
     if (i === task.correctCharacter) cls += ' correct';
     else if (i === selectedCharacter) cls += ' user-wrong';
     else cls += ' incorrect';
-    return `<div class="${cls}"><img src="${char.img}" alt="Персонаж ${i + 1}"></div>`;
+    const name = char.name ? `<div class="char-name">${char.name}</div>` : '';
+    return `<div class="char-result-cell"><div class="${cls}"><img src="${char.img}" alt="${char.name || ('Персонаж ' + (i + 1))}"></div>${name}</div>`;
   }).join('') + '</div>';
 
   const summaryEl = document.getElementById('resultSummary');
   summaryEl.textContent = task.summary || correctChar.text;
   summaryEl.style.display = 'block';
 
-  // Победный экран дела о знаменитости — коллекционная карточка + хлопушка
-  if (isCorrect && taskMode === 'detective' && task.celebrity) {
-    showVictoryCard(task);
-    setTimeout(launchConfetti, 220);
+  // Детектив-режим: коллекционная карточка в обе ветки (верно/неверно)
+  if (taskMode === 'detective' && task.celebrity) {
+    const grade = detectiveGrade(isCorrect);
+    saveToAlbum(task, grade);
+    if (isCorrect) {
+      showVictoryCard(task, grade);
+      setTimeout(launchConfetti, 220);
+      return;
+    }
+    // неверно: сначала разбор с подсветкой, затем мостик к приглушённой карточке
+    const btn = document.getElementById('btnResultsNext');
+    btn.textContent = 'К карточке дела →';
+    btn.onclick = function () {
+      document.getElementById('resultsOverlay').classList.remove('open');
+      showVictoryCard(task, grade);
+    };
+    document.getElementById('resultsOverlay').classList.add('open');
     return;
   }
 
   document.getElementById('resultsOverlay').classList.add('open');
 }
 
+// Грейд = потраченные улики + верность опознания (1–3 звезды)
+function detectiveGrade(isCorrect) {
+  const clues = detectiveCluesUsed;
+  const stars = isCorrect ? (clues === 0 ? 3 : clues <= 3 ? 2 : 1) : 1;
+  const rankWin = { 3: 'Старший детектив', 2: 'Детектив', 1: 'Младший детектив' };
+  return { win: isCorrect, stars, rank: isCorrect ? rankWin[stars] : 'Стажёр', clues };
+}
+
+// Карточка падает в альбом в обоих исходах (UI альбома — фаза 2)
+function saveToAlbum(task, grade) {
+  try {
+    const album = JSON.parse(localStorage.getItem('detectiveAlbum') || '[]');
+    album.push({
+      id: task.id, name: task.celebrity.name, caseNo: task.caseNo,
+      win: grade.win, stars: grade.stars, clues: grade.clues, date: Date.now()
+    });
+    localStorage.setItem('detectiveAlbum', JSON.stringify(album));
+  } catch (e) { /* localStorage недоступен — не критично */ }
+}
+
 // ── VICTORY CARD (detective) ──────────────────────────────────────
-function showVictoryCard(task) {
+function showVictoryCard(task, grade) {
+  grade = grade || { win: true, stars: 3, rank: task.rank };
   const c = task.celebrity;
+  document.getElementById('victoryCard').classList.toggle('muted', !grade.win);
+  document.getElementById('vcSolved').textContent = grade.win ? '✓ РАСКРЫТО' : '✕ НЕ РАСКРЫТО';
   document.getElementById('vcCaseNo').textContent = 'ДЕЛО №' + (task.caseNo || 47);
   document.getElementById('vcArt').src = c.art;
   document.getElementById('vcName').textContent = c.name;
   document.getElementById('vcSub').textContent = c.sign + ' · ' + c.birth;
-  document.getElementById('vcRank').textContent = task.rank;
+  document.getElementById('vcRank').textContent = grade.rank;
+  document.getElementById('vcGrade').textContent = '★'.repeat(grade.stars) + '☆'.repeat(3 - grade.stars);
   document.getElementById('vcColl').textContent = '★ карта ' + task.collectibleNo + ' из ' + task.collectibleTotal;
 
   const order = ['sun', 'moon', 'mercury', 'venus', 'jupiter', 'saturn', 'mars'];
@@ -2311,6 +2369,8 @@ function loadCharacterTask(task) {
   document.querySelector('.desc-card').style.display = 'none';
   document.getElementById('planetTray').style.display = 'none';
   document.getElementById('btnClues').style.display = 'none';
+  // карта того же размера, что и в раундах с уликами
+  document.getElementById('chartWrap').classList.add('chart-small');
   const chartHint = document.getElementById('chartHint');
   if (task.panelAbove) {
     chartHint.textContent = 'Тапните на голову, чтобы услышать историю персонажа';
@@ -2345,8 +2405,9 @@ function loadCharacterTask(task) {
 
   const grid = document.getElementById('charGrid');
   grid.innerHTML = task.characters.map((char, i) =>
-    `<div class="char-head" onclick="selectCharacter(${i})">
-      <img src="${char.img}" alt="Персонаж ${i + 1}">
+    `<div class="char-cell" onclick="selectCharacter(${i})">
+      <div class="char-head"><img src="${char.img}" alt="${char.name || ('Персонаж ' + (i + 1))}"></div>
+      ${char.name ? `<div class="char-name">${char.name}</div>` : ''}
     </div>`
   ).join('');
 
@@ -2369,8 +2430,8 @@ function selectCharacter(idx) {
   panelTextBelow.textContent = storyText;
   panelTextBelow.classList.add('has-story');
 
-  document.querySelectorAll('.char-head').forEach((el, i) => {
-    el.classList.toggle('selected', i === idx);
+  document.querySelectorAll('#charGrid .char-cell').forEach((cell, i) => {
+    cell.querySelector('.char-head').classList.toggle('selected', i === idx);
   });
 
   document.getElementById('progressBar').innerHTML = '<div class="seg filled"></div>';
@@ -2399,6 +2460,7 @@ function renderClues() {
 function revealClue(idx) {
   if (idx !== cluesRevealed) return;
   cluesRevealed++;
+  if (taskMode === 'detective') detectiveCluesUsed++;
   renderClues();
 }
 
@@ -2903,6 +2965,7 @@ function startDetectiveMode() {
   document.getElementById('titleScreen').style.display = 'none';
   taskMode = 'detective';
   caseIdx = 0;
+  detectiveCluesUsed = 0;
   setGameVisible(true);
   loadCase();
 }
