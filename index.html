@@ -227,6 +227,17 @@
   }
 
   /* ── OVERLAYS ── */
+  .win-hero-img {
+    display: block; width: 220px; max-width: 70%;
+    aspect-ratio: 1 / 1; object-fit: cover;
+    margin: 14px auto 4px; border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+  #confettiCanvas {
+    display: none; position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 300;
+  }
   .overlay {
     display: none; position: fixed; inset: 0; z-index: 100;
     background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
@@ -853,6 +864,7 @@
     <div class="sheet-handle"></div>
     <div class="results-title" id="resultsTitle"></div>
     <div class="results-subtitle" id="resultsSubtitle"></div>
+    <img class="win-hero-img" id="winHeroImg" src="" alt="" style="display:none">
     <div class="result-chart-wrap">
       <img src="Natal Chat Circle 2.png" alt="">
       <svg class="result-chart-svg" id="resultSvg" viewBox="0 0 390 390"></svg>
@@ -884,6 +896,9 @@
     <button class="btn-close-clues" onclick="closeClues()">Закрыть</button>
   </div>
 </div>
+
+<!-- ── CONFETTI / ХЛОПУШКА (победный экран) ── -->
+<canvas id="confettiCanvas"></canvas>
 
 <script>
 // ── ALL PLANET DEFINITIONS ─────────────────────────────────────────
@@ -1322,7 +1337,7 @@ const DETECTIVE_CASES = [
       { img: 'Character 1.png', text: 'Билли Айлиш. Тоже Солнце в Стрельце — но её регистр это уход в себя и тьма, а не сентиментальный архив и не холодная стратегия на годы. Солнце совпало, остальная карта — нет.' },
       { img: 'Character 2.png', text: 'Лорд. Солнце в Скорпионе, затворница. Уже на первом раунде мимо: мы поставили Стрельца.' },
       { img: 'Character 3.png', text: 'Оливия Родриго. Солнце в Рыбах, сырая эмоция момента, а не десятилетняя стратегия и не строитель империи.' },
-      { img: 'Character 4.png', text: 'Тейлор Свифт. Стрелец-рассказчица + удвоенный Козерог (стратег, империя) + удвоенный Рак (память, преданность) + Скорпион-Марс («не забываю»). Это её карта.' },
+      { img: 'Taylor Swift Portrait.png', text: 'Тейлор Свифт. Стрелец-рассказчица + удвоенный Козерог (стратег, империя) + удвоенный Рак (память, преданность) + Скорпион-Марс («не забываю»). Это её карта.' },
     ]
   }
 ];
@@ -1604,6 +1619,7 @@ function updateProgress() {
 // ── CHECK ──────────────────────────────────────────────────────────
 function checkAnswers() {
   const c = getCase();
+  document.getElementById('winHeroImg').style.display = 'none';
   if (c.type === 'forecast_fill') {
     checkForecastFillTask(c);
     return;
@@ -1680,7 +1696,86 @@ function checkCharacterTask(task) {
   summaryEl.textContent = task.summary || correctChar.text;
   summaryEl.style.display = 'block';
 
+  // Победный экран дела о знаменитости — герой-картинка + хлопушка и конфетти
+  if (isCorrect && taskMode === 'detective') {
+    const hero = document.getElementById('winHeroImg');
+    hero.src = 'Taylor Swift final.png';
+    hero.style.display = '';
+    setTimeout(launchConfetti, 220);
+  }
+
   document.getElementById('resultsOverlay').classList.add('open');
+}
+
+// ── CONFETTI / ХЛОПУШКА ───────────────────────────────────────────
+function launchConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.clientWidth || window.innerWidth;
+  const H = canvas.clientHeight || window.innerHeight;
+  canvas.style.display = 'block';
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const colors = ['#ffd966', '#ff6b6b', '#4dabf7', '#69db7c', '#ffffff', '#da77f2', '#ffa94d'];
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = arr => arr[(Math.random() * arr.length) | 0];
+  const parts = [];
+
+  function spawn(x, y, vx, vy, big) {
+    parts.push({
+      x, y, vx, vy,
+      size: rand(big ? 7 : 5, big ? 12 : 9),
+      color: pick(colors),
+      rot: rand(0, Math.PI * 2), vr: rand(-0.35, 0.35),
+      shape: Math.random() < 0.5 ? 'rect' : 'circle',
+      life: 1
+    });
+  }
+
+  // две хлопушки из нижних углов — выстрел к центру
+  function popper(x, y, angle) {
+    for (let i = 0; i < 80; i++) {
+      const a = angle + rand(-0.45, 0.45);
+      const s = rand(9, 19);
+      spawn(x, y, Math.cos(a) * s, Math.sin(a) * s, true);
+    }
+  }
+  popper(0, H, -Math.PI / 3);        // снизу-слева → вправо-вверх
+  popper(W, H, -Math.PI * 2 / 3);    // снизу-справа → влево-вверх
+
+  const gravity = 0.3, drag = 0.99;
+  let frames = 0;
+  function tick() {
+    frames++;
+    ctx.clearRect(0, 0, W, H);
+
+    // лёгкий дождь конфетти сверху первые ~1.3с
+    if (frames < 80 && frames % 3 === 0) {
+      for (let i = 0; i < 7; i++) spawn(rand(0, W), -12, rand(-1.5, 1.5), rand(2, 5), false);
+    }
+
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i];
+      p.vy += gravity; p.vx *= drag; p.vy *= drag;
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      if (p.y > H) p.life -= 0.04;
+      if (p.life <= 0 || p.y > H + 60) { parts.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      if (p.shape === 'rect') ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+      else { ctx.beginPath(); ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2); ctx.fill(); }
+      ctx.restore();
+    }
+
+    if (parts.length > 0 && frames < 700) requestAnimationFrame(tick);
+    else { ctx.clearRect(0, 0, W, H); canvas.style.display = 'none'; }
+  }
+  requestAnimationFrame(tick);
 }
 
 function renderCharResultChart(task) {
