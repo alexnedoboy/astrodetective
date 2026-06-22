@@ -227,12 +227,43 @@
   }
 
   /* ── OVERLAYS ── */
-  .win-hero-img {
-    display: block; width: 220px; max-width: 70%;
-    aspect-ratio: 1 / 1; object-fit: cover;
-    margin: 14px auto 4px; border-radius: 20px;
-    border: 1px solid var(--border);
+  /* ── VICTORY CARD ── */
+  .victory-card {
+    width: 320px; max-width: 100%; margin: 0 auto 4px;
+    background: var(--bg); border-radius: 18px; padding: 14px;
+    color: var(--text); border: 0.5px solid rgba(255,255,255,0.14);
   }
+  .vc-frame {
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 12px; padding: 18px 16px;
+  }
+  .vc-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .vc-case { font-size: 11px; letter-spacing: 2px; color: var(--muted); }
+  .vc-solved {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; letter-spacing: 2px; color: var(--text);
+  }
+  .vc-art { background: #000; border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+  .vc-art img { width: 100%; display: block; }
+  .vc-name { text-align: center; font-size: 21px; font-weight: 500; margin: 0 0 2px; letter-spacing: 0.5px; }
+  .vc-sub { text-align: center; font-size: 12px; color: var(--muted); margin: 0 0 16px; }
+  .vc-chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
+  .vc-chip { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 7px 0; text-align: center; }
+  .vc-chip .sym { font-size: 15px; }
+  .vc-chip .lbl { font-size: 9.5px; color: #cccccc; margin-top: 2px; }
+  .vc-chip.score { background: rgba(240,237,232,0.12); border: 0.5px solid rgba(255,255,255,0.25); }
+  .vc-chip.score .lbl { color: var(--text); }
+  .vc-bottom {
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 0.5px solid rgba(255,255,255,0.12);
+    margin-top: 14px; padding-top: 12px;
+  }
+  .vc-rank-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); margin: 0 0 2px; }
+  .vc-rank { font-size: 14px; font-weight: 500; margin: 0; }
+  .vc-coll { font-size: 11px; color: #5F5E5A; margin: 0; }
   #confettiCanvas {
     display: none; position: fixed; inset: 0;
     width: 100%; height: 100%;
@@ -864,7 +895,6 @@
     <div class="sheet-handle"></div>
     <div class="results-title" id="resultsTitle"></div>
     <div class="results-subtitle" id="resultsSubtitle"></div>
-    <img class="win-hero-img" id="winHeroImg" src="" alt="" style="display:none">
     <div class="result-chart-wrap">
       <img src="Natal Chat Circle 2.png" alt="">
       <svg class="result-chart-svg" id="resultSvg" viewBox="0 0 390 390"></svg>
@@ -872,6 +902,34 @@
     <div id="charResultGrid" style="display:none"></div>
     <div class="result-summary" id="resultSummary"></div>
     <button class="btn-next" onclick="nextCase()">Следующий кейс →</button>
+  </div>
+</div>
+
+<!-- ── VICTORY CARD OVERLAY (detective mode) ── -->
+<div class="overlay" id="victoryOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="victory-card" id="victoryCard">
+      <div class="vc-frame">
+        <div class="vc-top">
+          <span class="vc-case" id="vcCaseNo">ДЕЛО №47</span>
+          <span class="vc-solved">✓ РАСКРЫТО</span>
+        </div>
+        <div class="vc-art"><img id="vcArt" src="" alt=""></div>
+        <p class="vc-name" id="vcName"></p>
+        <p class="vc-sub" id="vcSub"></p>
+        <div class="vc-chips" id="vcChips"></div>
+        <div class="vc-bottom">
+          <div>
+            <p class="vc-rank-label">РАНГ</p>
+            <p class="vc-rank" id="vcRank"></p>
+          </div>
+          <p class="vc-coll" id="vcColl"></p>
+        </div>
+      </div>
+    </div>
+    <button class="btn-next" onclick="shareVictoryCard()">Поделиться картой</button>
+    <button class="btn-close-clues" onclick="goLearn()">Прочитать свою карту →</button>
   </div>
 </div>
 
@@ -910,6 +968,9 @@ const PLANET_INFO = {
   mars:    { symbol: '♂', label: 'Марс',     color: '#bbbbbb' },
   jupiter: { symbol: '♃', label: 'Юпитер',   color: '#cccccc' },
   saturn:  { symbol: '♄', label: 'Сатурн',   color: '#aaaaaa' },
+  uranus:  { symbol: '♅', label: 'Уран',     color: '#888888' },
+  neptune: { symbol: '♆', label: 'Нептун',   color: '#888888' },
+  pluto:   { symbol: '♇', label: 'Плутон',   color: '#888888' },
 };
 
 // ── GAME DATA ──────────────────────────────────────────────────────
@@ -1246,16 +1307,16 @@ const DETECTIVE_CASES = [
   {
     id: 'det-ts-1',
     title: "Снаружи — вечная дорога. Внутри — комната, где хранится всё.",
-    body: 'На публике говорит правду в лицо, не выносит клеток, проживает жизнь как историю с широким горизонтом. Но за закрытой дверью хранит каждое письмо, каждую старую обиду, запах прошлых лет. Ранит её не удар, а холод.',
+    body: 'Она не умеет стоять на месте: каждые пару лет сжигает прежний образ и уходит в новый — другая страна звучания, другой облик, новый горизонт; дом и жанр для неё дороги, а не стены. И при этом отчаянно держится за прошлое: хранит и пересматривает каждую его деталь, тоскует по ушедшему, а публику бережёт как родню.',
     planets: ['sun', 'moon'],
     answer: { sun: 'sagittarius', moon: 'cancer' },
     clues: [
-      "Светило — стихия огня: горячая, подвижная, стен не выносит.",
-      "Сердце — стихия воды: чувство глубже логики, память долгая.",
-      "Из трёх огней — не «я первый» (Овен) и не сцена (Лев): этот про даль и смысл.",
-      "Из трёх вод — не страсть-власть (Скорпион) и не растворение (Рыбы): эта про дом и защиту своих.",
-      "Светило: стрела за горизонт — знак странника и вечной дороги.",
-      "Сердце: панцирь и гнездо — знак, что хранит прошлое как святыню."
+      "Запри её в четырёх стенах — и она задыхается: ей нужен маршрут, горизонт, ощущение пути.",
+      "Дома она хранит всё: старые письма, мелочи, запах прошлых лет. Ранит её холод, а не удар.",
+      "Её светило — огненной природы: горячее, подвижное, неугомонное.",
+      "Её сердце — водной природы: чувство глубже логики, память долгая.",
+      "Стрела, пущенная за горизонт — знак вечного странника и искателя смысла.",
+      "Панцирь и гнездо — знак, что бережёт прошлое и своих как святыню."
     ],
     summary: 'Солнце в Стрельце — свободная рассказчица, живущая как в пути. Луна в Раке — приватное «я» хранит прошлое и вьёт гнездо. Контраст публичной путешественницы и домашней хранительницы — её главная двойственность.',
     results: { sun: { label: 'Стрелец' }, moon: { label: 'Рак' } }
@@ -1265,17 +1326,17 @@ const DETECTIVE_CASES = [
   {
     id: 'det-ts-2',
     title: "Думает как стратег. Любит как бунтарка.",
-    body: 'Ничего не скажет, не просчитав на годы вперёд; обошли — строит план и ждёт, пока созреет. А любит странно для такой расчётливой: ей нужен простор, а не объятия-клетка; влюбляется в непохожесть и в идеи, держит дистанцию даже в близости.',
+    body: 'Когда права на всё, что она создала, ушли к другим, она не вспыхнула и не стала шуметь — тихо и методично, годами, отстраивала своё заново, чтобы вернуть контроль на своих условиях. А в любви устроена непривычно: ближний круг похож на избранную семью друзей, она ревностно бережёт независимость и тянется к тем, кто не вписывается в шаблон.',
     planets: ['mercury', 'venus'],
     prePlaced: { sun: 'sagittarius', moon: 'cancer' },
     answer: { mercury: 'capricorn', venus: 'aquarius' },
     clues: [
-      "Ум — стихия земли: практичный, не витает.",
-      "Чувство любви — стихия воздуха: через ум и слово, не через тело.",
-      "Из трёх земель — не чувственность (Телец) и не детали-сервис (Дева): про вершину и расчёт.",
-      "Из трёх воздухов — не баланс-партнёрство (Весы) и не лёгкий флирт (Близнецы): про свободу и непохожесть.",
-      "Ум: горный козёл, считающий шаги на годы вперёд — знак стратега и долгой игры.",
-      "Любовь: отстранённый новатор — любит на дистанции, влюбляется в идею и инаковость."
+      "Прежде чем сказать, она просчитывает на годы вперёд; обиду не выплеснет — затаит и выстроит план.",
+      "В любви ей нужен простор, а не клетка: влюбляется в непохожесть и в идеи, и даже в близости держит дистанцию.",
+      "Её ум — земной природы: практичный, надёжный, не витающий.",
+      "Её чувство любви — воздушной природы: через мысль и слово, а не через тело.",
+      "Горный козёл, считающий каждый шаг к вершине — знак стратега и долгой игры.",
+      "Отстранённый новатор — знак того, кто любит свободно и ценит инаковость."
     ],
     summary: 'Меркурий в Козероге — холодный стратег, играющий вдолгую. Венера в Водолее — любит свободно, ценит непохожесть, держит эмоциональную дистанцию. Расчётливый ум и свободолюбивое сердце — не противоречие, а портрет.',
     results: { mercury: { label: 'Козерог' }, venus: { label: 'Водолей' } }
@@ -1285,17 +1346,17 @@ const DETECTIVE_CASES = [
   {
     id: 'det-ts-3',
     title: "Растёт на преданности. Закаляется на амбиции.",
-    body: 'Её щедрость — это забота о своих, и удача приходит через тех, кого она греет: смотри, как держится за неё её паства. А давит и закаляет её амбиция: работает как одержимая, строит империю кирпич за кирпичом, и боится не провала — а потери контроля над построенным.',
+    body: 'Её удача всегда росла из домашнего тепла: она зовёт поклонников к себе домой, печёт им печенье, нянчится с ними как с роднёй — и эта почти материнская забота возвращается ей сторицей. А саму империю она возвела кирпич за кирпичом, дисциплиной и волей; и сильнее всего боится потерять контроль над построенным.',
     planets: ['jupiter', 'saturn'],
     prePlaced: { sun: 'sagittarius', moon: 'cancer', mercury: 'capricorn', venus: 'aquarius' },
     answer: { jupiter: 'cancer', saturn: 'capricorn' },
     clues: [
-      "Планета роста — стихия воды: растёт через чувство и связь.",
-      "Планета предела — стихия земли: закаляется трудом и дисциплиной.",
-      "Рост: не страсть (Скорпион), не растворение (Рыбы) — через заботу о своих и верность племени.",
-      "Предел: не чувственность (Телец), не сервис (Дева) — через амбицию и власть над построенным.",
-      "Рост — в том же знаке, что уже стоящее Сердце (Луна). Удача приходит через преданность.",
-      "Предел — в том же знаке, что уже стоящий Ум (Меркурий). Здесь эта планета у себя дома, сильнее всего."
+      "Её щедрость — это забота о своих; удача приходит через тех, кого она греет, и через верность её паствы.",
+      "Она работает как одержимая и строит империю кирпич за кирпичом; страшнее провала для неё — потеря контроля.",
+      "Планета роста у неё — водной природы: ширится через чувство и связь.",
+      "Планета предела у неё — земной природы: закаляется трудом и дисциплиной.",
+      "Тот же знак гнезда, что и её сердце (уже стоит Луна) — рост через преданность.",
+      "Тот же знак вершины, что и её ум (уже стоит Меркурий) — здесь эта планета у себя дома."
     ],
     summary: 'Юпитер в Раке усиливает Луну: рост через эмоциональную верность и преданность паствы. Сатурн в Козероге усиливает Меркурий: дисциплина, амбиция, контроль — строитель империи. Удвоенная вода и удвоенная земля — настоящая подпись карты.',
     results: { jupiter: { label: 'Рак' }, saturn: { label: 'Козерог' } }
@@ -1327,6 +1388,8 @@ const DETECTIVE_CASES = [
   },
 
   // ── ФИНАЛ — Опознание: кто это? ──
+  // char.text показывается при тапе ВО ВРЕМЯ игры — нейтральный портрет
+  // без астрологии и без вердикта. Разбор — после ответа, из поля summary.
   {
     type: 'characterSelect',
     id: 'det-ts-5',
@@ -1334,11 +1397,20 @@ const DETECTIVE_CASES = [
     prePlaced: { sun: 'sagittarius', moon: 'cancer', mercury: 'capricorn', venus: 'aquarius', jupiter: 'cancer', saturn: 'capricorn', mars: 'scorpio' },
     correctCharacter: 3,
     characters: [
-      { img: 'Character 1.png', text: 'Билли Айлиш. Тоже Солнце в Стрельце — но её регистр это уход в себя и тьма, а не сентиментальный архив и не холодная стратегия на годы. Солнце совпало, остальная карта — нет.' },
-      { img: 'Character 2.png', text: 'Лорд. Солнце в Скорпионе, затворница. Уже на первом раунде мимо: мы поставили Стрельца.' },
-      { img: 'Character 3.png', text: 'Оливия Родриго. Солнце в Рыбах, сырая эмоция момента, а не десятилетняя стратегия и не строитель империи.' },
-      { img: 'Taylor Swift Portrait.png', text: 'Тейлор Свифт. Стрелец-рассказчица + удвоенный Козерог (стратег, империя) + удвоенный Рак (память, преданность) + Скорпион-Марс («не забываю»). Это её карта.' },
-    ]
+      { img: 'Character 1.png', text: 'Тихая, ироничная, тянется к темноте и странности. Не любит блеск, прячется от внимания, говорит шёпотом то, что другие боятся сказать вслух.' },
+      { img: 'Character 2.png', text: 'Затворница: появляется редко и по-крупному. Наблюдает мир со стороны, пишет холодновато-умно, держит дистанцию даже с поклонниками.' },
+      { img: 'Character 3.png', text: 'Молодая, на разрыв искренняя. Чувства — сразу и наотмашь, без многолетних расчётов. Живёт и поёт тем, что болит прямо сейчас.' },
+      { img: 'Taylor Swift Portrait.png', text: 'Из всего личного делает истории, которые поёт весь мир. Хранит каждую деталь прошлого и переписывает правила игры на годы вперёд — мягкая снаружи, несгибаемая внутри.' },
+    ],
+    summary: 'Это Тейлор Свифт. Стрелец-Солнце — рассказчица, делающая из жизни истории. Удвоенный Козерог (Меркурий + Сатурн) — стратег, строящий империю вдолгую; а рядом, в том же знаке, Уран и Нептун — целый козерожий стеллиум, расчёт возведённый в четвёртую степень. Удвоенный Рак (Луна + Юпитер) — память и преданность, она хранит всё. Скорпион-Марс не забывает обид, и Плутон там же, в Скорпионе — та же тёмная сила, удвоенная. Билли Айлиш тоже Стрелец-Солнце, но без земляной стратегии и водной сентиментальности — одного Солнца мало. Лорд — Скорпион-Солнце, Оливия Родриго — Рыбы: обе мимо уже на первом раунде.',
+    // высшие планеты — контекст для карты-артефакта (НЕ дедуцируются):
+    outerContext: { uranus: 'capricorn', neptune: 'capricorn', pluto: 'scorpio' },
+    // победная карточка-артефакт:
+    celebrity: { name: 'Тейлор Свифт', sign: 'Стрелец', birth: 'рождена 13 декабря 1989', art: 'Taylor Swift final.png' },
+    caseNo: 47,
+    collectibleNo: 1,
+    collectibleTotal: 88,
+    rank: 'Старший детектив'
   }
 ];
 
@@ -1619,7 +1691,6 @@ function updateProgress() {
 // ── CHECK ──────────────────────────────────────────────────────────
 function checkAnswers() {
   const c = getCase();
-  document.getElementById('winHeroImg').style.display = 'none';
   if (c.type === 'forecast_fill') {
     checkForecastFillTask(c);
     return;
@@ -1696,15 +1767,47 @@ function checkCharacterTask(task) {
   summaryEl.textContent = task.summary || correctChar.text;
   summaryEl.style.display = 'block';
 
-  // Победный экран дела о знаменитости — герой-картинка + хлопушка и конфетти
-  if (isCorrect && taskMode === 'detective') {
-    const hero = document.getElementById('winHeroImg');
-    hero.src = 'Taylor Swift final.png';
-    hero.style.display = '';
+  // Победный экран дела о знаменитости — коллекционная карточка + хлопушка
+  if (isCorrect && taskMode === 'detective' && task.celebrity) {
+    showVictoryCard(task);
     setTimeout(launchConfetti, 220);
+    return;
   }
 
   document.getElementById('resultsOverlay').classList.add('open');
+}
+
+// ── VICTORY CARD (detective) ──────────────────────────────────────
+function showVictoryCard(task) {
+  const c = task.celebrity;
+  document.getElementById('vcCaseNo').textContent = 'ДЕЛО №' + (task.caseNo || 47);
+  document.getElementById('vcArt').src = c.art;
+  document.getElementById('vcName').textContent = c.name;
+  document.getElementById('vcSub').textContent = c.sign + ' · ' + c.birth;
+  document.getElementById('vcRank').textContent = task.rank;
+  document.getElementById('vcColl').textContent = '★ карта ' + task.collectibleNo + ' из ' + task.collectibleTotal;
+
+  const order = ['sun', 'moon', 'mercury', 'venus', 'jupiter', 'saturn', 'mars'];
+  const chips = order.map(p => {
+    const sign = SIGNS.find(s => s.id === task.prePlaced[p]);
+    return `<div class="vc-chip"><div class="sym">${PLANET_INFO[p].symbol}</div><div class="lbl">${sign ? sign.label : ''}</div></div>`;
+  }).join('') + `<div class="vc-chip score"><div class="sym">★</div><div class="lbl">${order.length}/${order.length}</div></div>`;
+  document.getElementById('vcChips').innerHTML = chips;
+
+  document.getElementById('victoryOverlay').classList.add('open');
+}
+
+function shareVictoryCard() {
+  // TODO (фаза 2): рендер #victoryCard в картинку (html2canvas) или navigator.share
+  if (navigator.share) {
+    navigator.share({ title: 'Stellar Detective', text: 'Я раскрыл дело Тейлор Свифт!' }).catch(() => {});
+  }
+}
+
+function goLearn() {
+  // мостик в обучалку
+  document.getElementById('victoryOverlay').classList.remove('open');
+  goHome();
 }
 
 // ── CONFETTI / ХЛОПУШКА ───────────────────────────────────────────
@@ -2806,6 +2909,7 @@ function startDetectiveMode() {
 
 function goHome() {
   document.getElementById('resultsOverlay').classList.remove('open');
+  document.getElementById('victoryOverlay').classList.remove('open');
   document.getElementById('cluesOverlay').classList.remove('open');
   setGameVisible(false);
   document.getElementById('titleScreen').style.display = '';
