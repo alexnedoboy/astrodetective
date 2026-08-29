@@ -775,6 +775,257 @@
   .round-btn:active {
     background: rgba(255,255,255,0.12);
   }
+
+  /* ══ MOON ROUND: «Луна как забота» ══════════════════════════════ */
+  #moonRound {
+    display: none;
+    position: fixed; inset: 0; z-index: 150;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    justify-content: center;
+    touch-action: manipulation;
+  }
+  #moonRound.open { display: flex; }
+  /* the main game styles must not leak into the round's chart */
+  #moonRound .zone:hover { fill: transparent; }
+  #moonRound .zone.live:hover { fill: rgba(255,255,255,0.05); }
+  #moonRound .chart-wrap { margin: 0; max-width: none; }
+  #moonRound .btn-mr-home {
+    font-size: 18px; line-height: 1; background: none; border: none;
+    color: var(--muted); cursor: pointer; padding: 0 8px 0 0;
+  }
+
+#moonRound {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --border: rgba(255,255,255,0.12);
+    --text: #f0ede8;
+    --muted: rgba(240,237,232,0.45);
+    --accent: rgba(255,255,255,0.06);
+    --hi: #ffffff;
+    --hi-dim: rgba(255,255,255,0.08);
+    --ok: #6fcf8e;
+    --ok-dim: rgba(111,207,142,0.14);
+    --bad: #d96a6a;
+    --bad-dim: rgba(217,106,106,0.14);
+    --gold: #e5c06b;
+    --silver: #b9b9b9;
+    --chart-size: 300px;
+  }
+
+
+#moonRound .app {
+    width: 100%; max-width: 430px;
+    height: 100%;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── HEADER ── */
+#moonRound .header { padding: 12px 20px 8px; display: flex; flex-direction: column; gap: 10px; flex: 0 0 auto; }
+#moonRound .header-top { display: flex; justify-content: space-between; align-items: baseline; }
+#moonRound .round-label { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; }
+#moonRound .round-counter { font-size: 12px; color: var(--muted); }
+#moonRound .progress-bar { display: flex; gap: 4px; height: 4px; }
+#moonRound .progress-bar .seg { flex: 1; border-radius: 2px; background: var(--accent); transition: background 0.3s; }
+#moonRound .progress-bar .seg.ok { background: var(--ok); }
+#moonRound .progress-bar .seg.bad { background: var(--bad); }
+#moonRound .progress-bar .seg.cur { background: var(--hi); }
+
+  /* ── CHART (fixed size, always on top) ── */
+#moonRound .chart-zone { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; }
+#moonRound .chart-wrap {
+    position: relative;
+    width: var(--chart-size); height: var(--chart-size);
+    flex: 0 0 auto;
+    user-select: none;
+  }
+#moonRound .chart-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+#moonRound .chart-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#moonRound .zone { fill: transparent; stroke: none; transition: fill 0.15s; }
+#moonRound .zone.live { cursor: pointer; }
+#moonRound .zone.live:hover { fill: rgba(255,255,255,0.05); }
+#moonRound .zone.targeted { fill: rgba(255,255,255,0.10); }
+#moonRound .zone.flash-ok { fill: var(--ok-dim); }
+#moonRound .zone.flash-bad { fill: var(--bad-dim); }
+#moonRound .chart-hint {
+    font-size: 12px; color: var(--muted); letter-spacing: 0.03em;
+    margin: 2px 0 6px; height: 16px; text-align: center;
+  }
+#moonRound .chart-hint b { color: var(--text); font-weight: 600; }
+
+  /* ── TASK BODY (the only scrolling area) ── */
+#moonRound .task-body {
+    flex: 1 1 auto; min-height: 0;
+    width: 100%;
+    padding: 0 20px;
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+#moonRound .prompt {
+    font-size: 14px; line-height: 1.5; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 12px 14px;
+  }
+#moonRound .prompt.small { font-size: 13px; color: var(--muted); }
+
+  /* ── 1. PLACE THE PLANET ── */
+#moonRound .token-row { display: flex; justify-content: center; padding: 14px 0 4px; }
+#moonRound .planet-token { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: grab; touch-action: none; }
+#moonRound .planet-token.dragging { opacity: 0.25; }
+#moonRound .planet-token.placed { opacity: 0.25; }
+#moonRound .planet-token.selected .token-circle { box-shadow: 0 0 0 2.5px var(--hi); background: var(--hi-dim); }
+#moonRound .token-circle {
+    width: 62px; height: 62px; border-radius: 50%;
+    border: 1.5px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; transition: box-shadow 0.2s, background 0.2s;
+  }
+#moonRound .token-label { font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
+#mr-dragGhost {
+    position: fixed; z-index: 200; pointer-events: none;
+    width: 62px; height: 62px; border-radius: 50%;
+    border: 1.5px solid var(--hi); background: var(--surface);
+    display: none; align-items: center; justify-content: center;
+    font-size: 26px; opacity: 0.85;
+    transform: translate(-50%, -50%);
+  }
+
+  /* ── 2. SWIPE ── */
+#moonRound .swipe-stage {
+    flex: 1 1 auto; min-height: 150px;
+    position: relative; display: flex; align-items: center; justify-content: center;
+  }
+#moonRound .swipe-card {
+    width: 100%; max-width: 320px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 26px 22px;
+    font-size: 17px; line-height: 1.45; text-align: center;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+    touch-action: none; cursor: grab; user-select: none;
+    will-change: transform;
+  }
+#moonRound .swipe-card.settle { transition: transform 0.28s ease, opacity 0.28s ease; }
+#moonRound .swipe-card.gone { transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
+#moonRound .swipe-stamp {
+    position: absolute; top: 14px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    border: 2px solid; border-radius: 8px; padding: 5px 10px;
+    opacity: 0; transition: opacity 0.12s;
+  }
+#moonRound .swipe-stamp.yes { right: 16px; color: var(--ok); border-color: var(--ok); transform: rotate(9deg); }
+#moonRound .swipe-stamp.no { left: 16px;  color: var(--bad); border-color: var(--bad); transform: rotate(-9deg); }
+#moonRound .swipe-buttons { display: flex; gap: 12px; padding: 12px 0 4px; }
+#moonRound .swipe-btn {
+    flex: 1; padding: 15px 8px; border-radius: 14px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    color: var(--text); font-size: 14px; font-weight: 600; letter-spacing: 0.03em;
+    cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+#moonRound .swipe-btn.no:hover { border-color: var(--bad); background: var(--bad-dim); }
+#moonRound .swipe-btn.yes:hover { border-color: var(--ok);  background: var(--ok-dim); }
+#moonRound .swipe-btn .mark { font-size: 16px; }
+#moonRound .swipe-btn.no .mark { color: var(--bad); }
+#moonRound .swipe-btn.yes .mark { color: var(--ok); }
+
+  /* ── 3. WORD BANK ── */
+#moonRound .wb-slots { display: flex; gap: 10px; margin: 12px 0 10px; }
+#moonRound .wb-slot {
+    flex: 1; min-height: 48px; border-radius: 14px;
+    border: 1.5px dashed var(--border); background: rgba(255,255,255,0.02);
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px 10px; font-size: 13px; line-height: 1.25; text-align: center;
+    color: var(--muted); transition: border-color 0.2s, background 0.2s, color 0.2s;
+  }
+#moonRound .wb-slot.filled { border-style: solid; border-color: var(--hi); background: var(--hi-dim); color: var(--text); cursor: pointer; }
+#moonRound .wb-slot.best, #moonRound .wb-slot.part, #moonRound .wb-slot.miss { border-style: solid; }
+#moonRound .wb-slot.best { border-color: var(--gold);   background: rgba(229,192,107,0.12); color: var(--gold); }
+#moonRound .wb-slot.part { border-color: var(--silver); background: rgba(185,185,185,0.10); color: var(--silver); }
+#moonRound .wb-slot.miss { border-color: var(--bad);    background: var(--bad-dim); color: var(--bad); }
+#moonRound .wb-pool { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 0 8px; }
+#moonRound .chip {
+    padding: 10px 14px; border-radius: 999px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    color: var(--text); font-size: 13px; line-height: 1;
+    cursor: pointer; transition: opacity 0.18s, transform 0.18s, border-color 0.18s;
+  }
+#moonRound .chip:active { transform: scale(0.96); }
+#moonRound .chip.used { opacity: 0.18; pointer-events: none; }
+#moonRound .chip.reveal-best { border-color: var(--gold); color: var(--gold); }
+#moonRound .chip.reveal-part { border-color: var(--silver); color: var(--silver); }
+#moonRound .wb-legend { font-size: 11px; color: var(--muted); letter-spacing: 0.02em; }
+
+  /* ── 4. IDENTIFY ── */
+#moonRound .char-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 0 4px; }
+#moonRound .char-card {
+    border: 1.5px solid var(--border); border-radius: 16px;
+    background: var(--surface); overflow: hidden; cursor: pointer;
+    transition: border-color 0.18s, background 0.18s;
+  }
+#moonRound .char-card.selected { border-color: var(--hi); background: var(--hi-dim); }
+#moonRound .char-card.ok { border-color: var(--ok);  background: var(--ok-dim); }
+#moonRound .char-card.bad { border-color: var(--bad); background: var(--bad-dim); }
+#moonRound .char-card img { width: 100%; height: 96px; object-fit: cover; object-position: center top; display: block; }
+#moonRound .char-card p { font-size: 11.5px; line-height: 1.35; color: var(--muted); padding: 8px 10px 10px; }
+
+  /* ── FOOTER / FEEDBACK ── */
+#moonRound .footer { flex: 0 0 auto; padding: 8px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
+#moonRound .btn-check {
+    width: 100%; padding: 15px; border-radius: 14px;
+    background: var(--surface); color: var(--muted);
+    font-size: 15px; font-weight: 600; letter-spacing: 0.04em;
+    cursor: not-allowed; border: 1.5px solid var(--border);
+    transition: background 0.25s, color 0.25s, border-color 0.25s;
+  }
+#moonRound .btn-check.ready { background: var(--hi); color: #0a0a0a; cursor: pointer; border-color: var(--hi); }
+#moonRound .btn-check.next { background: var(--hi); color: #0a0a0a; cursor: pointer; border-color: var(--hi); }
+
+#moonRound .feedback {
+    border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
+    font-size: 13px; line-height: 1.45;
+    border: 1px solid; display: none;
+  }
+#moonRound .feedback.show { display: block; animation: mrRise 0.22s ease; }
+#moonRound .feedback.ok { border-color: rgba(111,207,142,0.5); background: var(--ok-dim); }
+#moonRound .feedback.bad { border-color: rgba(217,106,106,0.5); background: var(--bad-dim); }
+#moonRound .feedback.part { border-color: rgba(229,192,107,0.5); background: rgba(229,192,107,0.12); }
+#moonRound .feedback .fb-title { font-weight: 700; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
+#moonRound .feedback.ok  .fb-title { color: var(--ok); }
+#moonRound .feedback.bad .fb-title { color: var(--bad); }
+#moonRound .feedback.part .fb-title { color: var(--gold); }
+#moonRound .feedback .fb-text { color: var(--text); opacity: 0.9; }
+  @keyframes mrRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* ── SUMMARY ── */
+#moonRound .summary { padding: 10px 20px 20px; text-align: center; overflow-y: auto; }
+#moonRound .summary h1 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+#moonRound .summary .score { font-size: 44px; font-weight: 200; letter-spacing: -0.02em; margin: 12px 0 4px; }
+#moonRound .summary .score small { font-size: 18px; color: var(--muted); }
+#moonRound .summary .rank { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+#moonRound .recap { display: flex; flex-direction: column; gap: 8px; text-align: left; margin-bottom: 18px; }
+#moonRound .recap-row {
+    display: flex; gap: 12px; align-items: flex-start;
+    border: 1px solid var(--border); background: var(--surface);
+    border-radius: 14px; padding: 11px 13px;
+  }
+#moonRound .recap-row .sym { font-size: 20px; width: 26px; text-align: center; flex: 0 0 auto; color: var(--text); font-family: 'Segoe UI Symbol', 'Apple Symbols', serif; }
+#moonRound .recap-row .name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+#moonRound .recap-row .desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+#moonRound .btn-back-home {
+    width: 100%; padding: 15px; margin-top: 10px; border-radius: 14px;
+    background: transparent; color: var(--muted);
+    border: 1.5px solid var(--border);
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+#moonRound .btn-restart {
+    width: 100%; padding: 15px; border-radius: 14px;
+    background: var(--hi); color: #0a0a0a; border: none;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+#moonRound .hidden { display: none !important; }
+
 </style>
 </head>
 <body>
@@ -790,6 +1041,7 @@
       <button class="btn-title-secondary" onclick="startLearningMode()">✦ Обучение</button>
       <button class="btn-title-secondary" onclick="startSessionMode()">♀ Сессия</button>
       <button class="btn-title-secondary" onclick="startDetectiveMode()">🔍 Дело</button>
+      <button class="btn-title-secondary" onclick="MoonRound.start()">☾ Луна как забота</button>
     </div>
   </div>
 </div>
@@ -973,6 +1225,48 @@
 
 <!-- ── CONFETTI / ХЛОПУШКА (победный экран) ── -->
 <canvas id="confettiCanvas"></canvas>
+
+<!-- ══ MOON ROUND: «Луна как забота» ══ -->
+<div id="moonRound">
+<div class="app" id="mr-app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <button class="btn-mr-home" onclick="MoonRound.exit()" title="На главную">←</button>
+      <span class="round-label">ЛУНА КАК ЗАБОТА</span>
+      <span class="round-counter" id="mr-counter">1 / 13</span>
+    </div>
+    <div class="progress-bar" id="mr-progressBar"></div>
+  </div>
+
+  <!-- CHART: always here, always the same size -->
+  <div class="chart-zone">
+    <div class="chart-wrap" id="mr-chartWrap">
+      <img src="Natal Chat Circle 2.png" alt="Натальная карта">
+      <svg class="chart-svg" id="mr-chartSvg" viewBox="0 0 390 390"></svg>
+    </div>
+    <p class="chart-hint" id="mr-chartHint"></p>
+  </div>
+
+  <!-- TASK BODY -->
+  <div class="task-body" id="mr-taskBody"></div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="feedback" id="mr-feedback">
+      <div class="fb-title" id="mr-fbTitle"></div>
+      <div class="fb-text" id="mr-fbText"></div>
+    </div>
+    <button class="btn-check" id="mr-btnCheck">Проверить</button>
+  </div>
+</div>
+
+<div id="mr-summaryScreen" class="app hidden">
+  <div class="summary" id="mr-summaryBody"></div>
+</div>
+
+<div id="mr-dragGhost">☽</div>
+</div>
 
 <script>
 // ── ALL PLANET DEFINITIONS ─────────────────────────────────────────
@@ -2928,7 +3222,7 @@ function checkQuestionTask(task) {
 
 // ── TITLE SCREEN ──────────────────────────────────────────────────
 function setGameVisible(visible) {
-  document.querySelectorAll('.header, .desc-card, .chart-wrap, .chart-hint, .planet-tray, .bottom-bar')
+  document.querySelectorAll('body > .header, body > .desc-card, body > .chart-wrap, body > .chart-hint, body > .planet-tray, body > .bottom-bar')
     .forEach(el => { el.style.display = visible ? '' : 'none'; });
   if (!visible) {
     document.getElementById('charSelectSection').style.display = 'none';
@@ -2985,6 +3279,581 @@ function goHome() {
 buildZones();
 setGameVisible(false);
 
+const MoonRound = (function () {
+
+const mrRoot = document.getElementById('moonRound');
+
+// ── SIGNS (geometry matches Natal Chat Circle 2.png) ───────────────
+const SIGNS = [
+  { id: 'scorpio',     label: 'Скорпион', prep: 'Скорпионе', symbol: '♏', startDeg: 180 },
+  { id: 'libra',       label: 'Весы',     prep: 'Весах',     symbol: '♎', startDeg: 210 },
+  { id: 'virgo',       label: 'Дева',     prep: 'Деве',      symbol: '♍', startDeg: 240 },
+  { id: 'leo',         label: 'Лев',      prep: 'Льве',      symbol: '♌', startDeg: 270 },
+  { id: 'cancer',      label: 'Рак',      prep: 'Раке',      symbol: '♋', startDeg: 300 },
+  { id: 'gemini',      label: 'Близнецы', prep: 'Близнецах', symbol: '♊', startDeg: 330 },
+  { id: 'taurus',      label: 'Телец',    prep: 'Тельце',    symbol: '♉', startDeg:   0 },
+  { id: 'aries',       label: 'Овен',     prep: 'Овне',      symbol: '♈', startDeg:  30 },
+  { id: 'pisces',      label: 'Рыбы',     prep: 'Рыбах',     symbol: '♓', startDeg:  60 },
+  { id: 'aquarius',    label: 'Водолей',  prep: 'Водолее',   symbol: '♒', startDeg:  90 },
+  { id: 'capricorn',   label: 'Козерог',  prep: 'Козероге',  symbol: '♑', startDeg: 120 },
+  { id: 'sagittarius', label: 'Стрелец',  prep: 'Стрельце',  symbol: '♐', startDeg: 150 },
+];
+const signById = id => SIGNS.find(s => s.id === id);
+
+const CX = 195, CY = 195, R_OUTER = 188, R_INNER = 70, R_MARKER = 108;
+const MOON = '☽';
+
+// ── ROUND DATA ─────────────────────────────────────────────────────
+const TASKS = [
+  // 1–3  swipe / Луна в Раке
+  { type: 'swipe', moon: 'cancer',
+    text: 'Варит суп, когда кому-то плохо.',
+    answer: true,
+    note: 'Лунный Рак заботится телесно: еда, тепло, «поешь и поспи».' },
+  { type: 'swipe', moon: 'cancer',
+    text: 'Присылает таблицу с вариантами решения.',
+    answer: false,
+    note: 'Это забота через структуру — почерк Козерога, а не Рака.' },
+  { type: 'swipe', moon: 'cancer',
+    text: 'Обнимает и ничего не говорит.',
+    answer: true,
+    note: 'Раку не нужны слова: он держит рядом и разделяет состояние.' },
+
+  // 4  place / Козерог
+  { type: 'place', answer: 'capricorn',
+    text: 'Она заботится через планы: записывает к врачу, разруливает расписание, остаётся спокойной, когда все паникуют.',
+    note: 'Луна в Козероге: забота = взять ответственность и навести порядок.' },
+
+  // 5  swipe / Козерог
+  { type: 'swipe', moon: 'capricorn',
+    text: 'Паникует, когда ребёнок заболел.',
+    answer: false,
+    note: 'Лунный Козерог в кризисе становится собраннее, а не тревожнее.' },
+
+  // 6  place / Овен
+  { type: 'place', answer: 'aries',
+    text: 'Когда подруге разбили сердце, она говорит «пошли побегаем» и вытаскивает её из дома.',
+    note: 'Луна в Овне заботится действием: движение важнее разговора.' },
+
+  // 7  swipe / Овен
+  { type: 'swipe', moon: 'aries',
+    text: 'Терпеливо ждёт, пока вы сами попросите о помощи.',
+    answer: false,
+    note: 'Луна в Овне не ждёт — она вмешивается первой.' },
+
+  // 8  place / Водолей
+  { type: 'place', answer: 'aquarius',
+    text: 'Вместо звонка присылает подкаст про горе. Не потому что ей всё равно — она считает, что понимание помогает больше объятий.',
+    note: 'Луна в Водолее заботится через смысл и дистанцию.' },
+
+  // 9  word bank / Рак
+  { type: 'wordbank', moon: 'cancer',
+    text: 'У её подруги расставание. Она…',
+    chips: [
+      { t: 'варит ей еду',            v: 2 },
+      { t: 'обнимает и молчит',       v: 2 },
+      { t: 'зовёт ночевать к себе',   v: 1 },
+      { t: 'составляет план действий',v: 0 },
+      { t: 'тащит на пробежку',       v: 0 },
+      { t: 'присылает подкаст',       v: 0 },
+      { t: 'даёт жёсткий совет',      v: 0 },
+      { t: 'оставляет её одну',       v: 0 },
+    ],
+    note: 'Луна в Раке кормит и обнимает. Она не чинит проблему — она делает так, чтобы рядом было безопасно.' },
+
+  // 10 identify / Рак
+  { type: 'identify', moon: 'cancer', answer: 0,
+    text: 'Кто из них — с этой Луной?',
+    chars: [
+      { img: 'Character 1.png', q: '«Я уже заказала тебе еду.»' },
+      { img: 'Character 2.png', q: '«Вот что тебе стоит сделать по пунктам.»' },
+      { img: 'Character 3.png', q: '«Пошли в зал, разгонишь кровь.»' },
+      { img: 'Character 4.png', q: '«Я читала об этом статью — сейчас пришлю.»' },
+    ],
+    note: 'Еда, забота о теле, «я уже сделала это за тебя» — Луна в Раке.' },
+
+  // 11 word bank / Козерог
+  { type: 'wordbank', moon: 'capricorn',
+    text: 'У её брата рухнул бизнес. Она…',
+    chips: [
+      { t: 'составляет план',         v: 2 },
+      { t: 'звонит нужным людям',     v: 2 },
+      { t: 'переводит деньги',        v: 1 },
+      { t: 'плачет вместе с ним',     v: 0 },
+      { t: 'говорит «просто почувствуй»', v: 0 },
+      { t: 'варит суп',               v: 0 },
+      { t: 'зовёт в бар',             v: 0 },
+      { t: 'присылает статью',        v: 0 },
+    ],
+    note: 'Козерожья Луна любит через ресурс и структуру: план, связи, крыша над головой.' },
+
+  // 12 swipe / Водолей
+  { type: 'swipe', moon: 'aquarius',
+    text: 'Плачет вместе с вами, когда вам плохо.',
+    answer: false,
+    note: 'Водолейская Луна держит дистанцию: она объясняет, а не сливается с чувством.' },
+
+  // 13 place / Рак (финал, потруднее)
+  { type: 'place', answer: 'cancer',
+    text: 'Она поняла, что вы устали, ещё до того как вы сказали хоть слово. К вашему приходу постель была застелена, а чай — налит.',
+    note: 'Луна в Раке считывает состояние без слов и отвечает бытовым теплом.' },
+];
+
+const RECAP = [
+  { sign: 'cancer',    desc: 'Забота телом и домом: накормить, обнять, создать безопасность. Считывает состояние без слов.' },
+  { sign: 'capricorn', desc: 'Забота структурой: план, ответственность, ресурс. Спокойнее всех в кризисе.' },
+  { sign: 'aries',     desc: 'Забота действием: поднять, вытащить, защитить. Вмешивается первой, не ждёт просьбы.' },
+  { sign: 'aquarius',  desc: 'Забота смыслом: объяснить, дать перспективу, оставить пространство. Не сливается с чувством.' },
+];
+
+// ── STATE ──────────────────────────────────────────────────────────
+let idx = 0;
+let score = 0;
+let results = [];        // 'ok' | 'part' | 'bad'
+let locked = false;      // answer already checked
+let sel = null;          // task-local selection
+
+// ── CHART ──────────────────────────────────────────────────────────
+const degToRad = d => d * Math.PI / 180;
+function polarToXY(cx, cy, r, a) { const t = degToRad(a); return { x: cx + r * Math.cos(t), y: cy + r * Math.sin(t) }; }
+function sectorPath(cx, cy, rO, rI, s, e) {
+  const p1 = polarToXY(cx, cy, rO, s), p2 = polarToXY(cx, cy, rO, e);
+  const p3 = polarToXY(cx, cy, rI, e), p4 = polarToXY(cx, cy, rI, s);
+  const lg = (e - s) > 180 ? 1 : 0;
+  return `M ${p1.x} ${p1.y} A ${rO} ${rO} 0 ${lg} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rI} ${rI} 0 ${lg} 0 ${p4.x} ${p4.y} Z`;
+}
+const svgNS = 'http://www.w3.org/2000/svg';
+
+function buildZones() {
+  const svg = $('chartSvg');
+  svg.innerHTML = '';
+  SIGNS.forEach(sign => {
+    const p = document.createElementNS(svgNS, 'path');
+    p.setAttribute('d', sectorPath(CX, CY, R_OUTER, R_INNER, sign.startDeg, sign.startDeg + 30));
+    p.setAttribute('class', 'zone');
+    p.setAttribute('data-sign', sign.id);
+    p.addEventListener('click', () => { if (isPlaceTask() && !locked) placeMoon(sign.id); });
+    svg.appendChild(p);
+  });
+  const g = document.createElementNS(svgNS, 'g');
+  g.id = 'mr-markersGroup';
+  svg.appendChild(g);
+}
+
+function renderMoon(signId) {
+  const g = $('markersGroup');
+  g.innerHTML = '';
+  if (!signId) return;
+  const sign = signById(signId);
+  const pos = polarToXY(CX, CY, R_MARKER, sign.startDeg + 15);
+  const t = document.createElementNS(svgNS, 'text');
+  t.setAttribute('x', pos.x); t.setAttribute('y', pos.y + 7);
+  t.setAttribute('text-anchor', 'middle');
+  t.setAttribute('font-size', '22');
+  t.setAttribute('fill', '#ffffff');
+  t.setAttribute('pointer-events', 'none');
+  t.textContent = MOON;
+  g.appendChild(t);
+}
+
+function zonesLive(on) {
+  mrRoot.querySelectorAll('.zone').forEach(z => z.classList.toggle('live', on));
+}
+function clearZoneFx() {
+  mrRoot.querySelectorAll('.zone').forEach(z => z.classList.remove('targeted', 'flash-ok', 'flash-bad'));
+}
+function zoneEl(signId) { return mrRoot.querySelector(`.zone[data-sign="${signId}"]`); }
+
+// ── SHELL ──────────────────────────────────────────────────────────
+const $ = id => mrRoot.querySelector('#mr-' + id);
+const body = $('taskBody'), btn = $('btnCheck'), fb = $('feedback');
+
+function renderProgress() {
+  const bar = $('progressBar');
+  bar.innerHTML = '';
+  TASKS.forEach((_, i) => {
+    const s = document.createElement('div');
+    s.className = 'seg' + (results[i] === 'bad' ? ' bad' : results[i] ? ' ok' : (i === idx ? ' cur' : ''));
+    bar.appendChild(s);
+  });
+  $('counter').textContent = `${Math.min(idx + 1, TASKS.length)} / ${TASKS.length}`;
+}
+
+function setBtn(state, label) {
+  btn.className = 'btn-check' + (state === 'ready' ? ' ready' : state === 'next' ? ' next' : '');
+  btn.textContent = label;
+  btn.disabled = state === 'idle';
+  btn.style.visibility = state === 'none' ? 'hidden' : 'visible';
+}
+
+function showFeedback(kind, title, text) {
+  fb.className = 'feedback show ' + (kind === 'bad' ? 'bad' : kind === 'part' ? 'part' : 'ok');
+  $('fbTitle').textContent = title;
+  $('fbText').textContent = text;
+}
+function hideFeedback() { fb.className = 'feedback'; }
+
+function isPlaceTask() { return TASKS[idx] && TASKS[idx].type === 'place'; }
+
+function record(kind) {
+  results[idx] = kind;
+  if (kind === 'ok') score += 1;
+  else if (kind === 'part') score += 0.5;
+  renderProgress();
+}
+
+function next() {
+  idx++;
+  if (idx >= TASKS.length) return showSummary();
+  loadTask();
+}
+
+// ── TASK LOADER ────────────────────────────────────────────────────
+function loadTask() {
+  const t = TASKS[idx];
+  locked = false; sel = null;
+  hideFeedback(); clearZoneFx();
+  body.innerHTML = '';
+  body.scrollTop = 0;
+  renderProgress();
+
+  if (t.type === 'place') {
+    renderMoon(null);
+    zonesLive(true);
+    $('chartHint').innerHTML = 'Перетащите Луну в нужный знак';
+  } else {
+    renderMoon(t.moon);
+    zonesLive(false);
+    $('chartHint').innerHTML = 'Луна в <b>' + signById(t.moon).prep + '</b>';
+  }
+
+  ({ place: loadPlace, swipe: loadSwipe, wordbank: loadWordbank, identify: loadIdentify })[t.type](t);
+}
+
+// ── TASK 1: PLACE THE PLANET ───────────────────────────────────────
+function loadPlace(t) {
+  body.innerHTML = `
+    <p class="prompt">${t.text}</p>
+    <div class="token-row">
+      <div class="planet-token" id="mr-moonToken">
+        <div class="token-circle">${MOON}</div>
+        <div class="token-label">Луна</div>
+      </div>
+    </div>`;
+  setBtn('idle', 'Проверить');
+  initMoonDrag();
+}
+
+function placeMoon(signId) {
+  sel = signId;
+  renderMoon(signId);
+  clearZoneFx();
+  $('moonToken').classList.add('placed');
+  $('chartHint').innerHTML = 'Луна в <b>' + signById(signId).prep + '</b>';
+  setBtn('ready', 'Проверить');
+}
+
+function initMoonDrag() {
+  const token = $('moonToken'), ghost = $('dragGhost');
+  let dragging = false;
+
+  const hitZone = (x, y) => {
+    ghost.style.display = 'none';
+    const el = document.elementFromPoint(x, y);
+    ghost.style.display = 'flex';
+    return el && el.classList.contains('zone') ? el : null;
+  };
+
+  token.addEventListener('pointerdown', e => {
+    if (locked) return;
+    dragging = true;
+    token.setPointerCapture(e.pointerId);
+    token.classList.add('dragging');
+    ghost.style.display = 'flex';
+    ghost.style.left = e.clientX + 'px';
+    ghost.style.top = e.clientY + 'px';
+    e.preventDefault();
+  });
+
+  token.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    ghost.style.left = e.clientX + 'px';
+    ghost.style.top = e.clientY + 'px';
+    const z = hitZone(e.clientX, e.clientY);
+    mrRoot.querySelectorAll('.zone').forEach(el => el.classList.toggle('targeted', el === z));
+  });
+
+  const end = e => {
+    if (!dragging) return;
+    dragging = false;
+    token.classList.remove('dragging');
+    const z = hitZone(e.clientX, e.clientY);
+    ghost.style.display = 'none';
+    clearZoneFx();
+    if (z) placeMoon(z.getAttribute('data-sign'));
+  };
+  token.addEventListener('pointerup', end);
+  token.addEventListener('pointercancel', () => {
+    dragging = false; token.classList.remove('dragging');
+    ghost.style.display = 'none'; clearZoneFx();
+  });
+}
+
+function checkPlace(t) {
+  const ok = sel === t.answer;
+  zoneEl(t.answer).classList.add('flash-ok');
+  if (!ok) zoneEl(sel).classList.add('flash-bad');
+  renderMoon(t.answer);
+  $('chartHint').innerHTML = 'Луна в <b>' + signById(t.answer).prep + '</b>';
+  record(ok ? 'ok' : 'bad');
+  showFeedback(ok ? 'ok' : 'bad',
+    ok ? 'Верно' : 'Не то — правильно: ' + signById(t.answer).label,
+    t.note);
+}
+
+// ── TASK 2: SWIPE ──────────────────────────────────────────────────
+function loadSwipe(t) {
+  body.innerHTML = `
+    <div class="swipe-stage" id="mr-swipeStage">
+      <div class="swipe-card" id="mr-swipeCard">
+        <div class="swipe-stamp no"  id="mr-stampNo">Не похоже</div>
+        <div class="swipe-stamp yes" id="mr-stampYes">Похоже</div>
+        ${t.text}
+      </div>
+    </div>
+    <div class="swipe-buttons">
+      <button class="swipe-btn no"  id="mr-btnNo"><span class="mark">✗</span> Не похоже</button>
+      <button class="swipe-btn yes" id="mr-btnYes"><span class="mark">✓</span> Похоже</button>
+    </div>`;
+  setBtn('none', '');
+
+  const card = $('swipeCard'), stampYes = $('stampYes'), stampNo = $('stampNo');
+  const TH = 80;
+  let startX = 0, startY = 0, dx = 0, dragging = false;
+
+  const setT = (x, rot, drop) => {
+    card.style.transform = `translate(${x}px, ${drop || 0}px) rotate(${rot}deg)`;
+  };
+
+  card.addEventListener('pointerdown', e => {
+    if (locked) return;
+    dragging = true; startX = e.clientX; startY = e.clientY;
+    card.classList.remove('settle');
+    card.setPointerCapture(e.pointerId);
+  });
+  card.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    dx = e.clientX - startX;
+    const dy = (e.clientY - startY) * 0.25;
+    setT(dx, dx / 18, dy);
+    const p = Math.min(Math.abs(dx) / TH, 1);
+    stampYes.style.opacity = dx > 0 ? p : 0;
+    stampNo.style.opacity  = dx < 0 ? p : 0;
+  });
+  const release = () => {
+    if (!dragging) return;
+    dragging = false;
+    if (Math.abs(dx) >= TH) {
+      answerSwipe(t, dx > 0, dx > 0 ? 1 : -1);
+    } else {
+      card.classList.add('settle');
+      setT(0, 0, 0);
+      stampYes.style.opacity = 0; stampNo.style.opacity = 0;
+      dx = 0;
+    }
+  };
+  card.addEventListener('pointerup', release);
+  card.addEventListener('pointercancel', release);
+
+  $('btnYes').onclick = () => answerSwipe(t, true, 1);
+  $('btnNo').onclick  = () => answerSwipe(t, false, -1);
+}
+
+function answerSwipe(t, said, dir) {
+  if (locked) return;
+  locked = true;
+  const ok = (said === t.answer);
+  const card = $('swipeCard');
+  const stamp = ok ? (said ? $('stampYes') : $('stampNo')) : null;
+  if (stamp) stamp.style.opacity = 1;
+
+  record(ok ? 'ok' : 'bad');
+  showFeedback(ok ? 'ok' : 'bad',
+    ok ? 'Верно' : (t.answer ? 'На самом деле — похоже' : 'На самом деле — не похоже'),
+    t.note);
+
+  $('btnYes').disabled = true; $('btnNo').disabled = true;
+
+  if (ok) {
+    card.classList.add('gone');
+    card.style.transform = `translate(${dir * 460}px, -40px) rotate(${dir * 22}deg)`;
+    setTimeout(next, 900);
+  } else {
+    card.classList.add('settle');
+    card.style.transform = 'translate(0,0) rotate(0deg)';
+    card.style.borderColor = 'var(--bad)';
+    $('stampYes').style.opacity = 0; $('stampNo').style.opacity = 0;
+    setBtn('next', 'Дальше');
+  }
+}
+
+// ── TASK 3: WORD BANK ──────────────────────────────────────────────
+function loadWordbank(t) {
+  sel = [];
+  body.innerHTML = `
+    <p class="prompt">${t.text}</p>
+    <div class="wb-slots" id="mr-wbSlots">
+      <div class="wb-slot" data-i="0">…</div>
+      <div class="wb-slot" data-i="1">…</div>
+    </div>
+    <p class="wb-legend" id="mr-wbLegend">Выберите 2 действия</p>
+    <div class="wb-pool" id="mr-wbPool"></div>`;
+  const pool = $('wbPool');
+  t.chips.forEach((c, i) => {
+    const el = document.createElement('button');
+    el.className = 'chip'; el.textContent = c.t; el.dataset.i = i;
+    el.onclick = () => toggleChip(t, i);
+    pool.appendChild(el);
+  });
+  $('wbSlots').querySelectorAll('.wb-slot').forEach(s => {
+    s.onclick = () => { if (!locked && sel[+s.dataset.i] !== undefined) removeChip(t, +s.dataset.i); };
+  });
+  setBtn('idle', 'Проверить');
+}
+
+function renderWbSlots(t) {
+  const slots = $('wbSlots').querySelectorAll('.wb-slot');
+  slots.forEach((s, i) => {
+    const ci = sel[i];
+    s.textContent = ci === undefined ? '…' : t.chips[ci].t;
+    s.className = 'wb-slot' + (ci === undefined ? '' : ' filled');
+  });
+  $('wbPool').querySelectorAll('.chip').forEach(c => {
+    c.classList.toggle('used', sel.includes(+c.dataset.i));
+  });
+  setBtn(sel.length === 2 ? 'ready' : 'idle', 'Проверить');
+}
+
+function toggleChip(t, i) {
+  if (locked) return;
+  if (sel.includes(i)) { sel = sel.filter(x => x !== i); }
+  else if (sel.length < 2) { sel.push(i); }
+  renderWbSlots(t);
+}
+function removeChip(t, slot) { sel.splice(slot, 1); renderWbSlots(t); }
+
+function checkWordbank(t) {
+  const vals = sel.map(i => t.chips[i].v);
+  const total = vals.reduce((a, b) => a + b, 0);
+  const kind = total === 4 ? 'ok' : total >= 2 ? 'part' : 'bad';
+
+  const slots = $('wbSlots').querySelectorAll('.wb-slot');
+  slots.forEach((s, i) => {
+    const v = t.chips[sel[i]].v;
+    s.className = 'wb-slot ' + (v === 2 ? 'best' : v === 1 ? 'part' : 'miss');
+  });
+  $('wbPool').querySelectorAll('.chip').forEach(c => {
+    const v = t.chips[+c.dataset.i].v;
+    if (sel.includes(+c.dataset.i)) return;
+    if (v === 2) c.classList.add('reveal-best');
+    if (v === 1) c.classList.add('reveal-part');
+  });
+  $('wbLegend').textContent = 'Золотое — точное попадание, серое — почти, красное — мимо.';
+
+  record(kind);
+  showFeedback(kind,
+    kind === 'ok' ? 'Точно' : kind === 'part' ? 'Почти' : 'Мимо',
+    t.note);
+}
+
+// ── TASK 4: IDENTIFY ───────────────────────────────────────────────
+function loadIdentify(t) {
+  body.innerHTML = `
+    <p class="prompt small">${t.text}</p>
+    <div class="char-grid" id="mr-charGrid"></div>`;
+  const grid = $('charGrid');
+  t.chars.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'char-card'; el.dataset.i = i;
+    el.innerHTML = `<img src="${c.img}" alt=""><p>${c.q}</p>`;
+    el.onclick = () => {
+      if (locked) return;
+      sel = i;
+      grid.querySelectorAll('.char-card').forEach(x => x.classList.toggle('selected', +x.dataset.i === i));
+      setBtn('ready', 'Проверить');
+    };
+    grid.appendChild(el);
+  });
+  setBtn('idle', 'Проверить');
+}
+
+function checkIdentify(t) {
+  const ok = sel === t.answer;
+  const cards = $('charGrid').querySelectorAll('.char-card');
+  cards.forEach(c => c.classList.remove('selected'));
+  cards[t.answer].classList.add('ok');
+  if (!ok) cards[sel].classList.add('bad');
+  record(ok ? 'ok' : 'bad');
+  showFeedback(ok ? 'ok' : 'bad', ok ? 'Верно' : 'Не он', t.note);
+}
+
+// ── CHECK / NEXT BUTTON ────────────────────────────────────────────
+btn.onclick = () => {
+  const t = TASKS[idx];
+  if (locked) { next(); return; }
+  if (btn.classList.contains('ready') === false) return;
+  locked = true;
+  zonesLive(false);
+  ({ place: checkPlace, wordbank: checkWordbank, identify: checkIdentify })[t.type](t);
+  setBtn('next', idx === TASKS.length - 1 ? 'Итог' : 'Дальше');
+};
+
+// ── SUMMARY ────────────────────────────────────────────────────────
+function showSummary() {
+  $('app').classList.add('hidden');
+  const s = $('summaryScreen');
+  s.classList.remove('hidden');
+  const shown = Math.round(score * 10) / 10;
+  const pct = score / TASKS.length;
+  const rank = pct >= 0.9 ? 'Луна прочитана' : pct >= 0.7 ? 'Почерк узнан' : pct >= 0.5 ? 'Есть догадки' : 'Нужен ещё круг';
+  $('summaryBody').innerHTML = `
+    <div class="score">${shown}<small> / ${TASKS.length}</small></div>
+    <div class="rank">${rank}</div>
+    <h1>Луна как забота</h1>
+    <p class="wb-legend" style="margin:8px 0 18px">Четыре почерка заботы, которые вы разбирали:</p>
+    <div class="recap">
+      ${RECAP.map(r => {
+        const sg = signById(r.sign);
+        return `<div class="recap-row">
+          <div class="sym">${sg.symbol}\uFE0E</div>
+          <div><div class="name">Луна в ${sg.prep}</div><div class="desc">${r.desc}</div></div>
+        </div>`;
+      }).join('')}
+    </div>
+    <button class="btn-restart" onclick="MoonRound.start()">Пройти заново</button>
+    <button class="btn-back-home" onclick="MoonRound.exit()">На главную</button>`;
+}
+
+// ── ENTRY / EXIT ───────────────────────────────────────────────────
+function start() {
+  idx = 0; score = 0; results = []; locked = false; sel = null;
+  $('app').classList.remove('hidden');
+  $('summaryScreen').classList.add('hidden');
+  mrRoot.classList.add('open');
+  document.getElementById('titleScreen').style.display = 'none';
+  buildZones();
+  loadTask();
+}
+
+function exit() {
+  mrRoot.classList.remove('open');
+  document.getElementById('titleScreen').style.display = '';
+}
+
+return { start, exit };
+
+})();
+
 // ── PWA: register service worker ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -2994,5 +3863,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+
 </body>
 </html>
