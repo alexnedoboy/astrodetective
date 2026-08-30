@@ -1110,8 +1110,7 @@
 #course .node .num { font-size: 9px; letter-spacing: 0.1em; margin-top: 3px; opacity: 0.7; }
 #course .node:active { transform: scale(0.94); }
 
-#course .node.locked { opacity: 0.32; cursor: default; }
-#course .node.locked:active { transform: none; }
+#course .node.ahead { opacity: 0.5; }
 #course .node.done {
     border-color: var(--gold); color: var(--gold);
     background-color: var(--surface);
@@ -1338,6 +1337,32 @@
 #course .sw-btn.no .mk { color: var(--bad); }
 #course .sw-btn.yes .mk { color: var(--ok); }
 #course .sw-btn[disabled] { opacity: 0.4; cursor: default; }
+
+  /* pick — боксы с вариантами под картой */
+#course .pick-grid { display: grid; gap: 8px; padding: 10px 0 4px; }
+#course .pick-grid.signs { grid-template-columns: repeat(3, 1fr); }
+#course .pick-grid.text  { grid-template-columns: 1fr; }
+#course .pick-opt {
+    border: 1.5px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: 13px; padding: 10px 8px; cursor: pointer; text-align: center;
+    transition: border-color 0.18s, background 0.18s, color 0.18s;
+  }
+#course .pick-grid.text .pick-opt { text-align: left; padding: 12px 14px; font-size: 13.5px; line-height: 1.4; }
+#course .pick-opt .g {
+    display: block; font-size: 21px; line-height: 1.1;
+    font-family: 'Segoe UI Symbol', 'Apple Symbols', serif;
+  }
+#course .pick-opt .n { display: block; font-size: 11px; color: var(--muted); margin-top: 3px; }
+#course .pick-opt.sel { border-color: var(--hi); background: var(--hi-dim); }
+#course .pick-opt.sel .n { color: var(--text); }
+#course .pick-opt.ok  { border-color: var(--ok);  background: var(--ok-dim);  color: var(--ok); }
+#course .pick-opt.bad { border-color: var(--bad); background: var(--bad-dim); color: var(--bad); }
+#course .pick-opt.ok .n, #course .pick-opt.bad .n { color: inherit; }
+
+  /* планета, о которой спрашивают */
+#course .pmark.focus circle { stroke: var(--hi); stroke-width: 2; fill: rgba(255,255,255,0.10); }
+#course .pmark.focus { animation: cFocus 1.8s ease-in-out infinite; }
+  @keyframes cFocus { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
 
   /* match */
 #course .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; padding: 10px 0 4px; }
@@ -4364,6 +4389,16 @@ const C3 = { sun: 'aries',  moon: 'virgo',    mercury: 'sagittarius' };
 const A5 = { sun: 'cancer', moon: 'aquarius', mercury: 'leo',    venus: 'scorpio', mars: 'taurus' };
 const B5 = { sun: 'pisces', moon: 'libra',    mercury: 'aries',  venus: 'capricorn', mars: 'gemini' };
 
+// ── КАРТА ПОЛЬЗОВАТЕЛЯ ────────────────────────────────────────────
+// Порядок ключей задаёт порядок в столбике: в Стрельце сверху вниз ☉ ♀ ♂.
+const MY = {
+  sun:     'sagittarius',
+  venus:   'sagittarius',
+  mars:    'sagittarius',
+  moon:    'virgo',
+  mercury: 'scorpio',
+};
+
 // ── КОНТЕНТ РАУНДОВ ───────────────────────────────────────────────
 const ROUNDS = [
 // ═══ МОДУЛЬ 1 · АЛФАВИТ ═══════════════════════════════════════════
@@ -4560,7 +4595,57 @@ const ROUNDS = [
     { t: 'place', dock: ['venus'],   q: 'Поставьте Венеру в Рыб.',        a: { p: 'venus', s: 'pisces' },    note: 'Венера в Рыбах: любовь как растворение.' },
     { t: 'place', dock: ['mars'],    q: 'Поставьте Марс в Скорпиона.',    a: { p: 'mars', s: 'scorpio' },    note: 'Марс в Скорпионе: тихая, долгая сила.' },
     { t: 'tapP', chart: B5, q: 'Нажмите на планету, которая стоит в Овне.', a: 'mercury', note: 'В Овне — Меркурий. Планету ищут по сектору, а не по памяти.' },
-    { t: 'tapS', chart: B5, q: 'В каком знаке стоит Венера? Нажмите на этот сектор.', a: 'capricorn', note: 'Венера в Козероге. Теперь вы читаете карту в обе стороны.' },
+    { t: 'tapS', chart: B5, noLegend: true, q: 'В каком знаке стоит Венера? Нажмите на этот сектор.', a: 'capricorn', note: 'Венера в Козероге. Теперь вы читаете карту в обе стороны.' },
+  ],
+},
+
+{
+  id: 'r10', glyph: '✶', title: 'Ваша карта', caption: 'Читаем настоящую карту, а не пример',
+  intro: {
+    title: 'Ваша карта',
+    lead: 'Дальше на экране не учебный пример, а ваша натальная карта. Символы и знаки те же, что вы разбирали — прочитаем их.',
+    rows: [
+      { sym: '☉', nm: 'Пять планет', ds: 'Те же символы, что вы уже узнаёте: Солнце, Луна, Меркурий, Венера, Марс.' },
+      { sym: '♐', nm: 'Двенадцать знаков', ds: 'Сектор, в котором стоит планета, — её знак. Это и есть «планета в знаке».' },
+      { sym: '⋮', nm: 'Столбик', ds: 'Если в одном секторе несколько планет, они выстраиваются столбиком от края к центру.' },
+    ],
+  },
+  tasks: [
+    { t: 'tapP', chart: MY, q: 'Найдите на карте Солнце.', a: 'sun',
+      note: 'Круг с точкой. У вас он в верхней части столбика из трёх планет.' },
+    { t: 'pick', chart: MY, focus: 'sun', signs: ['sagittarius', 'virgo', 'scorpio', 'leo'],
+      q: 'В каком знаке стоит ваше Солнце?', a: 'sagittarius',
+      note: 'Солнце в Стрельце. Сектор со стрелой лучника, левый нижний край карты.' },
+
+    { t: 'tapP', chart: MY, q: 'Найдите Луну.', a: 'moon',
+      note: 'Серп. Она стоит одна в своём секторе.' },
+    { t: 'pick', chart: MY, focus: 'moon', signs: ['virgo', 'gemini', 'pisces', 'sagittarius'],
+      q: 'В каком знаке ваша Луна?', a: 'virgo',
+      note: 'Луна в Деве — в верхней части карты, слева от Льва.' },
+
+    { t: 'tapP', chart: MY, q: 'Найдите Меркурий.', a: 'mercury',
+      note: 'Круг с рожками. Тоже стоит один.' },
+    { t: 'pick', chart: MY, focus: 'mercury',
+      signs: ['scorpio', 'virgo', 'capricorn', 'aries', 'sagittarius', 'taurus'],
+      q: 'В каком знаке ваш Меркурий?', a: 'scorpio',
+      note: 'Меркурий в Скорпионе — слева, рядом со Стрельцом. Не перепутайте с Девой: у Скорпиона хвост со стрелкой наружу.' },
+
+    { t: 'tapP', chart: MY, q: 'В одном секторе у вас три планеты. Найдите среди них Венеру.', a: 'venus',
+      note: 'Венера — круг с крестом снизу, середина столбика.' },
+    { t: 'tapP', chart: MY, q: 'А теперь Марс.', a: 'mars',
+      note: 'Марс — со стрелой, в самом низу столбика, ближе к центру карты.' },
+
+    { t: 'pick', chart: MY, focus: 'venus', signs: 'all',
+      q: 'В каком знаке ваша Венера?', a: 'sagittarius',
+      note: 'Тоже Стрелец — она стоит в том же секторе, что Солнце и Марс.' },
+    { t: 'pick', chart: MY, focus: 'mars', signs: 'all',
+      q: 'А ваш Марс?', a: 'sagittarius',
+      note: 'И Марс в Стрельце. Три планеты в одном знаке — обычное дело.' },
+
+    { t: 'tapS', chart: MY, noLegend: true, q: 'Нажмите сектор, в котором у вас стоят сразу три планеты.', a: 'sagittarius',
+      note: 'Стрелец: Солнце, Венера и Марс. Этот знак у вас звучит громче остальных.' },
+    { t: 'tapP', chart: MY, q: 'Какая планета стоит у вас в Деве?', a: 'moon',
+      note: 'Луна. Вы прочитали карту в обе стороны: от планеты к знаку и обратно.' },
   ],
 },
 
@@ -4694,6 +4779,91 @@ const ROUNDS = [
     { t: 'swipe', chart: { venus: 'leo' }, text: 'Она предпочитает тихие свидания дома.', a: false, note: 'Венере во Льве нужны сцена, жест и восхищение.' },
   ],
 },
+{
+  id: 'r17', glyph: '✵', title: 'Ваши планеты в деле', caption: 'За что каждая планета отвечает именно у вас',
+  module: 2,
+  intro: {
+    title: 'Что это значит для вас',
+    lead: 'Вы знаете, за что отвечает каждая планета, и знаете свою карту. Соединяем: планета говорит, что происходит, знак — каким почерком это происходит у вас.',
+    rows: [
+      { sym: '☉', nm: 'Планета — область', ds: 'Воля, отдых и забота, речь, любовь, действие.' },
+      { sym: '♐', nm: 'Знак — стиль', ds: 'Одна и та же функция у разных людей выглядит по-разному.' },
+    ],
+  },
+  tasks: [
+    { t: 'tapP', chart: MY, q: 'Вы вымотались и хотите прийти в себя. Какая планета за это отвечает?', a: 'moon',
+      note: 'Отдых и восстановление — Луна. У вас она в Деве.' },
+    { t: 'pick', chart: MY, focus: 'moon', a: 'a',
+      q: 'Ваша Луна в Деве. Как, скорее всего, выглядит ваше восстановление?',
+      options: [
+        { id: 'a', label: 'Разобрать накопившееся, навести порядок, закрыть мелкие дела — и отпускает' },
+        { id: 'b', label: 'Собрать шумную компанию и ни минуты не быть одному' },
+        { id: 'c', label: 'Сорваться в спонтанную поездку без плана' },
+        { id: 'd', label: 'Оказаться в центре внимания и получить побольше тепла' },
+      ],
+      note: 'Дева успокаивается через порядок и ясность: пока хаос не разобран, отдых не наступает.' },
+
+    { t: 'tapP', chart: MY, q: 'Кто и что вас притягивает в людях? Какая планета?', a: 'venus',
+      note: 'Притяжение и вкус — Венера. У вас она в Стрельце.' },
+    { t: 'pick', chart: MY, focus: 'venus', a: 'b',
+      q: 'Венера в Стрельце — что вас, скорее всего, цепляет?',
+      options: [
+        { id: 'a', label: 'Надёжность, статус и долгие обязательства' },
+        { id: 'b', label: 'Кругозор и свобода; люди с другим опытом, рядом с которыми не тесно' },
+        { id: 'c', label: 'Уют, домашность и забота о быте' },
+        { id: 'd', label: 'Глубина, тайна и полное слияние' },
+      ],
+      note: 'Стрельцу нужен воздух и горизонт. Там, где всё предсказуемо и заранее решено, интерес гаснет.' },
+
+    { t: 'tapP', chart: MY, q: 'Как вы формулируете мысли и говорите? Какая планета?', a: 'mercury',
+      note: 'Мышление и речь — Меркурий. У вас он в Скорпионе.' },
+    { t: 'pick', chart: MY, focus: 'mercury', a: 'c',
+      q: 'Меркурий в Скорпионе — как это звучит?',
+      options: [
+        { id: 'a', label: 'Говорю много и быстро, перескакиваю с темы на тему' },
+        { id: 'b', label: 'Формулирую мягко и обтекаемо, чтобы никого не задеть' },
+        { id: 'c', label: 'Мало слов, но по существу; замечаю подтекст и то, о чём умолчали' },
+        { id: 'd', label: 'Раскладываю всё по пунктам, срокам и таблицам' },
+      ],
+      note: 'Скорпион читает между строк и не разбрасывается словами. Отсюда же привычка не выкладывать всё сразу.' },
+
+    { t: 'tapP', chart: MY, q: 'Как вы добиваетесь своего и как злитесь? Какая планета?', a: 'mars',
+      note: 'Действие, напор и злость — Марс. У вас он в Стрельце.' },
+    { t: 'pick', chart: MY, focus: 'mars', a: 'a',
+      q: 'Марс в Стрельце — как вы идёте к своему?',
+      options: [
+        { id: 'a', label: 'Крупно и напрямую; спорю за идею и правоту, а не за мелочь' },
+        { id: 'b', label: 'Тихо и терпеливо, ничего не забывая' },
+        { id: 'c', label: 'Через обаяние и переговоры, избегая прямого столкновения' },
+        { id: 'd', label: 'Молча обижаюсь и жду, пока заметят' },
+      ],
+      note: 'Огонь Стрельца вспыхивает быстро и так же быстро отходит: спор для вас про принцип, а не про человека.' },
+
+    { t: 'tapP', chart: MY, q: 'Что вы считаете делом жизни? Какая планета отвечает за это?', a: 'sun',
+      note: 'Замысел и направление — Солнце. У вас оно в Стрельце.' },
+    { t: 'pick', chart: MY, focus: 'sun', a: 'd',
+      q: 'Солнце в Стрельце — вокруг чего складывается смысл?',
+      options: [
+        { id: 'a', label: 'Построить надёжную структуру и заслужить уважение' },
+        { id: 'b', label: 'Беречь близких и сохранять дом' },
+        { id: 'c', label: 'Довести мастерство до безупречности в деталях' },
+        { id: 'd', label: 'Расти, расширять горизонт, понимать и объяснять другим' },
+      ],
+      note: 'Стрелец живёт ростом и смыслом. Когда расти некуда, наступает не усталость, а тоска.' },
+
+    { t: 'tapP', chart: MY, q: 'Близкому плохо, и вы хотите помочь. Какая планета отвечает за заботу?', a: 'moon',
+      note: 'Тоже Луна: и отдых, и забота — её область. В Деве забота выглядит как конкретная помощь: разгрузить, починить, взять дела на себя.' },
+    { t: 'pick', chart: MY, a: 'b',
+      q: 'В Стрельце у вас сразу три планеты — Солнце, Венера и Марс. Что это значит?',
+      options: [
+        { id: 'a', label: 'Три планеты в одном знаке гасят друг друга' },
+        { id: 'b', label: 'Смысл, вкус и действие работают в одном ключе — широта, свобода, движение' },
+        { id: 'c', label: 'Значит, остальные планеты можно не читать' },
+        { id: 'd', label: 'Значит, Стрелец отвечает у вас за отдых и заботу' },
+      ],
+      note: 'Когда в знаке несколько планет, его почерк становится ведущим. Но каждая планета продолжает отвечать за своё: отдых у вас всё равно по Деве, а речь — по Скорпиону.' },
+  ],
+},
 ];
 
 // ── СТРУКТУРА КУРСА ───────────────────────────────────────────────
@@ -4702,12 +4872,14 @@ const MODULES = [
       { title: 'Раздел 1 · Планеты',        rounds: ['r1', 'r2', 'r3'] },
       { title: 'Раздел 2 · Знаки',          rounds: ['r4', 'r5', 'r6', 'r7', 'r8'] },
       { title: 'Раздел 3 · Чтение карты',   rounds: ['r9'] },
+      { title: 'Раздел 4 · Ваша карта',     rounds: ['r10'] },
   ]},
   { name: 'Словарь планет', kicker: 'Модуль 2', sections: [
       { title: 'Раздел 1 · Светила',        rounds: ['r11', 'r12'] },
       { title: 'Раздел 2 · Меркурий и Венера', rounds: ['r13', 'r14'] },
       { title: 'Раздел 3 · Марс',           rounds: ['r15'] },
       { title: 'Раздел 4 · Всё вместе',     rounds: ['r16'] },
+      { title: 'Раздел 5 · Ваша карта в деле', rounds: ['r17'] },
   ]},
 ];
 
@@ -4726,10 +4898,8 @@ function saveProgress() {
   try { localStorage.setItem(STORE, JSON.stringify(progress)); } catch (e) {}
 }
 function isDone(id)     { return progress[id] > 0; }
-function isUnlocked(id) {
-  const i = ORDER.indexOf(id);
-  return i === 0 || isDone(ORDER[i - 1]);
-}
+// Раунды не блокируются: можно начать любой, не проходя предыдущие.
+// «Текущий» — просто первый непройденный, он подсвечен как подсказка, куда идти.
 function totalStars() { return Object.values(progress).reduce((a, b) => a + b, 0); }
 function currentId()  { return ORDER.find(id => !isDone(id)) || ORDER[ORDER.length - 1]; }
 
@@ -4782,23 +4952,41 @@ function showSignNames(on) {
 }
 
 // chart: { planetId: signId }  •  live: планеты кликабельны
+// Несколько планет в одном знаке выстраиваются столбиком от края к центру:
+// по дуге сектора места мало, а по радиусу хватает и на три, не задевая друг друга.
+// Рабочая полоса — между центральным кругом с номерами домов и глифами знаков
+// по ободу (те сидят примерно на радиусе 144).
+const R_MIN = 52, R_MAX = 126;
+function stackFor(n) {
+  if (n === 1) return { rr: [R_MARKER], r: 17, f: 21 };
+  const span = R_MAX - R_MIN;
+  const r = Math.min(15, span / (2 * n));            // маркеры не наезжают друг на друга
+  const step = (span - 2 * r) / (n - 1);
+  return {
+    rr: Array.from({ length: n }, (_, i) => R_MAX - r - i * step),
+    r,
+    f: Math.max(12, Math.round(r * 1.3)),
+  };
+}
+
 function renderPlanets(chart, live) {
   gMarks.innerHTML = '';
   if (!chart) return;
   const bySign = {};
   Object.entries(chart).forEach(([p, s]) => { (bySign[s] = bySign[s] || []).push(p); });
   Object.entries(bySign).forEach(([s, list]) => {
-    const base = sign(s).startDeg + 15;
+    const mid = sign(s).startDeg + 15;
+    const st = stackFor(list.length);
     list.forEach((p, i) => {
-      const spread = (i - (list.length - 1) / 2) * 11;
-      const pos = xy(R_MARKER - Math.abs(spread) * 0.5, base + spread);
+      const pos = xy(st.rr[i], mid);
       const g = document.createElementNS(svgNS, 'g');
       g.setAttribute('class', 'pmark' + (live ? ' live' : ''));
       g.dataset.planet = p;
       const c = document.createElementNS(svgNS, 'circle');
-      c.setAttribute('cx', pos.x); c.setAttribute('cy', pos.y); c.setAttribute('r', 17);
+      c.setAttribute('cx', pos.x); c.setAttribute('cy', pos.y); c.setAttribute('r', st.r);
       const t = document.createElementNS(svgNS, 'text');
-      t.setAttribute('x', pos.x); t.setAttribute('y', pos.y + 7.5);
+      t.setAttribute('x', pos.x); t.setAttribute('y', pos.y + st.f * 0.35);
+      t.setAttribute('font-size', st.f);
       t.textContent = PL[p].symbol;
       g.appendChild(c); g.appendChild(t);
       if (live) g.addEventListener('click', () => onPlanet(p));
@@ -4842,11 +5030,11 @@ function renderPath() {
       html += `<div class="section-head"><span class="txt">${sec.title}</span><div class="line"></div></div>`;
       sec.rounds.forEach((id, k) => {
         const r = roundById(id);
-        const done = isDone(id), open = isUnlocked(id), isCur = id === cur && !done;
+        const done = isDone(id), isCur = id === cur && !done;
         const off = OFFSETS[n % OFFSETS.length];
         // связку рисуем только внутри раздела — между разделами стоит заголовок
         const prev = k === 0 ? null : OFFSETS[(n - 1) % OFFSETS.length];
-        const cls = done ? 'done' : isCur ? 'cur' : open ? '' : 'locked';
+        const cls = done ? 'done' : isCur ? 'cur' : 'ahead';
         const stars = done ? '★'.repeat(progress[id]) + '☆'.repeat(3 - progress[id]) : '';
 
         // пунктирная связка от центра предыдущего узла к центру текущего
@@ -4868,7 +5056,7 @@ function renderPath() {
             ${link}
             <div class="node ${cls}" style="transform:translateX(${off}px)" data-round="${id}">
               <span class="glyph">${r.glyph}</span>
-              <span class="num">${open ? 'РАУНД ' + (ORDER.indexOf(id) + 1) : 'ЗАКРЫТО'}</span>
+              <span class="num">РАУНД ${ORDER.indexOf(id) + 1}</span>
               ${stars ? `<span class="stars">${stars}</span>` : ''}
             </div>
             <div class="node-caption ${capAlign}" style="${capSide}">${r.title}</div>
@@ -4886,11 +5074,7 @@ function renderPath() {
 
   wrap.innerHTML = html;
   wrap.querySelectorAll('.node').forEach(el => {
-    el.onclick = () => {
-      const id = el.dataset.round;
-      if (!isUnlocked(id)) return;
-      openSheet(id);
-    };
+    el.onclick = () => openSheet(el.dataset.round);
   });
   $('starTotal').textContent = totalStars();
 }
@@ -5033,6 +5217,14 @@ function next() {
   loadTask();
 }
 
+// Подпись под картой. Её нельзя показывать, когда задание как раз и
+// спрашивает, в каком знаке стоит планета, — иначе это готовый ответ.
+function chartLegend(t) {
+  if (!t.chart || t.noLegend) return '';
+  if (t.t === 'pick' && t.signs) return '';
+  return placementLine(t.chart);
+}
+
 // список планет под картой: «☉ во Льве · ☽ в Водолее»
 function placementLine(chart) {
   return Object.entries(chart).map(([p, s]) => `${PL[p].symbol}\uFE0E в <b>${sign(s).prep}</b>`).join(' · ');
@@ -5055,7 +5247,9 @@ function loadTask() {
   renderBar();
   say(t.quote ? `<span class="quote">«${t.quote}»</span><span class="ask">${t.q}</span>`
               : (t.q || t.text || 'Задание ниже.'));
-  ({ tapP: loadTapP, tapS: loadTapS, place: loadPlace, swipe: loadSwipe, match: loadMatch, rapid: loadRapid })[t.t](t);
+  ({ tapP: loadTapP, tapS: loadTapS, place: loadPlace, swipe: loadSwipe,
+     match: loadMatch, rapid: loadRapid, pick: loadPick })[t.t](t);
+  if (t.focus && markEl(t.focus)) markEl(t.focus).classList.add('focus');
 }
 
 // ── 1. TAP: ПЛАНЕТА ───────────────────────────────────────────────
@@ -5079,7 +5273,7 @@ function loadTapP(t) {
 function loadTapS(t) {
   renderPlanets(t.chart || null, false);
   zonesLive(true);
-  hint(t.chart ? placementLine(t.chart) : 'Знаки идут по внешнему кругу карты');
+  hint(chartLegend(t) || 'Знаки идут по внешнему кругу карты');
   setBtn('none', '');
   onZone = s => {
     if (locked) return;
@@ -5208,7 +5402,55 @@ function loadSwipe(t) {
   }
 }
 
-// ── 5. MATCH ──────────────────────────────────────────────────────
+// ── 5. PICK: ВАРИАНТЫ В БОКСАХ ПОД КАРТОЙ ─────────────────────────
+// t.signs: массив id знаков или 'all' — боксы с глифом и названием.
+// t.options: [{ id, label }] — боксы со свободным текстом.
+const ZODIAC = ['aries','taurus','gemini','cancer','leo','virgo',
+                'libra','scorpio','sagittarius','capricorn','aquarius','pisces'];
+
+function pickOptions(t) {
+  if (t.signs) {
+    const ids = t.signs === 'all' ? ZODIAC : t.signs;
+    return { kind: 'signs', list: ids.map(id => ({ id, glyph: sign(id).symbol, label: sign(id).label })) };
+  }
+  return { kind: 'text', list: t.options };
+}
+
+function loadPick(t) {
+  renderPlanets(t.chart || null, false);
+  const { kind, list } = pickOptions(t);
+  hint(chartLegend(t));
+  $('body').innerHTML = `<div class="pick-grid ${kind}">${list.map(o =>
+    `<button class="pick-opt" data-id="${o.id}">${
+      o.glyph ? `<span class="g">${o.glyph}\uFE0E</span><span class="n">${o.label}</span>` : o.label
+    }</button>`).join('')}</div>`;
+  $('body').querySelectorAll('.pick-opt').forEach(el => el.onclick = () => {
+    if (locked) return;
+    sel = el.dataset.id;
+    $('body').querySelectorAll('.pick-opt').forEach(x => x.classList.toggle('sel', x === el));
+    setBtn('ready', 'Проверить');
+  });
+  setBtn('idle', 'Проверить');
+}
+
+function checkPick(t) {
+  const ok = sel === t.a;
+  const opts = $('body').querySelectorAll('.pick-opt');
+  opts.forEach(o => {
+    o.classList.remove('sel');
+    if (o.dataset.id === t.a) o.classList.add('ok');
+    else if (o.dataset.id === sel) o.classList.add('bad');
+  });
+  // правильный вариант мог уехать за пределы видимой части списка
+  const right = [...opts].find(o => o.dataset.id === t.a);
+  if (right) right.scrollIntoView({ block: 'nearest' });
+  if (t.signs && zoneEl(t.a)) zoneEl(t.a).classList.add('ok');
+  record(ok);
+  const answer = t.signs ? sign(t.a).label : 'не этот вариант';
+  feedback(ok, ok ? 'Верно' : (t.signs ? 'На самом деле — ' + answer : 'Не то'), t.note);
+}
+
+// ── 6. MATCH ──────────────────────────────────────────────────────
 function loadMatch(t) {
   renderPlanets(null, false);
   hint('Соедините символ с названием');
@@ -5255,7 +5497,7 @@ function checkMatch(t) {
   feedback(ok, ok ? 'Все пары верны' : `Ошибок: ${wrong.length}`, t.note);
 }
 
-// ── 6. RAPID ──────────────────────────────────────────────────────
+// ── 7. RAPID ──────────────────────────────────────────────────────
 function loadRapid(t) {
   const isP = t.kind === 'planet';
   renderPlanets(t.chart || null, isP);
@@ -5301,7 +5543,7 @@ $('btn').onclick = () => {
   if (locked) { next(); return; }
   if ($('btn').disabled) return;
   locked = true;
-  ({ place: checkPlace, match: checkMatch })[t.t](t);
+  ({ place: checkPlace, match: checkMatch, pick: checkPick })[t.t](t);
   setBtn('next', idx === TASKS.length - 1 ? 'Итог' : 'Дальше');
 };
 

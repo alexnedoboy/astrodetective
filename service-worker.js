@@ -1,5 +1,5 @@
 // ── Service Worker: Астро Детектив PWA ──
-const CACHE = 'astro-detective-v5';
+const CACHE = 'astro-detective-v6';
 
 const ASSETS = [
   './',
