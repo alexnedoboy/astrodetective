@@ -1,4 +1,9 @@
 .DS_Store
+*.bak
 
-# working notes, not part of the app
-*.md
+# внутренние документы — репозиторий публичный, в него уезжает только приложение
+astro-app-full-spec.md
+astro-round-spec.md
+task_celebrity_case.md
+task_update_detective.md
+session_venus_apprentice.md

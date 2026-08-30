@@ -1026,6 +1026,383 @@
   }
 #moonRound .hidden { display: none !important; }
 
+
+  /* ══════════════════════════════════════════════════════════════
+     COURSE  —  «Путь»: карта раундов + плеер заданий
+     ══════════════════════════════════════════════════════════════ */
+#course {
+    /* эти токены объявлены только на #moonRound, поэтому дублируем их здесь */
+    --ok: #6fcf8e;
+    --ok-dim: rgba(111,207,142,0.14);
+    --bad: #d96a6a;
+    --bad-dim: rgba(217,106,106,0.14);
+    --gold: #e5c06b;
+    --silver: #b9b9b9;
+
+    display: none;
+    position: fixed; inset: 0; z-index: 60;
+    background: var(--bg); color: var(--text);
+    flex-direction: column;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+#course.open { display: flex; }
+#course .hidden { display: none !important; }
+#course .screen { flex: 1; min-height: 0; width: 100%; max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; }
+
+  /* ── ОБЩАЯ ШАПКА ── */
+#course .c-top {
+    flex: 0 0 auto; padding: 12px 20px 10px;
+    display: flex; align-items: center; gap: 12px;
+  }
+#course .c-back {
+    width: 34px; height: 34px; flex: 0 0 auto;
+    border-radius: 50%; border: 1.5px solid var(--border);
+    background: transparent; color: var(--text);
+    font-size: 16px; line-height: 1; cursor: pointer;
+  }
+#course .c-back:active { background: var(--hi-dim); }
+#course .c-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+#course .c-title .m { font-size: 13px; font-weight: 600; letter-spacing: 0.01em; }
+#course .c-title .s { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+#course .c-stars {
+    margin-left: auto; flex: 0 0 auto;
+    font-size: 12px; color: var(--gold); letter-spacing: 0.04em;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  /* ── ЭКРАН ПУТИ ── */
+#course .path-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+
+#course .module-banner {
+    border: 1px solid var(--border); background: var(--surface);
+    border-radius: 18px; padding: 14px 16px; margin: 6px 0 4px;
+  }
+#course .module-banner .mb-kicker { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+#course .module-banner .mb-name { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+#course .module-banner .mb-bar { height: 4px; border-radius: 2px; background: var(--accent); overflow: hidden; }
+#course .module-banner .mb-bar i { display: block; height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.5s ease; }
+#course .module-banner .mb-meta { font-size: 11px; color: var(--muted); margin-top: 7px; }
+
+#course .section-head {
+    display: flex; align-items: center; gap: 10px;
+    margin: 26px 0 4px;
+  }
+#course .section-head .line { flex: 1; height: 1px; background: var(--border); }
+#course .section-head .txt { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+
+  /* узлы пути */
+#course .node-row { position: relative; height: 96px; display: flex; justify-content: center; align-items: center; }
+#course .node-row .link {
+    position: absolute; width: 2px; margin-left: -1px;
+    transform-origin: 1px 0; pointer-events: none;
+    background-image: linear-gradient(rgba(255,255,255,0.16) 55%, transparent 0);
+    background-size: 2px 9px;
+  }
+#course .node-row.done .link { background-image: linear-gradient(rgba(229,192,107,0.5) 55%, transparent 0); }
+#course .node {
+    position: relative; width: 64px; height: 64px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border: 1.5px solid var(--border); background: var(--surface);
+    color: var(--muted); cursor: pointer;
+    transition: transform 0.18s, border-color 0.25s, background 0.25s, color 0.25s;
+  }
+#course .node .glyph { font-size: 24px; line-height: 1; font-family: 'Segoe UI Symbol', 'Apple Symbols', serif; }
+#course .node .num { font-size: 9px; letter-spacing: 0.1em; margin-top: 3px; opacity: 0.7; }
+#course .node:active { transform: scale(0.94); }
+
+#course .node.locked { opacity: 0.32; cursor: default; }
+#course .node.locked:active { transform: none; }
+#course .node.done {
+    border-color: var(--gold); color: var(--gold);
+    background-color: var(--surface);
+    background-image: linear-gradient(rgba(229,192,107,0.10), rgba(229,192,107,0.10));
+  }
+#course .node.cur {
+    border-color: var(--hi); color: var(--text);
+    background-color: var(--surface);
+    background-image: linear-gradient(var(--hi-dim), var(--hi-dim));
+    animation: cPulse 2.2s ease-in-out infinite;
+  }
+  @keyframes cPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.22); }
+    50%      { box-shadow: 0 0 0 9px rgba(255,255,255,0); }
+  }
+#course .node .stars {
+    position: absolute; bottom: -13px; left: 50%; transform: translateX(-50%);
+    font-size: 8px; letter-spacing: 1.5px; color: var(--gold); white-space: nowrap;
+  }
+#course .node-caption {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-size: 11.5px; line-height: 1.3; color: var(--muted); width: 128px;
+  }
+#course .node-caption.ta-left  { text-align: left; }
+#course .node-caption.ta-right { text-align: right; }
+#course .node-row.done .node-caption { color: var(--text); }
+
+#course .milestone {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 14px 0 6px; color: var(--muted);
+  }
+#course .milestone .chest { font-size: 20px; opacity: 0.5; }
+#course .milestone .txt { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; }
+#course .milestone.reached { color: var(--gold); }
+#course .milestone.reached .chest { opacity: 1; }
+
+  /* нижний таб-бар */
+#course .tabbar {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; justify-content: center; gap: 4px;
+    padding: 8px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top, var(--bg) 62%, transparent);
+  }
+#course .tabbar .tab {
+    flex: 1; max-width: 130px; padding: 9px 4px 7px;
+    border: none; background: transparent; color: var(--muted);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+    border-radius: 12px;
+  }
+#course .tabbar .tab .ic { font-size: 17px; line-height: 1; }
+#course .tabbar .tab.on { color: var(--text); background: var(--accent); }
+
+  /* ── ПРОФИЛЬ / ПРАКТИКА (панель) ── */
+#course .panel { flex: 1; min-height: 0; overflow-y: auto; padding: 6px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+#course .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0 18px; }
+#course .stat {
+    border: 1px solid var(--border); background: var(--surface);
+    border-radius: 16px; padding: 14px;
+  }
+#course .stat .v { font-size: 26px; font-weight: 200; letter-spacing: -0.02em; }
+#course .stat .k { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-top: 5px; }
+#course .big-btn {
+    width: 100%; padding: 15px; border-radius: 14px;
+    background: var(--hi); color: #0a0a0a; border: none;
+    font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 4px;
+  }
+#course .big-btn[disabled] { background: var(--surface); color: var(--muted); border: 1.5px solid var(--border); cursor: not-allowed; }
+#course .ghost-btn {
+    width: 100%; padding: 15px; border-radius: 14px; margin-top: 10px;
+    background: transparent; color: var(--muted);
+    border: 1.5px solid var(--border); font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+#course .panel h2 { font-size: 17px; font-weight: 600; margin: 10px 0 6px; }
+#course .panel p.lead { font-size: 13px; line-height: 1.5; color: var(--muted); margin: 10px 0 16px; }
+
+  /* ── ШТОРКА РАУНДА ── */
+#course .sheet-back {
+    position: fixed; inset: 0; z-index: 5; background: rgba(0,0,0,0.6);
+    display: none; align-items: flex-end; justify-content: center;
+  }
+#course .sheet-back.open { display: flex; animation: cFade 0.2s ease; }
+#course .sheet {
+    width: 100%; max-width: 430px;
+    background: var(--surface); border: 1px solid var(--border); border-bottom: none;
+    border-radius: 22px 22px 0 0;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    animation: cSlideUp 0.26s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+#course .sheet .grab { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 16px; }
+#course .sheet .kick { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 7px; }
+#course .sheet h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+#course .sheet p { font-size: 13px; line-height: 1.5; color: var(--muted); margin-bottom: 16px; }
+  @keyframes cSlideUp { from { transform: translateY(100%); } to { transform: none; } }
+  @keyframes cFade { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ── ИНТРО-КАРТОЧКА РАУНДА ── */
+#course .intro-wrap { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 20px 20px; display: flex; flex-direction: column; justify-content: center; }
+#course .intro-card {
+    border: 1px solid var(--border); background: var(--surface);
+    border-radius: 20px; padding: 22px 20px;
+  }
+#course .intro-card .kick { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+#course .intro-card h3 { font-size: 21px; font-weight: 600; margin-bottom: 14px; }
+#course .intro-card .lead { font-size: 14px; line-height: 1.5; color: var(--text); opacity: 0.85; margin-bottom: 16px; }
+#course .intro-row { display: flex; gap: 13px; align-items: flex-start; padding: 11px 0; border-top: 1px solid var(--border); }
+#course .intro-row .sym {
+    width: 40px; height: 40px; flex: 0 0 auto; border-radius: 50%;
+    border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center;
+    font-size: 21px; font-family: 'Segoe UI Symbol', 'Apple Symbols', serif;
+  }
+#course .intro-row .nm { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+#course .intro-row .ds { font-size: 12.5px; line-height: 1.4; color: var(--muted); }
+
+  /* ── ПЛЕЕР ЗАДАНИЙ ── */
+#course .q-head { flex: 0 0 auto; padding: 10px 20px 8px; display: flex; flex-direction: column; gap: 9px; }
+#course .q-head-top { display: flex; align-items: center; gap: 12px; }
+#course .q-head-top .lbl { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+#course .q-head-top .cnt { margin-left: auto; font-size: 12px; color: var(--muted); }
+#course .q-bar { display: flex; gap: 3px; height: 4px; }
+#course .q-bar .seg { flex: 1; border-radius: 2px; background: var(--accent); transition: background 0.3s; }
+#course .q-bar .seg.ok { background: var(--ok); }
+#course .q-bar .seg.bad { background: var(--bad); }
+#course .q-bar .seg.cur { background: var(--hi); }
+
+#course .prompt-row { flex: 0 0 auto; display: flex; gap: 10px; align-items: flex-start; padding: 4px 20px 6px; }
+#course .prompt-row .avatar {
+    width: 40px; height: 40px; flex: 0 0 auto; border-radius: 50%;
+    border: 1.5px solid var(--border); overflow: hidden; background: var(--surface);
+  }
+#course .prompt-row .avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+#course .bubble {
+    position: relative; flex: 1;
+    border: 1px solid var(--border); background: var(--surface);
+    border-radius: 14px; padding: 10px 13px;
+    font-size: 14px; line-height: 1.4;
+  }
+#course .bubble::before {
+    content: ''; position: absolute; left: -6px; top: 15px;
+    width: 10px; height: 10px; background: var(--surface);
+    border-left: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    transform: rotate(45deg);
+  }
+#course .bubble .quote { display: block; font-style: italic; color: var(--text); opacity: 0.92; margin-bottom: 6px; }
+#course .bubble .ask { display: block; font-size: 12.5px; color: var(--muted); }
+
+  /* карта центрируется в свободном месте; когда тело задания высокое,
+     сжимается и скроллится именно тело, а не карта */
+#course .c-chart-zone {
+    flex: 1 1 auto; min-height: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+#course .c-chart {
+    position: relative; flex: 0 0 auto;
+    width: min(74vw, 310px); aspect-ratio: 1;
+    max-height: 40vh; margin: 2px 0 0;
+  }
+#course .c-chart img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+#course .c-chart svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#course .c-chart.dim { opacity: 0.28; transition: opacity 0.3s; }
+#course .zone { fill: transparent; stroke: none; transition: fill 0.15s; }
+#course .zone.live { cursor: pointer; }
+#course .zone.live:active { fill: rgba(255,255,255,0.07); }
+#course .zone.pick { fill: rgba(255,255,255,0.10); }
+#course .zone.ok { fill: var(--ok-dim); }
+#course .zone.bad { fill: var(--bad-dim); }
+#course .signname { font-size: 8px; fill: rgba(240,237,232,0.5); letter-spacing: 0.04em; pointer-events: none; }
+#course .pmark { cursor: default; }
+#course .pmark.live { cursor: pointer; }
+#course .pmark circle { fill: transparent; stroke: rgba(255,255,255,0.14); stroke-width: 1; transition: fill 0.15s, stroke 0.15s; }
+#course .pmark.live:active circle { fill: rgba(255,255,255,0.10); }
+#course .pmark text { fill: #fff; font-size: 21px; text-anchor: middle; pointer-events: none; font-family: 'Segoe UI Symbol', 'Apple Symbols', serif; }
+#course .pmark.ok circle { stroke: var(--ok); fill: var(--ok-dim); }
+#course .pmark.bad circle { stroke: var(--bad); fill: var(--bad-dim); }
+#course .pmark.ghost text { opacity: 0.4; }
+#course .c-hint { font-size: 11.5px; color: var(--muted); text-align: center; padding: 7px 20px 0; min-height: 17px; }
+#course .c-hint b { color: var(--text); font-weight: 600; }
+
+#course .c-body { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding: 4px 20px 6px; }
+
+  /* док планет */
+#course .dock { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 12px 0 4px; }
+#course .tok {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    background: none; border: none; cursor: pointer; padding: 0;
+  }
+#course .tok .ring {
+    width: 52px; height: 52px; border-radius: 50%;
+    border: 1.5px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; color: var(--text);
+    font-family: 'Segoe UI Symbol', 'Apple Symbols', serif;
+    transition: box-shadow 0.18s, background 0.18s, border-color 0.18s;
+  }
+#course .tok .cap { font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+#course .tok.sel .ring { border-color: var(--hi); background: var(--hi-dim); box-shadow: 0 0 0 2.5px var(--hi); }
+#course .tok.done { opacity: 0.28; pointer-events: none; }
+
+  /* swipe */
+#course .swipe-stage { display: flex; justify-content: center; padding: 10px 0 2px; perspective: 800px; }
+#course .swipe-card {
+    position: relative; width: 100%; max-width: 330px; min-height: 92px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    border-radius: 18px; padding: 18px 18px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    font-size: 15px; line-height: 1.4; touch-action: pan-y; cursor: grab; user-select: none;
+  }
+#course .swipe-card.glyph { font-size: 66px; font-family: 'Segoe UI Symbol', 'Apple Symbols', serif; min-height: 130px; }
+#course .swipe-card.settle { transition: transform 0.28s ease; }
+#course .swipe-card.gone { transition: transform 0.32s ease, opacity 0.32s ease; opacity: 0; }
+#course .stamp {
+    position: absolute; top: 12px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    border: 2px solid; border-radius: 7px; padding: 3px 7px; opacity: 0; font-family: inherit;
+  }
+#course .stamp.yes { right: 14px; color: var(--ok); border-color: var(--ok); transform: rotate(9deg); }
+#course .stamp.no  { left: 14px;  color: var(--bad); border-color: var(--bad); transform: rotate(-9deg); }
+#course .swipe-btns { display: flex; gap: 10px; padding: 12px 0 4px; }
+#course .sw-btn {
+    flex: 1; padding: 13px; border-radius: 14px;
+    border: 1.5px solid var(--border); background: var(--surface); color: var(--text);
+    font-size: 13.5px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+  }
+#course .sw-btn.no .mk { color: var(--bad); }
+#course .sw-btn.yes .mk { color: var(--ok); }
+#course .sw-btn[disabled] { opacity: 0.4; cursor: default; }
+
+  /* match */
+#course .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; padding: 10px 0 4px; }
+#course .match-col { display: flex; flex-direction: column; gap: 8px; }
+#course .m-item {
+    padding: 12px 10px; border-radius: 13px;
+    border: 1.5px solid var(--border); background: var(--surface); color: var(--text);
+    font-size: 14px; cursor: pointer; text-align: center;
+    transition: border-color 0.18s, background 0.18s, opacity 0.18s;
+  }
+#course .m-item.glyph { font-size: 23px; font-family: 'Segoe UI Symbol', 'Apple Symbols', serif; padding: 8px; }
+#course .m-item.sel { border-color: var(--hi); background: var(--hi-dim); }
+#course .m-item.tied { border-color: var(--gold); color: var(--gold); background: rgba(229,192,107,0.08); }
+#course .m-item.bad { border-color: var(--bad); color: var(--bad); background: var(--bad-dim); }
+#course .m-item.gone { opacity: 0.22; pointer-events: none; }
+
+  /* rapid */
+#course .rapid-strip { display: flex; justify-content: center; gap: 7px; padding: 12px 0 2px; }
+#course .rapid-strip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+#course .rapid-strip .dot.ok { background: var(--ok); }
+#course .rapid-strip .dot.bad { background: var(--bad); }
+#course .rapid-strip .dot.cur { background: var(--hi); }
+
+  /* футер плеера */
+#course .c-foot { flex: 0 0 auto; padding: 6px 20px calc(16px + env(safe-area-inset-bottom, 0px)); }
+#course .fb {
+    border-radius: 14px; padding: 11px 13px; margin-bottom: 9px;
+    font-size: 13px; line-height: 1.45; border: 1px solid; display: none;
+  }
+#course .fb.show { display: block; animation: cRise 0.22s ease; }
+#course .fb.ok  { border-color: rgba(111,207,142,0.5); background: var(--ok-dim); }
+#course .fb.bad { border-color: rgba(217,106,106,0.5); background: var(--bad-dim); }
+#course .fb .t { font-weight: 700; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+#course .fb.ok  .t { color: var(--ok); }
+#course .fb.bad .t { color: var(--bad); }
+#course .fb .x { color: var(--text); opacity: 0.9; }
+  @keyframes cRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+#course .c-btn {
+    width: 100%; padding: 15px; border-radius: 14px;
+    background: var(--surface); color: var(--muted);
+    font-size: 15px; font-weight: 600; letter-spacing: 0.03em;
+    border: 1.5px solid var(--border); cursor: not-allowed;
+    transition: background 0.25s, color 0.25s, border-color 0.25s;
+  }
+#course .c-btn.go { background: var(--hi); color: #0a0a0a; border-color: var(--hi); cursor: pointer; }
+
+  /* ── ИТОГ РАУНДА ── */
+#course .done-wrap { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px)); text-align: center; }
+#course .done-wrap .score { font-size: 46px; font-weight: 200; letter-spacing: -0.02em; margin: 18px 0 2px; }
+#course .done-wrap .score small { font-size: 18px; color: var(--muted); }
+#course .done-wrap .starline { font-size: 22px; letter-spacing: 6px; color: var(--gold); margin: 6px 0 10px; }
+#course .done-wrap .rank { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 22px; }
+#course .done-wrap h1 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+#course .done-wrap .next-up { font-size: 12.5px; color: var(--muted); margin-bottom: 20px; }
+#course .recap { display: flex; flex-direction: column; gap: 8px; text-align: left; margin-bottom: 18px; }
+#course .recap-row {
+    display: flex; gap: 12px; align-items: flex-start;
+    border: 1px solid var(--border); background: var(--surface);
+    border-radius: 14px; padding: 11px 13px;
+  }
+#course .recap-row .sym { font-size: 20px; width: 26px; flex: 0 0 auto; text-align: center; font-family: 'Segoe UI Symbol', 'Apple Symbols', serif; }
+#course .recap-row .nm { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+#course .recap-row .ds { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
 </style>
 </head>
 <body>
@@ -1041,6 +1418,7 @@
       <button class="btn-title-secondary" onclick="startLearningMode()">✦ Обучение</button>
       <button class="btn-title-secondary" onclick="startSessionMode()">♀ Сессия</button>
       <button class="btn-title-secondary" onclick="startDetectiveMode()">🔍 Дело</button>
+      <button class="btn-title-secondary" onclick="Course.start()">◎ Курс</button>
       <button class="btn-title-secondary" onclick="MoonRound.start()">☾ Луна как забота</button>
     </div>
   </div>
@@ -3864,5 +4242,1138 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
+
+<!-- ══ КУРС: карта раундов + плеер ══ -->
+<div id="course">
+
+  <!-- 1. ПУТЬ -->
+  <div class="screen" id="co-pathScreen">
+    <div class="c-top">
+      <button class="c-back" onclick="Course.exit()" title="На главную">←</button>
+      <div class="c-title">
+        <span class="m" id="co-pathTitle">Астрология с нуля</span>
+        <span class="s" id="co-pathSub">Курс</span>
+      </div>
+      <span class="c-stars">★ <b id="co-starTotal">0</b></span>
+    </div>
+    <div class="path-scroll" id="co-path"></div>
+    <div class="panel hidden" id="co-practice"></div>
+    <div class="panel hidden" id="co-profile"></div>
+    <div class="tabbar">
+      <button class="tab on" data-tab="path"><span class="ic">◎</span>Путь</button>
+      <button class="tab" data-tab="practice"><span class="ic">✦</span>Практика</button>
+      <button class="tab" data-tab="profile"><span class="ic">☾</span>Профиль</button>
+    </div>
+  </div>
+
+  <!-- 2. ИНТРО РАУНДА -->
+  <div class="screen hidden" id="co-introScreen">
+    <div class="c-top">
+      <button class="c-back" onclick="Course.abort()" title="Назад">✕</button>
+      <div class="c-title"><span class="m" id="co-introRound">Раунд 1</span><span class="s">Знакомство</span></div>
+    </div>
+    <div class="intro-wrap"><div class="intro-card" id="co-introCard"></div></div>
+    <div class="c-foot"><button class="c-btn go" id="co-introBtn">Поехали →</button></div>
+  </div>
+
+  <!-- 3. ПЛЕЕР ЗАДАНИЙ -->
+  <div class="screen hidden" id="co-taskScreen">
+    <div class="q-head">
+      <div class="q-head-top">
+        <button class="c-back" onclick="Course.abort()" title="Выйти">✕</button>
+        <span class="lbl" id="co-roundLabel"></span>
+        <span class="cnt" id="co-counter">1 / 10</span>
+      </div>
+      <div class="q-bar" id="co-bar"></div>
+    </div>
+
+    <div class="prompt-row">
+      <div class="avatar"><img src="character avatar.png" alt=""></div>
+      <div class="bubble" id="co-bubble"></div>
+    </div>
+
+    <div class="c-chart-zone">
+      <div class="c-chart" id="co-chartWrap">
+        <img src="Natal Chat Circle 2.png" alt="Натальная карта">
+        <svg id="co-svg" viewBox="0 0 390 390"></svg>
+      </div>
+      <p class="c-hint" id="co-hint"></p>
+    </div>
+
+    <div class="c-body" id="co-body"></div>
+
+    <div class="c-foot">
+      <div class="fb" id="co-fb"><div class="t" id="co-fbT"></div><div class="x" id="co-fbX"></div></div>
+      <button class="c-btn" id="co-btn">Проверить</button>
+    </div>
+  </div>
+
+  <!-- 4. ИТОГ -->
+  <div class="screen hidden" id="co-doneScreen">
+    <div class="done-wrap" id="co-doneBody"></div>
+  </div>
+
+  <!-- ШТОРКА -->
+  <div class="sheet-back" id="co-sheetBack">
+    <div class="sheet" id="co-sheet"></div>
+  </div>
+</div>
+
+<script>
+
+// ══════════════════════════════════════════════════════════════════
+//  КУРС «Астрология с нуля» — данные и движок
+// ══════════════════════════════════════════════════════════════════
+const Course = (function () {
+
+const root = document.getElementById('course');
+const $ = id => root.querySelector('#co-' + id);
+const svgNS = 'http://www.w3.org/2000/svg';
+
+// ── СПРАВОЧНИКИ ───────────────────────────────────────────────────
+const SG = [
+  { id: 'scorpio',     label: 'Скорпион', prep: 'Скорпионе', symbol: '♏', startDeg: 180 },
+  { id: 'libra',       label: 'Весы',     prep: 'Весах',     symbol: '♎', startDeg: 210 },
+  { id: 'virgo',       label: 'Дева',     prep: 'Деве',      symbol: '♍', startDeg: 240 },
+  { id: 'leo',         label: 'Лев',      prep: 'Льве',      symbol: '♌', startDeg: 270 },
+  { id: 'cancer',      label: 'Рак',      prep: 'Раке',      symbol: '♋', startDeg: 300 },
+  { id: 'gemini',      label: 'Близнецы', prep: 'Близнецах', symbol: '♊', startDeg: 330 },
+  { id: 'taurus',      label: 'Телец',    prep: 'Тельце',    symbol: '♉', startDeg:   0 },
+  { id: 'aries',       label: 'Овен',     prep: 'Овне',      symbol: '♈', startDeg:  30 },
+  { id: 'pisces',      label: 'Рыбы',     prep: 'Рыбах',     symbol: '♓', startDeg:  60 },
+  { id: 'aquarius',    label: 'Водолей',  prep: 'Водолее',   symbol: '♒', startDeg:  90 },
+  { id: 'capricorn',   label: 'Козерог',  prep: 'Козероге',  symbol: '♑', startDeg: 120 },
+  { id: 'sagittarius', label: 'Стрелец',  prep: 'Стрельце',  symbol: '♐', startDeg: 150 },
+];
+const sign = id => SG.find(s => s.id === id);
+
+const PL = {
+  sun:     { symbol: '☉', label: 'Солнце',   short: 'Солнце' },
+  moon:    { symbol: '☽', label: 'Луна',     short: 'Луна' },
+  mercury: { symbol: '☿', label: 'Меркурий', short: 'Меркурий' },
+  venus:   { symbol: '♀', label: 'Венера',   short: 'Венера' },
+  mars:    { symbol: '♂', label: 'Марс',     short: 'Марс' },
+};
+
+const CX = 195, CY = 195, R_OUTER = 188, R_INNER = 70, R_MARKER = 108, R_NAME = 172;
+
+// ── ГОТОВЫЕ РАСКЛАДКИ КАРТЫ ───────────────────────────────────────
+const A3 = { sun: 'leo',    moon: 'aquarius', mercury: 'taurus' };
+const B3 = { sun: 'scorpio', moon: 'gemini',  mercury: 'capricorn' };
+const C3 = { sun: 'aries',  moon: 'virgo',    mercury: 'sagittarius' };
+const A5 = { sun: 'cancer', moon: 'aquarius', mercury: 'leo',    venus: 'scorpio', mars: 'taurus' };
+const B5 = { sun: 'pisces', moon: 'libra',    mercury: 'aries',  venus: 'capricorn', mars: 'gemini' };
+
+// ── КОНТЕНТ РАУНДОВ ───────────────────────────────────────────────
+const ROUNDS = [
+// ═══ МОДУЛЬ 1 · АЛФАВИТ ═══════════════════════════════════════════
+{
+  id: 'r1', glyph: '☉', title: 'Солнце, Луна, Меркурий', caption: 'Три первых знака алфавита',
+  intro: {
+    title: 'Три планеты',
+    lead: 'На карте стоят три планеты. Научимся узнавать их в лицо.',
+    rows: [
+      { sym: '☉', nm: 'Солнце',   ds: 'Большой круг с точкой посередине.' },
+      { sym: '☽', nm: 'Луна',     ds: 'Серп, полумесяц.' },
+      { sym: '☿', nm: 'Меркурий', ds: 'Круг с рожками сверху и крестом снизу.' },
+    ],
+  },
+  tasks: [
+    { t: 'tapP', chart: A3, q: 'Нажмите на Солнце.',   a: 'sun',     note: '☉ — круг с точкой. Самый «полный» символ на карте.' },
+    { t: 'tapP', chart: A3, q: 'Нажмите на Луну.',     a: 'moon',    note: '☽ — единственный серп среди планет.' },
+    { t: 'tapP', chart: A3, q: 'Нажмите на Меркурий.', a: 'mercury', note: '☿ — круг, но с рожками сверху. Ни у кого больше рожек нет.' },
+    { t: 'swipe', glyph: { p: 'mercury' }, q: 'Это Луна?',     a: false, note: 'Это Меркурий. У Луны нет круга — только серп.' },
+    { t: 'swipe', glyph: { p: 'sun' },     q: 'Это Солнце?',   a: true,  note: 'Да: круг с точкой в центре.' },
+    { t: 'tapP', chart: B3, q: 'Нажмите на Меркурий.', a: 'mercury', note: 'Планеты переехали — символ остался прежним.' },
+    { t: 'swipe', glyph: { p: 'moon' },    q: 'Это Меркурий?', a: false, note: 'Это Луна. У Меркурия сверху рожки, а не серп целиком.' },
+    { t: 'tapP', chart: C3, q: 'Нажмите на Луну.',     a: 'moon',    note: 'Серп ни с чем не спутать.' },
+    { t: 'tapP', chart: C3, q: 'Какая планета похожа на серп?', a: 'moon',    note: 'Луна. Символ буквально рисует фазу месяца.' },
+    { t: 'tapP', chart: C3, q: 'У какой планеты точка в центре?', a: 'sun',   note: 'Солнце. Точка — это центр, вокруг которого всё вращается.' },
+  ],
+},
+{
+  id: 'r2', glyph: '♀', title: 'Венера и Марс', caption: 'Зеркало и копьё',
+  intro: {
+    title: 'Ещё две планеты',
+    lead: 'Их символы легко различить, если знать, куда смотреть.',
+    rows: [
+      { sym: '♀', nm: 'Венера', ds: 'Круг с крестом снизу — ручное зеркало.' },
+      { sym: '♂', nm: 'Марс',   ds: 'Круг со стрелой вверх — щит и копьё.' },
+    ],
+  },
+  tasks: [
+    { t: 'tapP', chart: { sun: 'leo', venus: 'libra', mars: 'aries' }, q: 'Нажмите на Венеру.', a: 'venus', note: '♀ — крест снизу, «ручка зеркала».' },
+    { t: 'tapP', chart: { sun: 'leo', venus: 'libra', mars: 'aries' }, q: 'Нажмите на Марс.',   a: 'mars',  note: '♂ — стрела, направленная наружу.' },
+    { t: 'swipe', glyph: { p: 'mars' },  q: 'Это Венера?', a: false, note: 'Это Марс: стрела вверх, а не крест вниз.' },
+    { t: 'swipe', glyph: { p: 'mars' },  q: 'Это Марс?',   a: true,  note: 'Да. Щит с копьём.' },
+    { t: 'tapP', chart: { sun: 'taurus', moon: 'pisces', venus: 'virgo', mars: 'sagittarius' }, q: 'Нажмите на Венеру.', a: 'venus', note: 'Даже среди четырёх планет зеркало видно сразу.' },
+    { t: 'tapP', chart: { sun: 'taurus', moon: 'pisces', venus: 'virgo', mars: 'sagittarius' }, q: 'Нажмите на Марс.',   a: 'mars',  note: 'Стрела всегда смотрит вверх-вправо.' },
+    { t: 'swipe', glyph: { p: 'venus' }, q: 'Это Солнце?', a: false, note: 'Это Венера. У Солнца точка внутри круга и никакого креста.' },
+    { t: 'tapP', chart: A5, q: 'Нажмите на планету со стрелой.', a: 'mars',  note: 'Марс — единственный со стрелой.' },
+    { t: 'tapP', chart: A5, q: 'Нажмите на планету с крестом снизу.', a: 'venus', note: 'Венера. Крест внизу — её подпись.' },
+    { t: 'tapP', chart: A5, q: 'Нажмите на Меркурий.', a: 'mercury', note: 'Среди пяти планет Меркурий узнаётся по рожкам.' },
+  ],
+},
+{
+  id: 'r3', glyph: '✦', title: 'Все пять планет', caption: 'Повторение',
+  tasks: [
+    { t: 'tapP', chart: A5, q: 'Нажмите на Солнце.', a: 'sun',  note: 'Круг с точкой.' },
+    { t: 'tapP', chart: A5, q: 'Нажмите на Марс.',   a: 'mars', note: 'Стрела.' },
+    { t: 'tapP', chart: A5, q: 'Нажмите на Луну.',   a: 'moon', note: 'Серп.' },
+    { t: 'swipe', glyph: { p: 'venus' }, q: 'Это Меркурий?', a: false, note: 'Это Венера. У Меркурия сверху рожки.' },
+    { t: 'swipe', glyph: { p: 'venus' }, q: 'Это Венера?',   a: true,  note: 'Да, зеркало.' },
+    { t: 'tapP', chart: B5, q: 'Какая планета — серп?',       a: 'moon',    note: 'Луна.' },
+    { t: 'tapP', chart: B5, q: 'У какой планеты рожки сверху?', a: 'mercury', note: 'Меркурий. Рожки — только у него.' },
+    { t: 'swipe', glyph: { p: 'sun' }, q: 'Это Солнце?', a: true, note: 'Да.' },
+    { t: 'match', kind: 'planet', q: 'Соедините каждый символ с его планетой.', items: ['sun', 'moon', 'mercury', 'venus', 'mars'], note: 'Пять символов — пять имён. Это весь алфавит личных планет.' },
+    { t: 'rapid', kind: 'planet', chart: A5, seq: ['venus', 'sun', 'mercury', 'moon', 'mars'], note: 'Пять подряд без подсказок — планеты вы узнаёте.' },
+  ],
+},
+{
+  id: 'r4', glyph: '♈', title: 'Огонь: Овен, Лев, Стрелец', caption: 'Первые три знака на ободе',
+  intro: {
+    title: 'Знаки огня',
+    lead: 'По ободу карты идут 12 знаков. Начнём с трёх огненных — резких, ярких, заметных.',
+    rows: [
+      { sym: '♈', nm: 'Овен',    ds: 'Рога барана.' },
+      { sym: '♌', nm: 'Лев',     ds: 'Грива и хвост льва.' },
+      { sym: '♐', nm: 'Стрелец', ds: 'Стрела лучника.' },
+    ],
+  },
+  tasks: [
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Овна.',    a: 'aries',       note: 'Овен ♈ — рога барана.' },
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Льва.',    a: 'leo',         note: 'Лев ♌ — завиток гривы.' },
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Стрельца.', a: 'sagittarius', note: 'Стрелец ♐ — стрела вверх.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Овен.',    a: { p: 'moon', s: 'aries' },       note: 'Овен — сектор с рогами барана, в правой нижней части круга.' },
+    { t: 'swipe', glyph: { s: 'sagittarius' }, q: 'Это Лев?', a: false, note: 'Это Стрелец: стрела. У Льва — завиток.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Стрелец.', a: { p: 'moon', s: 'sagittarius' }, note: 'Стрелец — сектор со стрелой на ободе.' },
+    { t: 'swipe', glyph: { s: 'aries' }, q: 'Это Овен?', a: true, note: 'Да, рога барана.' },
+    { t: 'tapS', names: true, q: 'Какой знак похож на стрелу лучника?', a: 'sagittarius', note: 'Стрелец.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну во Льва.', a: { p: 'moon', s: 'leo' }, note: 'Лев — верх карты, справа от Девы.' },
+    { t: 'tapS', q: 'Нажмите на Овна — теперь без подписей.', a: 'aries', note: 'Первый раз среди всех двенадцати. Дальше будет только так.' },
+  ],
+},
+{
+  id: 'r5', glyph: '♉', title: 'Земля: Телец, Дева, Козерог', caption: 'Три земных знака',
+  intro: {
+    title: 'Знаки земли',
+    lead: 'Земные знаки — про устойчивость, тело и результат.',
+    rows: [
+      { sym: '♉', nm: 'Телец',   ds: 'Голова быка с рогами.' },
+      { sym: '♍', nm: 'Дева',    ds: 'Буква M с петлёй.' },
+      { sym: '♑', nm: 'Козерог', ds: 'Козерог: V с хвостом-петлёй.' },
+    ],
+  },
+  tasks: [
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Тельца.',   a: 'taurus',    note: 'Телец ♉ — круг с рогами.' },
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Девы.',     a: 'virgo',     note: 'Дева ♍ — M с завёрнутым хвостом.' },
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Козерога.', a: 'capricorn', note: 'Козерог ♑ — острая V и петля.' },
+    { t: 'swipe', glyph: { s: 'capricorn' }, q: 'Это Дева?', a: false, note: 'Это Козерог. У Девы — M, а не V.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Тельца.', a: { p: 'moon', s: 'taurus' }, note: 'Телец — правая сторона карты, под Близнецами.' },
+    { t: 'swipe', glyph: { s: 'capricorn' }, q: 'Это Козерог?', a: true, note: 'Да.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Деву.', a: { p: 'moon', s: 'virgo' }, note: 'Дева — верх карты, слева от Льва.' },
+    { t: 'tapS', names: true, q: 'Какой знак — бык?', a: 'taurus', note: 'Телец.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Козерога.', a: { p: 'moon', s: 'capricorn' }, note: 'Козерог — низ карты, слева от Водолея.' },
+    { t: 'tapS', q: 'Нажмите на Деву — без подписей.', a: 'virgo', note: 'Дева и Скорпион похожи: у Девы хвост загнут внутрь, у Скорпиона — стрелка наружу.' },
+  ],
+},
+{
+  id: 'r6', glyph: '♊', title: 'Воздух: Близнецы, Весы, Водолей', caption: 'Три воздушных знака',
+  intro: {
+    title: 'Знаки воздуха',
+    lead: 'Воздух — про связь, обмен, разговор.',
+    rows: [
+      { sym: '♊', nm: 'Близнецы', ds: 'Двое рядом: римская двойка II.' },
+      { sym: '♎', nm: 'Весы',     ds: 'Коромысло весов.' },
+      { sym: '♒', nm: 'Водолей',  ds: 'Две волны.' },
+    ],
+  },
+  tasks: [
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Близнецов.', a: 'gemini',   note: 'Близнецы ♊ — две вертикали.' },
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Весов.',     a: 'libra',    note: 'Весы ♎ — горизонталь с дугой.' },
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Водолея.',   a: 'aquarius', note: 'Водолей ♒ — две волны.' },
+    { t: 'swipe', glyph: { s: 'aquarius' }, q: 'Это Весы?', a: false, note: 'Это Водолей. Весы — прямая линия с дугой сверху.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Близнецов.', a: { p: 'moon', s: 'gemini' }, note: 'Близнецы — правая сторона, над Тельцом.' },
+    { t: 'swipe', glyph: { s: 'libra' }, q: 'Это Весы?', a: true, note: 'Да, коромысло.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Весы.', a: { p: 'moon', s: 'libra' }, note: 'Весы — левая верхняя часть карты.' },
+    { t: 'tapS', names: true, q: 'Какой знак нарисован волнами?', a: 'aquarius', note: 'Водолей. Волны — не вода, а поток информации.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Водолея.', a: { p: 'moon', s: 'aquarius' }, note: 'Водолей — низ карты.' },
+    { t: 'tapS', q: 'Нажмите на Близнецов — без подписей.', a: 'gemini', note: 'Есть. Девять знаков позади.' },
+  ],
+},
+{
+  id: 'r7', glyph: '♋', title: 'Вода: Рак, Скорпион, Рыбы', caption: 'Последние три знака',
+  intro: {
+    title: 'Знаки воды',
+    lead: 'Вода — про чувство, глубину и то, что не проговаривают.',
+    rows: [
+      { sym: '♋', nm: 'Рак',      ds: 'Клешни: перевёрнутая 69.' },
+      { sym: '♏', nm: 'Скорпион', ds: 'M с жалом-стрелкой наружу.' },
+      { sym: '♓', nm: 'Рыбы',     ds: 'Две рыбы, плывущие в разные стороны.' },
+    ],
+  },
+  tasks: [
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Рака.',      a: 'cancer',  note: 'Рак ♋ — два завитка.' },
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Скорпиона.', a: 'scorpio', note: 'Скорпион ♏ — M с жалом.' },
+    { t: 'tapS', names: true, q: 'Нажмите на сектор Рыб.',       a: 'pisces',  note: 'Рыбы ♓ — две дуги и перемычка.' },
+    { t: 'swipe', glyph: { s: 'scorpio' }, q: 'Это Дева?', a: false, note: 'Это Скорпион: хвост со стрелкой наружу.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Рака.', a: { p: 'moon', s: 'cancer' }, note: 'Рак — правая верхняя часть карты.' },
+    { t: 'swipe', glyph: { s: 'pisces' }, q: 'Это Рыбы?', a: true, note: 'Да.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Скорпиона.', a: { p: 'moon', s: 'scorpio' }, note: 'Скорпион — левая сторона карты.' },
+    { t: 'tapS', names: true, q: 'В каком знаке две рыбы плывут в разные стороны?', a: 'pisces', note: 'Рыбы — знак двух направлений сразу.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Рыб.', a: { p: 'moon', s: 'pisces' }, note: 'Рыбы — низ карты, справа от Водолея.' },
+    { t: 'tapS', q: 'Нажмите на Скорпиона — без подписей.', a: 'scorpio', note: 'Все двенадцать знаков пройдены.' },
+  ],
+},
+{
+  id: 'r8', glyph: '◉', title: 'Все 12 знаков', caption: 'Повторение круга',
+  tasks: [
+    { t: 'tapS', q: 'Нажмите на Льва.',      a: 'leo',         note: 'Верх карты.' },
+    { t: 'tapS', q: 'Нажмите на Козерога.',  a: 'capricorn',   note: 'Низ слева.' },
+    { t: 'tapS', q: 'Нажмите на Близнецов.', a: 'gemini',      note: 'Справа вверху.' },
+    { t: 'tapS', q: 'Нажмите на Рыб.',       a: 'pisces',      note: 'Низ справа.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Весы.',      a: { p: 'moon', s: 'libra' },   note: 'Весы напротив Овна.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Тельца.',    a: { p: 'moon', s: 'taurus' },  note: 'Телец напротив Скорпиона.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Рака.',      a: { p: 'moon', s: 'cancer' },  note: 'Рак напротив Козерога.' },
+    { t: 'place', dock: ['moon'], q: 'Поставьте Луну в Водолея.',   a: { p: 'moon', s: 'aquarius' },note: 'Водолей напротив Льва.' },
+    { t: 'match', kind: 'sign', q: 'Соедините каждый символ с его знаком.', items: ['aries', 'cancer', 'libra', 'capricorn', 'virgo', 'pisces'], note: 'Шесть знаков из двенадцати — и ни одной подсказки.' },
+    { t: 'rapid', kind: 'sign', seq: ['scorpio', 'leo', 'aquarius', 'taurus'], note: 'Круг знаков читается с ходу.' },
+  ],
+},
+{
+  id: 'r9', glyph: '⊕', title: 'Планеты в знаках', caption: 'Складываем два навыка',
+  intro: {
+    title: 'Планета плюс знак',
+    lead: 'Вы знаете пять планет и двенадцать знаков. Теперь соединим: каждая планета всегда стоит в каком-то знаке — это и есть язык карты.',
+    rows: [
+      { sym: '☉', nm: 'Планета', ds: 'Что происходит — воля, чувство, речь, любовь, действие.' },
+      { sym: '♌', nm: 'Знак',    ds: 'Как именно это происходит — стиль, почерк, интонация.' },
+    ],
+  },
+  tasks: [
+    { t: 'place', dock: ['sun'],     q: 'Поставьте Солнце во Льва.',      a: { p: 'sun', s: 'leo' },         note: 'Солнце во Льве — планета в своём знаке.' },
+    { t: 'place', dock: ['venus'],   q: 'Поставьте Венеру в Весы.',       a: { p: 'venus', s: 'libra' },     note: 'Венера в Весах — тоже дома.' },
+    { t: 'place', dock: ['mars'],    q: 'Поставьте Марс в Овна.',         a: { p: 'mars', s: 'aries' },      note: 'Марс в Овне: действие без паузы.' },
+    { t: 'place', dock: ['mercury'], q: 'Поставьте Меркурий в Близнецов.', a: { p: 'mercury', s: 'gemini' },  note: 'Меркурий в Близнецах: речь на максимальной скорости.' },
+    { t: 'place', dock: ['moon'],    q: 'Поставьте Луну в Рака.',         a: { p: 'moon', s: 'cancer' },     note: 'Луна в Раке: дом, еда, безопасность.' },
+    { t: 'place', dock: ['sun'],     q: 'Поставьте Солнце в Козерога.',   a: { p: 'sun', s: 'capricorn' },   note: 'Та же планета — другой почерк.' },
+    { t: 'place', dock: ['venus'],   q: 'Поставьте Венеру в Рыб.',        a: { p: 'venus', s: 'pisces' },    note: 'Венера в Рыбах: любовь как растворение.' },
+    { t: 'place', dock: ['mars'],    q: 'Поставьте Марс в Скорпиона.',    a: { p: 'mars', s: 'scorpio' },    note: 'Марс в Скорпионе: тихая, долгая сила.' },
+    { t: 'tapP', chart: B5, q: 'Нажмите на планету, которая стоит в Овне.', a: 'mercury', note: 'В Овне — Меркурий. Планету ищут по сектору, а не по памяти.' },
+    { t: 'tapS', chart: B5, q: 'В каком знаке стоит Венера? Нажмите на этот сектор.', a: 'capricorn', note: 'Венера в Козероге. Теперь вы читаете карту в обе стороны.' },
+  ],
+},
+
+// ═══ МОДУЛЬ 2 · СЛОВАРЬ ═══════════════════════════════════════════
+{
+  id: 'r11', glyph: '☽', title: 'Солнце и Луна', caption: 'Воля против потребности',
+  module: 2,
+  intro: {
+    title: 'Два светила',
+    lead: 'Символы вы знаете. Теперь — что каждая планета делает.',
+    rows: [
+      { sym: '☉', nm: 'Солнце', ds: 'Воля, фокус, осознанное «я». То, к чему человек идёт.' },
+      { sym: '☽', nm: 'Луна',   ds: 'Потребность, инстинкт, зона комфорта. То, без чего небезопасно.' },
+    ],
+  },
+  tasks: [
+    { t: 'tapP', chart: { sun: 'sagittarius', moon: 'virgo' }, quote: 'Ставит амбициозные цели на годы вперёд и упрямо идёт к ним.', q: 'Какая планета за это отвечает?', a: 'sun',  note: 'Долгая цель и движение к ней — Солнце.' },
+    { t: 'tapP', chart: { sun: 'sagittarius', moon: 'virgo' }, quote: 'Не может успокоиться, пока в квартире беспорядок.', q: 'Какая планета за это отвечает?', a: 'moon', note: 'Условие покоя — Луна. Дева добавляет порядок.' },
+    { t: 'tapP', chart: { sun: 'sagittarius', moon: 'virgo' }, quote: 'Выбирает делом жизни философию.', q: 'Какая планета за это отвечает?', a: 'sun',  note: 'Выбор пути — Солнце.' },
+    { t: 'tapP', chart: { sun: 'sagittarius', moon: 'virgo' }, quote: 'Тревожится, когда планы меняются в последний момент.', q: 'Какая планета за это отвечает?', a: 'moon', note: 'Реакция на нестабильность — Луна.' },
+    { t: 'swipe', chart: { sun: 'aries', moon: 'cancer' }, text: 'Солнце определяет, как человек отдыхает после тяжёлого дня.', a: false, note: 'Отдых и восстановление — территория Луны.' },
+    { t: 'swipe', chart: { sun: 'aries', moon: 'cancer' }, text: 'Луна показывает, что даёт человеку чувство безопасности.', a: true,  note: 'Да, это её прямая функция.' },
+    { t: 'place', dock: ['sun', 'moon'], q: '«В Козероге — заботится делом: планами, деньгами, структурой.» Выберите планету и поставьте её.', a: { p: 'moon', s: 'capricorn' }, note: 'Забота — функция Луны. Козерог задаёт стиль: через структуру.' },
+    { t: 'place', dock: ['sun', 'moon'], q: '«В Овне — идёт к целям напролом, любит соревнование.» Выберите планету и поставьте её.', a: { p: 'sun', s: 'aries' }, note: 'Движение к цели — Солнце. Овен — стиль: быстро и первым.' },
+    { t: 'tapP', chart: { sun: 'leo', moon: 'aquarius' }, quote: 'Восстанавливается в одиночестве, с книгой.', q: 'Какая планета?', a: 'moon', note: 'Восстановление — Луна.' },
+    { t: 'tapP', chart: { sun: 'leo', moon: 'aquarius' }, quote: 'Хочет признания и восхищения.', q: 'Какая планета?', a: 'sun', note: 'Хотеть и добиваться — Солнце.' },
+    { t: 'place', dock: ['sun', 'moon'], q: '«В Раке — не может функционировать без близости и тепла.» Выберите планету и поставьте её.', a: { p: 'moon', s: 'cancer' }, note: '«Не может без» — всегда Луна.' },
+    { t: 'place', dock: ['sun', 'moon'], q: '«В Близнецах — любопытен, всё время учится, ищет новое.» Выберите планету и поставьте её.', a: { p: 'sun', s: 'gemini' }, note: 'Направление интереса — Солнце.' },
+  ],
+},
+{
+  id: 'r12', glyph: '☽', title: 'Солнце и Луна: тоньше', caption: 'Одинаковый знак — разная функция',
+  module: 2,
+  tasks: [
+    { t: 'tapP', chart: { sun: 'aquarius', moon: 'taurus' }, quote: 'Одна и та же кофейня, один и тот же заказ, один и тот же столик.', q: 'Какая планета?', a: 'moon', note: 'Ритуал ради спокойствия — Луна в Тельце.' },
+    { t: 'tapP', chart: { sun: 'aquarius', moon: 'taurus' }, quote: 'Тянется к нестандартным идеям и общественным темам.', q: 'Какая планета?', a: 'sun', note: 'Направление интереса — Солнце в Водолее.' },
+    { t: 'swipe', chart: { sun: 'aquarius', moon: 'taurus' }, text: 'Луна определяет карьерные амбиции.', a: false, note: 'Амбиции — Солнце. Луна отвечает за то, что нужно для покоя.' },
+    { t: 'tapP', chart: { sun: 'cancer', moon: 'aries' }, quote: 'Восстанавливается через нагрузку: бег, бокс, адреналин.', q: 'Какая планета?', a: 'moon', note: 'Восстановление — Луна. Овен задаёт способ: через тело.' },
+    { t: 'tapP', chart: { sun: 'cancer', moon: 'aries' }, quote: 'Строит жизнь вокруг семьи и близких — это её главный проект.', q: 'Какая планета?', a: 'sun', note: 'Главный проект жизни — Солнце. Рак — тема: семья.' },
+    { t: 'place', dock: ['sun', 'moon'], q: '«Во Льве — добивается внимания и восхищения.» Выберите планету и поставьте её.', a: { p: 'sun', s: 'leo' }, note: '«Добивается» — активное движение, Солнце.' },
+    { t: 'place', dock: ['sun', 'moon'], q: '«Во Льве — спокоен только когда он в центре и его любят.» Выберите планету и поставьте её.', a: { p: 'moon', s: 'leo' }, note: 'Тот же знак — но «спокоен только когда» это Луна.' },
+    { t: 'swipe', chart: { sun: 'virgo', moon: 'sagittarius' }, text: 'Она отдыхает, срываясь в спонтанные поездки.', a: true, note: 'Луна в Стрельце восстанавливается движением и новизной.' },
+    { t: 'tapP', chart: { sun: 'virgo', moon: 'sagittarius' }, quote: 'Помешан на том, чтобы в работе всё было идеально.', q: 'Какая планета?', a: 'sun', note: 'Работа и фокус — Солнце в Деве.' },
+    { t: 'place', dock: ['sun', 'moon'], q: '«В Скорпионе — нужны глубина и полное доверие, иначе тревожно.» Выберите планету и поставьте её.', a: { p: 'moon', s: 'scorpio' }, note: '«Нужно, иначе тревожно» — Луна.' },
+    { t: 'place', dock: ['sun', 'moon'], q: '«В Скорпионе — хочет докопаться до скрытого: психология, власть, тайны.» Выберите планету и поставьте её.', a: { p: 'sun', s: 'scorpio' }, note: '«Хочет докопаться» — Солнце.' },
+    { t: 'tapP', chart: { sun: 'libra', moon: 'capricorn' }, quote: 'В стрессе включает режим дела: списки, план, всё под контроль.', q: 'Какая планета?', a: 'moon', note: 'Реакция на стресс — всегда Луна.' },
+  ],
+},
+{
+  id: 'r13', glyph: '☿', title: 'Меркурий и Венера', caption: 'Ум и вкус',
+  module: 2,
+  intro: {
+    title: 'Мысль и притяжение',
+    lead: 'Две очень разные функции, которые часто путают.',
+    rows: [
+      { sym: '☿', nm: 'Меркурий', ds: 'Как человек думает, говорит и обрабатывает информацию.' },
+      { sym: '♀', nm: 'Венера',   ds: 'Как любит, что считает красивым, что приносит удовольствие.' },
+    ],
+  },
+  tasks: [
+    { t: 'tapP', chart: { mercury: 'gemini', venus: 'taurus' }, quote: 'Говорит быстро, прыгает с темы на тему, всегда три вкладки в голове.', q: 'Какая планета?', a: 'mercury', note: 'Скорость мысли и речи — Меркурий.' },
+    { t: 'tapP', chart: { mercury: 'gemini', venus: 'taurus' }, quote: 'Любит хорошую еду, мягкие ткани, красивые вещи.', q: 'Какая планета?', a: 'venus', note: 'Удовольствие и вкус — Венера.' },
+    { t: 'tapP', chart: { mercury: 'gemini', venus: 'taurus' }, quote: 'Пишет длинные письма с чёткой структурой.', q: 'Какая планета?', a: 'mercury', note: 'Способ излагать — Меркурий.' },
+    { t: 'tapP', chart: { mercury: 'gemini', venus: 'taurus' }, quote: 'Влюбляется медленно, но потом остаётся надолго.', q: 'Какая планета?', a: 'venus', note: 'Как человек любит — Венера.' },
+    { t: 'swipe', chart: { mercury: 'gemini', venus: 'taurus' }, text: 'Меркурий показывает, какие партнёры человека привлекают.', a: false, note: 'Притяжение — Венера. Меркурий про мышление.' },
+    { t: 'swipe', chart: { mercury: 'gemini', venus: 'taurus' }, text: 'Венера отвечает за эстетические предпочтения.', a: true, note: 'Да: вкус, красота, удовольствие.' },
+    { t: 'place', dock: ['mercury', 'venus'], q: '«В Овне — говорит прямо, решает мгновенно, спорит на победу.» Выберите планету и поставьте её.', a: { p: 'mercury', s: 'aries' }, note: 'Речь и решения — Меркурий.' },
+    { t: 'place', dock: ['mercury', 'venus'], q: '«В Овне — влюбляется в смелых и ярких, любовь как завоевание.» Выберите планету и поставьте её.', a: { p: 'venus', s: 'aries' }, note: 'Тот же знак, другая функция: притяжение — Венера.' },
+    { t: 'tapP', chart: { mercury: 'capricorn', venus: 'pisces' }, quote: 'Формулирует осторожно, выбирает слова, предпочитает факты чувствам.', q: 'Какая планета?', a: 'mercury', note: 'Меркурий в Козероге: слово как обязательство.' },
+    { t: 'tapP', chart: { mercury: 'capricorn', venus: 'pisces' }, quote: 'Романтична, идеализирует партнёра, любит через самоотдачу.', q: 'Какая планета?', a: 'venus', note: 'Венера в Рыбах.' },
+    { t: 'place', dock: ['mercury', 'venus'], q: '«В Рыбах — думает образами, трудно перевести чувство в слова.» Выберите планету и поставьте её.', a: { p: 'mercury', s: 'pisces' }, note: 'Способ думать — Меркурий.' },
+    { t: 'place', dock: ['mercury', 'venus'], q: '«В Козероге — любит через надёжность и обязательства, без громких жестов.» Выберите планету и поставьте её.', a: { p: 'venus', s: 'capricorn' }, note: 'Способ любить — Венера.' },
+  ],
+},
+{
+  id: 'r14', glyph: '♀', title: 'Четыре планеты вместе', caption: 'Меркурий, Венера и повторение светил',
+  module: 2,
+  tasks: [
+    { t: 'tapP', chart: { sun: 'capricorn', moon: 'virgo', mercury: 'aquarius', venus: 'leo' }, quote: 'Чтобы прийти в себя, нужны тишина и одиночество.', q: 'Какая планета?', a: 'moon', note: 'Восстановление — Луна.' },
+    { t: 'tapP', chart: { sun: 'capricorn', moon: 'virgo', mercury: 'aquarius', venus: 'leo' }, quote: 'Обожает спорить и может убедительно защищать любую сторону.', q: 'Какая планета?', a: 'mercury', note: 'Аргументация — Меркурий.' },
+    { t: 'tapP', chart: { sun: 'capricorn', moon: 'virgo', mercury: 'aquarius', venus: 'leo' }, quote: 'Её привлекает ум: без интеллектуального интереса нет влюблённости.', q: 'Какая планета?', a: 'venus', note: 'Что привлекает — Венера, даже если предмет притяжения — интеллект.' },
+    { t: 'tapP', chart: { sun: 'capricorn', moon: 'virgo', mercury: 'aquarius', venus: 'leo' }, quote: 'Хочет построить что-то, что останется после неё.', q: 'Какая планета?', a: 'sun', note: 'Замысел жизни — Солнце.' },
+    { t: 'place', dock: ['sun', 'moon', 'mercury', 'venus'], q: '«В Водолее — мыслит системами, видит закономерности.» Выберите планету и поставьте её.', a: { p: 'mercury', s: 'aquarius' }, note: 'Мышление — Меркурий.' },
+    { t: 'place', dock: ['sun', 'moon', 'mercury', 'venus'], q: '«В Водолее — ценит свободу в отношениях, нужно личное пространство.» Выберите планету и поставьте её.', a: { p: 'venus', s: 'aquarius' }, note: 'Условия любви — Венера.' },
+    { t: 'place', dock: ['sun', 'moon', 'mercury', 'venus'], q: '«В Водолее — оживает среди странных людей и новых идей.» Выберите планету и поставьте её.', a: { p: 'moon', s: 'aquarius' }, note: 'Один знак, три планеты — три разные функции. Восстановление — Луна.' },
+    { t: 'swipe', chart: { mercury: 'virgo', venus: 'leo' }, text: 'Она перечитывает сообщение трижды, прежде чем отправить.', a: true, note: 'Меркурий в Деве: точность в словах.' },
+    { t: 'tapP', chart: { mercury: 'virgo', venus: 'leo' }, quote: 'Любит громкие свидания: концерты, сюрпризы, широкие жесты.', q: 'Какая планета?', a: 'venus', note: 'Венера во Льве.' },
+    { t: 'place', dock: ['sun', 'moon', 'mercury', 'venus'], q: '«В Раке — усваивает материал только через эмоциональную связь с ним.» Выберите планету и поставьте её.', a: { p: 'mercury', s: 'cancer' }, note: 'Как человек учится — Меркурий.' },
+  ],
+},
+{
+  id: 'r15', glyph: '♂', title: 'Марс: действие', caption: 'Как человек добивается и злится',
+  module: 2,
+  intro: {
+    title: 'Марс',
+    lead: 'Пятая функция — самая телесная.',
+    rows: [
+      { sym: '♂', nm: 'Марс', ds: 'Как человек действует, злится, отстаивает себя и берёт то, что хочет.' },
+    ],
+  },
+  tasks: [
+    { t: 'tapP', chart: { sun: 'libra', mars: 'aries' }, quote: 'Идёт на конфликт в лоб, не откладывая.', q: 'Какая планета?', a: 'mars', note: 'Стиль конфликта — Марс.' },
+    { t: 'tapP', chart: { sun: 'libra', mars: 'aries' }, quote: 'Хочет, чтобы во всём были гармония и справедливость.', q: 'Какая планета?', a: 'sun', note: 'Ценность и направление — Солнце в Весах.' },
+    { t: 'swipe', chart: { sun: 'libra', mars: 'aries' }, text: 'Марс определяет, как человек проживает эмоции.', a: false, note: 'Эмоции — Луна. Марс — про действие.' },
+    { t: 'tapP', chart: { moon: 'aries', venus: 'virgo', mars: 'cancer' }, quote: 'Злится, но выражает это молчанием и обидой.', q: 'Какая планета?', a: 'mars', note: 'Марс в Раке: пассивная агрессия вместо прямого удара.' },
+    { t: 'tapP', chart: { moon: 'aries', venus: 'virgo', mars: 'cancer' }, quote: 'Приходит в себя через движение и соревнование.', q: 'Какая планета?', a: 'moon', note: 'Луна в Овне: восстановление через нагрузку.' },
+    { t: 'place', dock: ['sun', 'mars'], q: '«В Козероге — работает без остановки, стратег, играет вдолгую.» Выберите планету и поставьте её.', a: { p: 'mars', s: 'capricorn' }, note: 'Как добивается — Марс.' },
+    { t: 'place', dock: ['sun', 'mars'], q: '«В Козероге — хочет построить что-то уважаемое и весомое.» Выберите планету и поставьте её.', a: { p: 'sun', s: 'capricorn' }, note: 'Чего добивается — Солнце.' },
+    { t: 'tapP', chart: A5, quote: 'Проявляет интерес телом и делает первый шаг.', q: 'Какая планета?', a: 'mars', note: 'Марс — как человек идёт за желаемым, в том числе в сексе.' },
+    { t: 'tapP', chart: A5, quote: 'Находит красоту в тихом и неброском.', q: 'Какая планета?', a: 'venus', note: 'Вкус — Венера.' },
+    { t: 'place', dock: ['sun', 'mars'], q: '«В Скорпионе — воюет тихо, помнит всё, не прощает.» Выберите планету и поставьте её.', a: { p: 'mars', s: 'scorpio' }, note: 'Марс в Скорпионе.' },
+    { t: 'place', dock: ['sun', 'mars'], q: '«В Скорпионе — тянет к предельному: к тайнам и переломам.» Выберите планету и поставьте её.', a: { p: 'sun', s: 'scorpio' }, note: 'Солнце в Скорпионе.' },
+    { t: 'tapP', chart: { mercury: 'aries', mars: 'libra' }, quote: 'Избегает ссор, действует через обаяние и переговоры.', q: 'Какая планета?', a: 'mars', note: 'Марс в Весах: воюет дипломатией.' },
+  ],
+},
+{
+  id: 'r16', glyph: '✧', title: 'Все пять функций', caption: 'Финальное повторение',
+  module: 2,
+  tasks: [
+    { t: 'tapP', chart: A5, quote: 'Когда плохо — нужны еда и плед.', q: 'Какая планета?', a: 'moon', note: 'Луна.' },
+    { t: 'tapP', chart: A5, quote: 'Пишет краткое резюме после каждой встречи.', q: 'Какая планета?', a: 'mercury', note: 'Меркурий.' },
+    { t: 'tapP', chart: A5, quote: 'Её тянет к художникам и творческим людям.', q: 'Какая планета?', a: 'venus', note: 'Венера.' },
+    { t: 'tapP', chart: A5, quote: 'Играет на победу даже в настолки.', q: 'Какая планета?', a: 'mars', note: 'Марс.' },
+    { t: 'tapP', chart: A5, quote: 'Хочет стать первым в своей области.', q: 'Какая планета?', a: 'sun', note: 'Солнце.' },
+    { t: 'place', dock: ['sun', 'moon', 'mercury', 'venus', 'mars'], q: '«В Близнецах — флиртует словами и остроумием.» Выберите планету и поставьте её.', a: { p: 'venus', s: 'gemini' }, note: 'Флирт — способ любить, Венера.' },
+    { t: 'place', dock: ['sun', 'moon', 'mercury', 'venus', 'mars'], q: '«В Близнецах — в споре выстреливает фактами очередью.» Выберите планету и поставьте её.', a: { p: 'mars', s: 'gemini' }, note: 'Спор как атака — Марс.' },
+    { t: 'place', dock: ['sun', 'moon', 'mercury', 'venus', 'mars'], q: '«В Тельце — отдыхает на природе, нужен телесный комфорт.» Выберите планету и поставьте её.', a: { p: 'moon', s: 'taurus' }, note: 'Отдых и комфорт — Луна.' },
+    { t: 'place', dock: ['sun', 'moon', 'mercury', 'venus', 'mars'], q: '«В Тельце — думает медленно и основательно, переубедить трудно.» Выберите планету и поставьте её.', a: { p: 'mercury', s: 'taurus' }, note: 'Скорость мысли — Меркурий.' },
+    { t: 'place', dock: ['sun', 'moon', 'mercury', 'venus', 'mars'], q: '«В Стрельце — живёт ради дороги, свободы и больших идей.» Выберите планету и поставьте её.', a: { p: 'sun', s: 'sagittarius' }, note: 'Смысл жизни — Солнце.' },
+    { t: 'swipe', chart: { mars: 'pisces' }, text: 'Он идёт к начальнику и прямо говорит, что решение несправедливо.', a: false, note: 'Марс в Рыбах избегает лобового конфликта — он уходит, тянет или обходит.' },
+    { t: 'swipe', chart: { venus: 'leo' }, text: 'Она предпочитает тихие свидания дома.', a: false, note: 'Венере во Льве нужны сцена, жест и восхищение.' },
+  ],
+},
+];
+
+// ── СТРУКТУРА КУРСА ───────────────────────────────────────────────
+const MODULES = [
+  { name: 'Алфавит', kicker: 'Модуль 1', sections: [
+      { title: 'Раздел 1 · Планеты',        rounds: ['r1', 'r2', 'r3'] },
+      { title: 'Раздел 2 · Знаки',          rounds: ['r4', 'r5', 'r6', 'r7', 'r8'] },
+      { title: 'Раздел 3 · Чтение карты',   rounds: ['r9'] },
+  ]},
+  { name: 'Словарь планет', kicker: 'Модуль 2', sections: [
+      { title: 'Раздел 1 · Светила',        rounds: ['r11', 'r12'] },
+      { title: 'Раздел 2 · Меркурий и Венера', rounds: ['r13', 'r14'] },
+      { title: 'Раздел 3 · Марс',           rounds: ['r15'] },
+      { title: 'Раздел 4 · Всё вместе',     rounds: ['r16'] },
+  ]},
+];
+
+const ORDER = MODULES.flatMap(m => m.sections.flatMap(s => s.rounds));
+const roundById = id => ROUNDS.find(r => r.id === id);
+
+// ── ПРОГРЕСС ──────────────────────────────────────────────────────
+const STORE = 'astroCourse.v1';
+let progress = {};   // { roundId: stars }
+
+function loadProgress() {
+  try { progress = JSON.parse(localStorage.getItem(STORE)) || {}; }
+  catch (e) { progress = {}; }
+}
+function saveProgress() {
+  try { localStorage.setItem(STORE, JSON.stringify(progress)); } catch (e) {}
+}
+function isDone(id)     { return progress[id] > 0; }
+function isUnlocked(id) {
+  const i = ORDER.indexOf(id);
+  return i === 0 || isDone(ORDER[i - 1]);
+}
+function totalStars() { return Object.values(progress).reduce((a, b) => a + b, 0); }
+function currentId()  { return ORDER.find(id => !isDone(id)) || ORDER[ORDER.length - 1]; }
+
+// ── СОСТОЯНИЕ ПЛЕЕРА ──────────────────────────────────────────────
+let TASKS = [];       // текущий список заданий
+let round = null;     // объект раунда (null в режиме практики)
+let idx = 0, score = 0, results = [], locked = false;
+let sel = null;       // выбор внутри задания
+let practiceMode = false;
+
+// ── ГЕОМЕТРИЯ ─────────────────────────────────────────────────────
+const rad = d => d * Math.PI / 180;
+const xy = (r, a) => ({ x: CX + r * Math.cos(rad(a)), y: CY + r * Math.sin(rad(a)) });
+function sectorPath(rO, rI, s, e) {
+  const p1 = xy(rO, s), p2 = xy(rO, e), p3 = xy(rI, e), p4 = xy(rI, s);
+  const lg = (e - s) > 180 ? 1 : 0;
+  return `M ${p1.x} ${p1.y} A ${rO} ${rO} 0 ${lg} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rI} ${rI} 0 ${lg} 0 ${p4.x} ${p4.y} Z`;
+}
+
+let gZones, gNames, gMarks;
+function buildChart() {
+  const svg = $('svg');
+  svg.innerHTML = '';
+  gZones = document.createElementNS(svgNS, 'g');
+  gNames = document.createElementNS(svgNS, 'g');
+  gMarks = document.createElementNS(svgNS, 'g');
+  SG.forEach(s => {
+    const p = document.createElementNS(svgNS, 'path');
+    p.setAttribute('d', sectorPath(R_OUTER, R_INNER, s.startDeg, s.startDeg + 30));
+    p.setAttribute('class', 'zone');
+    p.dataset.sign = s.id;
+    p.addEventListener('click', () => onZone(s.id));
+    gZones.appendChild(p);
+  });
+  svg.appendChild(gZones); svg.appendChild(gNames); svg.appendChild(gMarks);
+}
+
+function showSignNames(on) {
+  gNames.innerHTML = '';
+  if (!on) return;
+  SG.forEach(s => {
+    const p = xy(R_NAME, s.startDeg + 15);
+    const t = document.createElementNS(svgNS, 'text');
+    t.setAttribute('x', p.x); t.setAttribute('y', p.y + 3);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('class', 'signname');
+    t.textContent = s.label;
+    gNames.appendChild(t);
+  });
+}
+
+// chart: { planetId: signId }  •  live: планеты кликабельны
+function renderPlanets(chart, live) {
+  gMarks.innerHTML = '';
+  if (!chart) return;
+  const bySign = {};
+  Object.entries(chart).forEach(([p, s]) => { (bySign[s] = bySign[s] || []).push(p); });
+  Object.entries(bySign).forEach(([s, list]) => {
+    const base = sign(s).startDeg + 15;
+    list.forEach((p, i) => {
+      const spread = (i - (list.length - 1) / 2) * 11;
+      const pos = xy(R_MARKER - Math.abs(spread) * 0.5, base + spread);
+      const g = document.createElementNS(svgNS, 'g');
+      g.setAttribute('class', 'pmark' + (live ? ' live' : ''));
+      g.dataset.planet = p;
+      const c = document.createElementNS(svgNS, 'circle');
+      c.setAttribute('cx', pos.x); c.setAttribute('cy', pos.y); c.setAttribute('r', 17);
+      const t = document.createElementNS(svgNS, 'text');
+      t.setAttribute('x', pos.x); t.setAttribute('y', pos.y + 7.5);
+      t.textContent = PL[p].symbol;
+      g.appendChild(c); g.appendChild(t);
+      if (live) g.addEventListener('click', () => onPlanet(p));
+      gMarks.appendChild(g);
+    });
+  });
+}
+
+const zoneEl   = id => gZones.querySelector(`.zone[data-sign="${id}"]`);
+const markEl   = id => gMarks.querySelector(`.pmark[data-planet="${id}"]`);
+const zonesLive = on => gZones.querySelectorAll('.zone').forEach(z => z.classList.toggle('live', on));
+function clearFx() {
+  gZones.querySelectorAll('.zone').forEach(z => z.classList.remove('pick', 'ok', 'bad'));
+  gMarks.querySelectorAll('.pmark').forEach(m => m.classList.remove('ok', 'bad'));
+}
+
+// ── ЭКРАН ПУТИ ────────────────────────────────────────────────────
+const SCREENS = ['pathScreen', 'introScreen', 'taskScreen', 'doneScreen'];
+function show(name) { SCREENS.forEach(s => $(s).classList.toggle('hidden', s !== name)); }
+
+const OFFSETS = [0, 46, 66, 46, 0, -46, -66, -46];
+const ROW_H = 96;   // должно совпадать с .node-row height в CSS
+
+function renderPath() {
+  const wrap = $('path');
+  const cur = currentId();
+  let html = '';
+  let n = 0;
+
+  MODULES.forEach(mod => {
+    const ids = mod.sections.flatMap(s => s.rounds);
+    const doneN = ids.filter(isDone).length;
+    html += `<div class="module-banner">
+        <div class="mb-kicker">${mod.kicker}</div>
+        <div class="mb-name">${mod.name}</div>
+        <div class="mb-bar"><i style="width:${Math.round(doneN / ids.length * 100)}%"></i></div>
+        <div class="mb-meta">${doneN} из ${ids.length} раундов пройдено</div>
+      </div>`;
+
+    mod.sections.forEach(sec => {
+      html += `<div class="section-head"><span class="txt">${sec.title}</span><div class="line"></div></div>`;
+      sec.rounds.forEach((id, k) => {
+        const r = roundById(id);
+        const done = isDone(id), open = isUnlocked(id), isCur = id === cur && !done;
+        const off = OFFSETS[n % OFFSETS.length];
+        // связку рисуем только внутри раздела — между разделами стоит заголовок
+        const prev = k === 0 ? null : OFFSETS[(n - 1) % OFFSETS.length];
+        const cls = done ? 'done' : isCur ? 'cur' : open ? '' : 'locked';
+        const stars = done ? '★'.repeat(progress[id]) + '☆'.repeat(3 - progress[id]) : '';
+
+        // пунктирная связка от центра предыдущего узла к центру текущего
+        let link = '';
+        if (prev !== null) {
+          const dx = off - prev, dy = ROW_H;
+          const len = Math.hypot(dx, dy);
+          const ang = -Math.asin(dx / len) * 180 / Math.PI;
+          link = `<div class="link" style="left:calc(50% + ${prev}px);top:${-ROW_H / 2}px;height:${len}px;transform:rotate(${ang.toFixed(2)}deg)"></div>`;
+        }
+
+        // подпись — с той стороны, где больше места
+        const capSide = off >= 0
+          ? `right:calc(50% - ${off}px + 44px)`
+          : `left:calc(50% + ${off}px + 44px)`;
+        const capAlign = off >= 0 ? 'ta-right' : 'ta-left';
+
+        html += `<div class="node-row ${done ? 'done' : ''}">
+            ${link}
+            <div class="node ${cls}" style="transform:translateX(${off}px)" data-round="${id}">
+              <span class="glyph">${r.glyph}</span>
+              <span class="num">${open ? 'РАУНД ' + (ORDER.indexOf(id) + 1) : 'ЗАКРЫТО'}</span>
+              ${stars ? `<span class="stars">${stars}</span>` : ''}
+            </div>
+            <div class="node-caption ${capAlign}" style="${capSide}">${r.title}</div>
+          </div>`;
+        n++;
+      });
+    });
+
+    const modDone = doneN === ids.length;
+    html += `<div class="milestone${modDone ? ' reached' : ''}">
+        <span class="chest">${modDone ? '◆' : '◇'}</span>
+        <span class="txt">${modDone ? 'Модуль пройден' : 'Награда за модуль'}</span>
+      </div>`;
+  });
+
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.node').forEach(el => {
+    el.onclick = () => {
+      const id = el.dataset.round;
+      if (!isUnlocked(id)) return;
+      openSheet(id);
+    };
+  });
+  $('starTotal').textContent = totalStars();
+}
+
+// ── ШТОРКА РАУНДА ─────────────────────────────────────────────────
+function openSheet(id) {
+  const r = roundById(id);
+  const done = isDone(id);
+  $('sheet').innerHTML = `
+    <div class="grab"></div>
+    <div class="kick">Раунд ${ORDER.indexOf(id) + 1}${done ? ' · пройден' : ''}</div>
+    <h3>${r.title}</h3>
+    <p>${r.caption}. ${r.tasks.length} заданий${done ? ` · ваш результат: ${'★'.repeat(progress[id])}` : ''}.</p>
+    <button class="big-btn" id="co-sheetGo">${done ? 'Пройти заново' : 'Начать'}</button>
+    <button class="ghost-btn" id="co-sheetClose">Позже</button>`;
+  $('sheetBack').classList.add('open');
+  $('sheetGo').onclick = () => { closeSheet(); startRound(id); };
+  $('sheetClose').onclick = closeSheet;
+  $('sheetBack').onclick = e => { if (e.target === $('sheetBack')) closeSheet(); };
+}
+function closeSheet() { $('sheetBack').classList.remove('open'); }
+
+// ── ВКЛАДКИ ───────────────────────────────────────────────────────
+function setTab(name) {
+  root.querySelectorAll('.tabbar .tab').forEach(t => t.classList.toggle('on', t.dataset.tab === name));
+  $('path').classList.toggle('hidden', name !== 'path');
+  $('practice').classList.toggle('hidden', name !== 'practice');
+  $('profile').classList.toggle('hidden', name !== 'profile');
+  const ttl = { path: ['Астрология с нуля', 'Курс'], practice: ['Практика', 'Смешанные задания'], profile: ['Профиль', 'Ваш прогресс'] }[name];
+  $('pathTitle').textContent = ttl[0];
+  $('pathSub').textContent = ttl[1];
+  if (name === 'practice') renderPractice();
+  if (name === 'profile') renderProfile();
+}
+
+function practicePool() {
+  return ORDER.filter(isDone).flatMap(id => roundById(id).tasks.map(t => ({ t, mod: roundById(id).module || 1 })));
+}
+
+function renderPractice() {
+  const pool = practicePool();
+  $('practice').innerHTML = `
+    <p class="lead">${pool.length ? `Десять случайных заданий из всего, что вы уже прошли (${pool.length} в банке). Прогресс не меняется — это тренировка.` : 'Пройдите хотя бы один раунд на вкладке «Путь» — и здесь появится смешанная тренировка.'}</p>
+    <button class="big-btn" id="co-practiceGo" ${pool.length ? '' : 'disabled'}>Начать тренировку</button>`;
+  if (pool.length) $('practiceGo').onclick = startPractice;
+}
+
+function renderProfile() {
+  const doneN = ORDER.filter(isDone).length;
+  const perfect = ORDER.filter(id => progress[id] === 3).length;
+  $('profile').innerHTML = `
+    <p class="lead">Курс «Астрология с нуля» — символы, знаки и функции пяти личных планет.</p>
+    <div class="stat-grid">
+      <div class="stat"><div class="v">${doneN}<small style="font-size:14px;color:var(--muted)"> / ${ORDER.length}</small></div><div class="k">Раундов пройдено</div></div>
+      <div class="stat"><div class="v">${totalStars()}</div><div class="k">Звёзд собрано</div></div>
+      <div class="stat"><div class="v">${perfect}</div><div class="k">Идеальных раундов</div></div>
+      <div class="stat"><div class="v">${practicePool().length}</div><div class="k">Заданий в банке</div></div>
+    </div>
+    <button class="ghost-btn" id="co-reset">Сбросить прогресс</button>`;
+  $('reset').onclick = () => {
+    if (!confirm('Сбросить весь прогресс курса?')) return;
+    progress = {}; saveProgress(); renderPath(); renderProfile();
+  };
+}
+
+// ── ЗАПУСК РАУНДА ─────────────────────────────────────────────────
+function startRound(id) {
+  round = roundById(id);
+  practiceMode = false;
+  TASKS = round.tasks;
+  idx = 0; score = 0; results = []; locked = false; sel = null;
+  if (round.intro) showIntro(); else { show('taskScreen'); buildChart(); loadTask(); }
+}
+
+function startPractice() {
+  const pool = practicePool().map(x => x.t);
+  for (let i = pool.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  TASKS = pool.slice(0, 10);
+  round = null; practiceMode = true;
+  idx = 0; score = 0; results = []; locked = false; sel = null;
+  show('taskScreen'); buildChart(); loadTask();
+}
+
+function showIntro() {
+  show('introScreen');
+  $('introRound').textContent = 'Раунд ' + (ORDER.indexOf(round.id) + 1);
+  const i = round.intro;
+  $('introCard').innerHTML = `
+    <div class="kick">${round.caption}</div>
+    <h3>${i.title}</h3>
+    <p class="lead">${i.lead}</p>
+    ${i.rows.map(r => `<div class="intro-row">
+        <div class="sym">${r.sym}\uFE0E</div>
+        <div><div class="nm">${r.nm}</div><div class="ds">${r.ds}</div></div>
+      </div>`).join('')}`;
+  $('introBtn').onclick = () => { show('taskScreen'); buildChart(); loadTask(); };
+}
+
+// ── ОБОЛОЧКА ПЛЕЕРА ───────────────────────────────────────────────
+function renderBar() {
+  const bar = $('bar');
+  bar.innerHTML = '';
+  TASKS.forEach((_, i) => {
+    const s = document.createElement('div');
+    s.className = 'seg' + (results[i] === 'bad' ? ' bad' : results[i] ? ' ok' : (i === idx ? ' cur' : ''));
+    bar.appendChild(s);
+  });
+  $('counter').textContent = `${Math.min(idx + 1, TASKS.length)} / ${TASKS.length}`;
+  $('roundLabel').textContent = practiceMode ? 'Практика' : round.title;
+}
+
+function setBtn(state, label) {
+  const b = $('btn');
+  b.className = 'c-btn' + (state === 'idle' ? '' : ' go');
+  b.textContent = label || 'Проверить';
+  b.disabled = state === 'idle';
+  b.style.visibility = state === 'none' ? 'hidden' : 'visible';
+}
+
+function say(html) { $('bubble').innerHTML = html; }
+function hint(html) { $('hint').innerHTML = html || ''; }
+
+function feedback(ok, title, text) {
+  const f = $('fb');
+  f.className = 'fb show ' + (ok ? 'ok' : 'bad');
+  $('fbT').textContent = title;
+  $('fbX').textContent = text || '';
+}
+function hideFeedback() { $('fb').className = 'fb'; }
+
+function record(ok) {
+  results[idx] = ok ? 'ok' : 'bad';
+  if (ok) score++;
+  renderBar();
+}
+
+function next() {
+  idx++;
+  if (idx >= TASKS.length) return finish();
+  loadTask();
+}
+
+// список планет под картой: «☉ во Льве · ☽ в Водолее»
+function placementLine(chart) {
+  return Object.entries(chart).map(([p, s]) => `${PL[p].symbol}\uFE0E в <b>${sign(s).prep}</b>`).join(' · ');
+}
+
+// ── ЗАГРУЗКА ЗАДАНИЯ ──────────────────────────────────────────────
+let onZone = () => {};
+let onPlanet = () => {};
+
+function loadTask() {
+  const t = TASKS[idx];
+  locked = false; sel = null;
+  onZone = () => {}; onPlanet = () => {};
+  hideFeedback(); clearFx();
+  $('body').innerHTML = '';
+  $('body').scrollTop = 0;
+  $('chartWrap').classList.remove('dim');
+  showSignNames(!!t.names);
+  zonesLive(false);
+  renderBar();
+  say(t.quote ? `<span class="quote">«${t.quote}»</span><span class="ask">${t.q}</span>`
+              : (t.q || t.text || 'Задание ниже.'));
+  ({ tapP: loadTapP, tapS: loadTapS, place: loadPlace, swipe: loadSwipe, match: loadMatch, rapid: loadRapid })[t.t](t);
+}
+
+// ── 1. TAP: ПЛАНЕТА ───────────────────────────────────────────────
+function loadTapP(t) {
+  renderPlanets(t.chart, true);
+  hint(t.quote ? placementLine(t.chart) : 'Нажмите нужный символ прямо на карте');
+  setBtn('none', '');
+  onPlanet = p => {
+    if (locked) return;
+    locked = true;
+    const ok = p === t.a;
+    markEl(t.a).classList.add('ok');
+    if (!ok) markEl(p).classList.add('bad');
+    record(ok);
+    feedback(ok, ok ? 'Верно' : 'Это ' + PL[t.a].label, t.note);
+    setBtn('next', idx === TASKS.length - 1 ? 'Итог' : 'Дальше');
+  };
+}
+
+// ── 2. TAP: ЗНАК ──────────────────────────────────────────────────
+function loadTapS(t) {
+  renderPlanets(t.chart || null, false);
+  zonesLive(true);
+  hint(t.chart ? placementLine(t.chart) : 'Знаки идут по внешнему кругу карты');
+  setBtn('none', '');
+  onZone = s => {
+    if (locked) return;
+    locked = true;
+    const ok = s === t.a;
+    zoneEl(t.a).classList.add('ok');
+    if (!ok) zoneEl(s).classList.add('bad');
+    showSignNames(true);
+    zonesLive(false);
+    record(ok);
+    feedback(ok, ok ? 'Верно' : 'Это ' + sign(t.a).label, t.note);
+    setBtn('next', idx === TASKS.length - 1 ? 'Итог' : 'Дальше');
+  };
+}
+
+// ── 3. PLACE / CHOOSE + PLACE ─────────────────────────────────────
+function loadPlace(t) {
+  renderPlanets(null, false);
+  zonesLive(true);
+  const one = t.dock.length === 1;
+  hint(one ? 'Выберите планету внизу, затем сектор знака' : 'Сначала решите, какая планета — потом её знак');
+  sel = { p: one ? t.dock[0] : null, s: null };
+  $('body').innerHTML = `<div class="dock">${t.dock.map(p =>
+    `<button class="tok${one ? ' sel' : ''}" data-p="${p}"><span class="ring">${PL[p].symbol}\uFE0E</span><span class="cap">${PL[p].short}</span></button>`
+  ).join('')}</div>`;
+  $('body').querySelectorAll('.tok').forEach(el => {
+    el.onclick = () => {
+      if (locked) return;
+      sel.p = el.dataset.p;
+      $('body').querySelectorAll('.tok').forEach(x => x.classList.toggle('sel', x === el));
+      if (sel.s) drawPick();
+      updatePlaceBtn();
+    };
+  });
+  setBtn('idle', 'Проверить');
+
+  onZone = s => {
+    if (locked || !sel.p) { if (!sel.p) hint('Сначала выберите планету'); return; }
+    sel.s = s;
+    drawPick();
+    updatePlaceBtn();
+  };
+
+  function drawPick() {
+    clearFx();
+    zoneEl(sel.s).classList.add('pick');
+    renderPlanets({ [sel.p]: sel.s }, false);
+    hint(`${PL[sel.p].symbol}\uFE0E в <b>${sign(sel.s).prep}</b>`);
+  }
+  function updatePlaceBtn() { setBtn(sel.p && sel.s ? 'ready' : 'idle', 'Проверить'); }
+}
+
+function checkPlace(t) {
+  const ok = sel.p === t.a.p && sel.s === t.a.s;
+  clearFx();
+  zoneEl(t.a.s).classList.add('ok');
+  if (!ok && sel.s !== t.a.s) zoneEl(sel.s).classList.add('bad');
+  renderPlanets({ [t.a.p]: t.a.s }, false);
+  hint(`${PL[t.a.p].symbol}\uFE0E в <b>${sign(t.a.s).prep}</b>`);
+  zonesLive(false);
+  record(ok);
+  feedback(ok, ok ? 'Верно' : `Правильно: ${PL[t.a.p].label} в ${sign(t.a.s).prep}`, t.note);
+}
+
+// ── 4. SWIPE ──────────────────────────────────────────────────────
+function loadSwipe(t) {
+  const g = t.glyph ? (t.glyph.p ? PL[t.glyph.p].symbol : sign(t.glyph.s).symbol) : null;
+  renderPlanets(t.chart || null, false);
+  if (t.glyph) { $('chartWrap').classList.add('dim'); hint('Что это за символ?'); }
+  else hint(t.chart ? placementLine(t.chart) : '');
+
+  $('body').innerHTML = `
+    <div class="swipe-stage">
+      <div class="swipe-card${g ? ' glyph' : ''}" id="co-swCard">
+        <div class="stamp no"  id="co-stNo">Нет</div>
+        <div class="stamp yes" id="co-stYes">Да</div>
+        ${g ? g + '\uFE0E' : t.text}
+      </div>
+    </div>
+    <div class="swipe-btns">
+      <button class="sw-btn no"  id="co-swNo"><span class="mk">✗</span> ${t.glyph ? 'Нет' : 'Не похоже'}</button>
+      <button class="sw-btn yes" id="co-swYes"><span class="mk">✓</span> ${t.glyph ? 'Да' : 'Похоже'}</button>
+    </div>`;
+  setBtn('none', '');
+
+  const card = $('swCard'), sy = $('stYes'), sn = $('stNo');
+  const TH = 76;
+  let x0 = 0, dx = 0, drag = false;
+  const put = (x, r) => card.style.transform = `translateX(${x}px) rotate(${r}deg)`;
+
+  card.addEventListener('pointerdown', e => {
+    if (locked) return;
+    drag = true; x0 = e.clientX; card.classList.remove('settle');
+    card.setPointerCapture(e.pointerId);
+  });
+  card.addEventListener('pointermove', e => {
+    if (!drag) return;
+    dx = e.clientX - x0;
+    put(dx, dx / 18);
+    const p = Math.min(Math.abs(dx) / TH, 1);
+    sy.style.opacity = dx > 0 ? p : 0;
+    sn.style.opacity = dx < 0 ? p : 0;
+  });
+  const rel = () => {
+    if (!drag) return;
+    drag = false;
+    if (Math.abs(dx) >= TH) answer(dx > 0);
+    else { card.classList.add('settle'); put(0, 0); sy.style.opacity = 0; sn.style.opacity = 0; dx = 0; }
+  };
+  card.addEventListener('pointerup', rel);
+  card.addEventListener('pointercancel', rel);
+  $('swYes').onclick = () => answer(true);
+  $('swNo').onclick  = () => answer(false);
+
+  function answer(said) {
+    if (locked) return;
+    locked = true;
+    const ok = said === t.a;
+    (said ? sy : sn).style.opacity = 1;
+    card.classList.add('settle'); put(0, 0);
+    card.style.borderColor = ok ? 'var(--ok)' : 'var(--bad)';
+    $('swYes').disabled = true; $('swNo').disabled = true;
+    record(ok);
+    feedback(ok, ok ? 'Верно' : (t.a ? 'На самом деле — да' : 'На самом деле — нет'), t.note);
+    setBtn('next', idx === TASKS.length - 1 ? 'Итог' : 'Дальше');
+  }
+}
+
+// ── 5. MATCH ──────────────────────────────────────────────────────
+function loadMatch(t) {
+  renderPlanets(null, false);
+  hint('Соедините символ с названием');
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const get = id => t.kind === 'planet' ? PL[id] : sign(id);
+  const L = shuffle(t.items), R = shuffle(t.items);
+  sel = { left: null, ties: {} };   // ties: leftId -> rightId
+
+  $('body').innerHTML = `<div class="match-grid">
+      <div class="match-col">${L.map(id => `<button class="m-item glyph" data-side="l" data-id="${id}">${get(id).symbol}\uFE0E</button>`).join('')}</div>
+      <div class="match-col">${R.map(id => `<button class="m-item" data-side="r" data-id="${id}">${get(id).label}</button>`).join('')}</div>
+    </div>`;
+
+  const items = $('body').querySelectorAll('.m-item');
+  items.forEach(el => el.onclick = () => {
+    if (locked) return;
+    const side = el.dataset.side, id = el.dataset.id;
+    if (side === 'l') {
+      if (sel.ties[id] !== undefined) return;
+      sel.left = id;
+      items.forEach(x => x.classList.toggle('sel', x === el));
+    } else {
+      if (!sel.left) return;
+      if (Object.values(sel.ties).includes(id)) return;
+      sel.ties[sel.left] = id;
+      $('body').querySelector(`[data-side="l"][data-id="${sel.left}"]`).classList.remove('sel');
+      $('body').querySelector(`[data-side="l"][data-id="${sel.left}"]`).classList.add('tied');
+      el.classList.add('tied');
+      sel.left = null;
+      setBtn(Object.keys(sel.ties).length === t.items.length ? 'ready' : 'idle', 'Проверить');
+    }
+  });
+  setBtn('idle', 'Проверить');
+}
+
+function checkMatch(t) {
+  const wrong = Object.entries(sel.ties).filter(([l, r]) => l !== r);
+  const ok = wrong.length === 0;
+  wrong.forEach(([l, r]) => {
+    $('body').querySelector(`[data-side="l"][data-id="${l}"]`).classList.replace('tied', 'bad');
+    $('body').querySelector(`[data-side="r"][data-id="${r}"]`).classList.replace('tied', 'bad');
+  });
+  record(ok);
+  feedback(ok, ok ? 'Все пары верны' : `Ошибок: ${wrong.length}`, t.note);
+}
+
+// ── 6. RAPID ──────────────────────────────────────────────────────
+function loadRapid(t) {
+  const isP = t.kind === 'planet';
+  renderPlanets(t.chart || null, isP);
+  if (!isP) zonesLive(true);
+  sel = { i: 0, hits: [] };
+  $('body').innerHTML = `<div class="rapid-strip">${t.seq.map(() => '<span class="dot"></span>').join('')}</div>
+    <p class="c-hint" style="padding-top:10px">Подряд, без подсказок между ответами.</p>`;
+  setBtn('none', '');
+  paint();
+
+  function paint() {
+    const dots = $('body').querySelectorAll('.dot');
+    dots.forEach((d, i) => d.className = 'dot' + (sel.hits[i] === undefined ? (i === sel.i ? ' cur' : '') : (sel.hits[i] ? ' ok' : ' bad')));
+    const id = t.seq[sel.i];
+    const nm = isP ? PL[id].label : sign(id).label;
+    say(`Быстро: <b>${nm}</b> <span class="ask">${sel.i + 1} из ${t.seq.length}</span>`);
+    hint(isP ? 'Нажимайте символы на карте' : 'Нажимайте секторы знаков');
+  }
+
+  function take(given) {
+    if (locked) return;
+    sel.hits[sel.i] = given === t.seq[sel.i];
+    sel.i++;
+    if (sel.i < t.seq.length) { paint(); return; }
+    locked = true;
+    zonesLive(false);
+    const dots = $('body').querySelectorAll('.dot');
+    dots.forEach((d, i) => d.className = 'dot ' + (sel.hits[i] ? 'ok' : 'bad'));
+    const right = sel.hits.filter(Boolean).length;
+    const ok = right === t.seq.length;
+    record(ok);
+    say(`Серия завершена: ${right} из ${t.seq.length}`);
+    feedback(ok, ok ? 'Чисто' : `${right} из ${t.seq.length}`, t.note);
+    setBtn('next', idx === TASKS.length - 1 ? 'Итог' : 'Дальше');
+  }
+
+  if (isP) onPlanet = take; else onZone = take;
+}
+
+// ── КНОПКА ────────────────────────────────────────────────────────
+$('btn').onclick = () => {
+  const t = TASKS[idx];
+  if (locked) { next(); return; }
+  if ($('btn').disabled) return;
+  locked = true;
+  ({ place: checkPlace, match: checkMatch })[t.t](t);
+  setBtn('next', idx === TASKS.length - 1 ? 'Итог' : 'Дальше');
+};
+
+// ── ИТОГ ──────────────────────────────────────────────────────────
+function finish() {
+  const acc = score / TASKS.length;
+  const stars = acc >= 0.9 ? 3 : acc >= 0.7 ? 2 : 1;
+  const rank = acc >= 0.9 ? 'Безупречно' : acc >= 0.7 ? 'Уверенно' : acc >= 0.5 ? 'Есть основа' : 'Нужен ещё круг';
+
+  if (!practiceMode) {
+    progress[round.id] = Math.max(progress[round.id] || 0, stars);
+    saveProgress();
+  }
+
+  const recap = !practiceMode && round.intro ? round.intro.rows : null;
+
+  // что дальше по пути — заодно заполняет пустоту в раундах без разбора
+  let nextLine = '';
+  if (!practiceMode) {
+    const nx = ORDER[ORDER.indexOf(round.id) + 1];
+    nextLine = nx
+      ? `<p class="next-up">Дальше · Раунд ${ORDER.indexOf(nx) + 1} — ${roundById(nx).title}</p>`
+      : `<p class="next-up">Это последний раунд курса.</p>`;
+  }
+
+  show('doneScreen');
+  $('doneBody').innerHTML = `
+    <div class="score">${score}<small> / ${TASKS.length}</small></div>
+    <div class="starline">${practiceMode ? '' : '★'.repeat(stars) + '☆'.repeat(3 - stars)}</div>
+    <div class="rank">${rank}</div>
+    <h1>${practiceMode ? 'Тренировка' : round.title}</h1>
+    ${nextLine}
+    ${recap ? `<div class="recap">${recap.map(r => `<div class="recap-row">
+        <div class="sym">${r.sym}\uFE0E</div>
+        <div><div class="nm">${r.nm}</div><div class="ds">${r.ds}</div></div>
+      </div>`).join('')}</div>` : ''}
+    <button class="big-btn" id="co-doneNext">${practiceMode ? 'К пути' : 'Продолжить'}</button>
+    <button class="ghost-btn" id="co-doneAgain">Пройти заново</button>`;
+  $('doneNext').onclick = toPath;
+  $('doneAgain').onclick = () => practiceMode ? startPractice() : startRound(round.id);
+}
+
+function toPath() {
+  show('pathScreen');
+  renderPath();
+  setTab('path');
+}
+
+// ── ВХОД / ВЫХОД ──────────────────────────────────────────────────
+function start() {
+  loadProgress();
+  root.classList.add('open');
+  document.getElementById('titleScreen').style.display = 'none';
+  toPath();
+}
+function abort() {
+  if (idx > 0 && !confirm('Выйти из раунда? Прогресс раунда не сохранится.')) return;
+  toPath();
+}
+function exit() {
+  root.classList.remove('open');
+  closeSheet();
+  document.getElementById('titleScreen').style.display = '';
+}
+
+root.querySelectorAll('.tabbar .tab').forEach(t => t.onclick = () => setTab(t.dataset.tab));
+loadProgress();
+
+return { start, exit, abort };
+
+})();
+
+</script>
 </body>
 </html>

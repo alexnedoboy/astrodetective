@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stellar Detective — макет победной карточки</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.11.0/tabler-icons.min.css">
+<style>
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:#1c1c1c; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; padding:32px; }
+  .vc { width:320px; background:#0a0a0a; border-radius:18px; padding:14px; color:#f0ede8;
+        border:0.5px solid rgba(255,255,255,0.14); }
+  .vc-frame { border:1px solid rgba(255,255,255,0.22); border-radius:12px; padding:18px 16px; }
+  .vc-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .vc-top .case { font-size:11px; letter-spacing:2px; color:#888780; }
+  .vc-top .solved { display:inline-flex; align-items:center; gap:5px; font-size:11px; letter-spacing:2px; color:#f0ede8; }
+  .vc-art { background:#000; border-radius:10px; overflow:hidden; margin-bottom:14px; }
+  .vc-art img { width:100%; display:block; }
+  .vc-name { text-align:center; font-size:21px; font-weight:500; margin:0 0 2px; letter-spacing:0.5px; }
+  .vc-sub { text-align:center; font-size:12px; color:#888780; margin:0 0 16px; }
+  .vc-chips { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:8px; }
+  .vc-chip { background:rgba(255,255,255,0.06); border-radius:8px; padding:7px 0; text-align:center; }
+  .vc-chip .sym { font-size:15px; }
+  .vc-chip .lbl { font-size:9.5px; color:#cccccc; margin-top:2px; }
+  .vc-chip.score { background:rgba(240,237,232,0.12); border:0.5px solid rgba(255,255,255,0.25); }
+  .vc-chip.score .lbl { color:#f0ede8; }
+  .vc-bottom { display:flex; align-items:center; justify-content:space-between;
+               border-top:0.5px solid rgba(255,255,255,0.12); margin-top:14px; padding-top:12px; }
+  .vc-rank-label { font-size:10px; letter-spacing:2px; color:#888780; margin:0 0 2px; }
+  .vc-rank { font-size:14px; font-weight:500; margin:0; }
+  .vc-coll { font-size:11px; color:#5F5E5A; margin:0; }
+  .vc-share { background:#f0ede8; color:#0a0a0a; font-size:14px; font-weight:500; padding:11px;
+              border-radius:10px; text-align:center; margin-top:14px; cursor:pointer; }
+  .vc-bridge { font-size:11px; color:#888780; text-align:center; margin:10px 0 0; line-height:1.5; }
+</style>
+</head>
+<body>
+  <div class="vc">
+    <div class="vc-frame">
+      <div class="vc-top">
+        <span class="case">ДЕЛО №47</span>
+        <span class="solved"><i class="ti ti-circle-check"></i> РАСКРЫТО</span>
+      </div>
+
+      <!-- vc-art: сюда встаёт реальная иллюстрация celebs/taylor.png (ч/б, квадрат).
+           Ниже — фигура-заглушка в том же стиле, для демонстрации пропорций слота. -->
+      <div class="vc-art">
+        <svg viewBox="0 0 288 220" width="100%" role="img" aria-label="Иллюстрация: певица с гитарой под звёздами">
+          <g fill="#f0ede8">
+            <path d="M40 46l1.4 4 4 1.4-4 1.4L40 57l-1.4-4.2-4-1.4 4-1.4z"/>
+            <path d="M250 40l1.2 3.4 3.4 1.2-3.4 1.2-1.2 3.4-1.2-3.4-3.4-1.2 3.4-1.2z"/>
+            <path d="M230 95l1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/>
+            <path d="M58 120l1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/>
+            <circle cx="262" cy="78" r="1.6"/><circle cx="30" cy="86" r="1.6"/>
+            <circle cx="210" cy="50" r="1.4"/><circle cx="74" cy="40" r="1.4"/>
+            <circle cx="250" cy="130" r="1.4"/>
+          </g>
+          <g fill="none" stroke="#f0ede8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M30 205c40-16 188-16 228 0" />
+            <line x1="92" y1="205" x2="92" y2="118"/>
+            <ellipse cx="92" cy="112" rx="9" ry="7"/>
+            <line x1="80" y1="206" x2="104" y2="206"/>
+            <circle cx="150" cy="58" r="17" fill="#0a0a0a"/>
+            <path d="M134 52c-4-14 6-22 16-22s20 8 16 22c2-6 2-12 0-16" fill="#0a0a0a"/>
+            <circle cx="144" cy="58" r="1.4" fill="#f0ede8" stroke="none"/>
+            <circle cx="156" cy="58" r="1.4" fill="#f0ede8" stroke="none"/>
+            <path d="M152 62c2 2 0 4-2 4" stroke-width="1.6"/>
+            <path d="M138 78c-6 30-10 60-12 84M162 78c6 30 10 60 12 84" fill="#0a0a0a"/>
+            <path d="M138 78c4-4 20-4 24 0" />
+            <path d="M126 162c0 0 24 6 48 0" />
+            <line x1="140" y1="80" x2="146" y2="92"/>
+            <line x1="160" y1="80" x2="154" y2="92"/>
+            <ellipse cx="150" cy="120" rx="26" ry="20" fill="#0a0a0a"/>
+            <circle cx="150" cy="120" r="6"/>
+            <line x1="172" y1="112" x2="210" y2="86"/>
+            <line x1="206" y1="80" x2="216" y2="92"/>
+            <path d="M132 108c-6 6-8 14-4 20" />
+            <path d="M168 132c8 2 14 0 18-4" />
+            <line x1="140" y1="162" x2="136" y2="196"/>
+            <line x1="160" y1="162" x2="164" y2="196"/>
+            <path d="M130 196h12v8l-4 4h-8z" fill="#0a0a0a"/>
+            <path d="M158 196h12l-2 12h-8z" fill="#0a0a0a"/>
+          </g>
+        </svg>
+      </div>
+
+      <p class="vc-name">Тейлор Свифт</p>
+      <p class="vc-sub">Стрелец · рождена 13 декабря 1989</p>
+
+      <div class="vc-chips">
+        <div class="vc-chip"><div class="sym">☉</div><div class="lbl">Стрелец</div></div>
+        <div class="vc-chip"><div class="sym">☽</div><div class="lbl">Рак</div></div>
+        <div class="vc-chip"><div class="sym">☿</div><div class="lbl">Козерог</div></div>
+        <div class="vc-chip"><div class="sym">♀</div><div class="lbl">Водолей</div></div>
+        <div class="vc-chip"><div class="sym">♃</div><div class="lbl">Рак</div></div>
+        <div class="vc-chip"><div class="sym">♄</div><div class="lbl">Козерог</div></div>
+        <div class="vc-chip"><div class="sym">♂</div><div class="lbl">Скорпион</div></div>
+        <div class="vc-chip score"><div class="sym"><i class="ti ti-star"></i></div><div class="lbl">7/7</div></div>
+      </div>
+
+      <div class="vc-bottom">
+        <div>
+          <p class="vc-rank-label">РАНГ</p>
+          <p class="vc-rank">Старший детектив</p>
+        </div>
+        <p class="vc-coll">★ карта 1 из 88</p>
+      </div>
+
+      <div class="vc-share"><i class="ti ti-share-2"></i>&nbsp; Поделиться картой</div>
+      <p class="vc-bridge">Ты прочитала её карту вхолодную.<br>А теперь прочитай свою →</p>
+    </div>
+  </div>
+</body>
+</html>
